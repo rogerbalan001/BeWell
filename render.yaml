@@ -1,0 +1,56 @@
+# Blueprint de Render: https://render.com/docs/blueprint-spec
+# - bewell-api: API NestJS (se compila en Render desde backend/).
+# - bewell-app: app web Flutter. GitHub Actions la compila y publica en la rama web-dist;
+#   Render solo sirve esos archivos estáticos.
+services:
+  - type: web
+    name: bewell-api
+    runtime: node
+    plan: free
+    region: ohio
+    branch: main
+    rootDir: backend
+    buildCommand: npm install --include=dev --no-audit --no-fund && npm run build
+    startCommand: node dist/main
+    healthCheckPath: /api/v1/salud/vida
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Cadena de conexión de MongoDB Atlas: se pide al crear el Blueprint.
+      - key: MONGO_URI
+        sync: false
+      - key: PUBLIC_API_URL
+        value: https://bewell-api.onrender.com/api/v1
+      - key: PUBLIC_WEB_URL
+        value: https://bewell-app.onrender.com/#
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: FIELD_ENCRYPTION_KEY
+        generateValue: true
+      - key: KMS_MASTER_KEY
+        generateValue: true
+      - key: URL_SIGNING_SECRET
+        generateValue: true
+      - key: OCR_PROVIDER
+        value: simulado
+      # El disco del plan gratuito es efímero: los archivos subidos se pierden al reiniciar.
+      - key: STORAGE_DIR
+        value: /tmp/bewell-storage
+      # Demo: carga datos si la base está vacía y permite reiniciarlos (POST /api/v1/demo/reiniciar como admin).
+      - key: SEED_SI_VACIA
+        value: "true"
+      - key: DEMO_REINICIO
+        value: "true"
+
+  - type: web
+    name: bewell-app
+    runtime: static
+    branch: web-dist
+    buildCommand: echo "Compilado por GitHub Actions"
+    staticPublishPath: .
+    autoDeploy: true

@@ -1,0 +1,19 @@
+# Backend
+backend/node_modules/
+backend/dist/
+backend/storage/
+backend/coverage/
+backend/.env
+
+# Flutter
+app/.dart_tool/
+app/build/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/.packages
+*.iml
+.idea/
+
+# Sistema
+.DS_Store
+Thumbs.db

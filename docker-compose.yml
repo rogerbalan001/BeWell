@@ -1,0 +1,24 @@
+# Infraestructura local del MVP: MongoDB + Redis (+ API opcional).
+#   docker compose up -d mongo redis      → solo bases de datos (desarrollo con `npm run start:dev`)
+#   docker compose up -d                  → todo, incluida la API en http://localhost:3000
+services:
+  mongo:
+    image: mongo:7
+    ports: ["27017:27017"]
+    volumes: [mongo-data:/data/db]
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  api:
+    build: ./backend
+    depends_on: [mongo, redis]
+    ports: ["3000:3000"]
+    env_file: ./backend/.env
+    environment:
+      MONGO_URI: mongodb://mongo:27017/bewell
+      REDIS_URL: redis://redis:6379
+      STORAGE_DIR: /data/storage
+    volumes: [storage:/data/storage]
+volumes:
+  mongo-data:
+  storage:
