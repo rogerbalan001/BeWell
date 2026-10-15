@@ -1,0 +1,5 @@
+1-create: 0
+2-pub-get: 0
+3-analyze: 1
+4-test: 1
+5-build-web: 1

@@ -1,0 +1,24 @@
+
+lib/main.dart:31:22: Error: This requires the experimental 'dot-shorthands' language feature to be enabled.
+Try passing the '--enable-experiment=dot-shorthands' command line option.
+        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+                     ^
+lib/main.dart:105:30: Error: This requires the experimental 'dot-shorthands' language feature to be enabled.
+Try passing the '--enable-experiment=dot-shorthands' command line option.
+          mainAxisAlignment: .center,
+                             ^
+::group::❌ loading /home/runner/work/BeWell/BeWell/test/widget_test.dart (failed)
+Failed to load "/home/runner/work/BeWell/BeWell/test/widget_test.dart":
+Compilation failed for testPath=/home/runner/work/BeWell/BeWell/test/widget_test.dart: lib/main.dart:31:22: Error: This requires the experimental 'dot-shorthands' language feature to be enabled.
+Try passing the '--enable-experiment=dot-shorthands' command line option.
+        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+                     ^
+lib/main.dart:105:30: Error: This requires the experimental 'dot-shorthands' language feature to be enabled.
+Try passing the '--enable-experiment=dot-shorthands' command line option.
+          mainAxisAlignment: .center,
+                             ^
+.
+
+::endgroup::
+
+::error::0 tests passed, 1 failed.
