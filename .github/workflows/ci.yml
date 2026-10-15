@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backend:
+    name: Backend (NestJS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar, tipar, probar y compilar
+        run: bash .github/scripts/ci-backend.sh
+      - name: Publicar registros en la rama ci-logs-backend
+        if: always()
+        run: bash .github/scripts/publicar-logs.sh ci-logs-backend
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  app:
+    name: App (Flutter web)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Analizar, probar y compilar
+        run: bash .github/scripts/ci-app.sh
+        env:
+          # URL pública de la API (variable del repositorio API_URL; por defecto, Render).
+          API_URL: ${{ vars.API_URL || 'https://bewell-api.onrender.com/api/v1' }}
+      - name: Publicar la app web en la rama web-dist (Render la sirve)
+        if: success() && github.ref == 'refs/heads/main'
+        run: bash .github/scripts/publicar-web.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publicar registros en la rama ci-logs-app
+        if: always()
+        run: bash .github/scripts/publicar-logs.sh ci-logs-app
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
