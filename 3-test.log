@@ -1,0 +1,14 @@
+PASS test/dominio/clinico.spec.ts (5.183 s)
+PASS test/dominio/cita-y-pago.spec.ts
+PASS test/aplicacion/recipes-y-emergencias.spec.ts (6.35 s)
+PASS test/aplicacion/citas.service.spec.ts (6.47 s)
+PASS test/aplicacion/expediente.service.spec.ts
+PASS test/dominio/politica-y-medico.spec.ts
+[32m[Nest] 2542  - [39m10/15/2026, 1:58:10 PM [32m    LOG[39m [38;5;3m[PagosService] [39m[32mPagos liberados: 1[39m
+[32m[Nest] 2542  - [39m10/15/2026, 1:58:10 PM [32m    LOG[39m [38;5;3m[CitasService] [39m[32mPropuestas vencidas: 1[39m
+
+Test Suites: 6 passed, 6 total
+Tests:       60 passed, 60 total
+Snapshots:   0 total
+Time:        7.173 s
+Ran all test suites.
