@@ -23,6 +23,7 @@ import { ExamenesService } from '../modules/examenes/application/examenes.servic
 import { ExpedienteService } from '../modules/expediente/application/expediente.service';
 import { ReferenciasService } from '../modules/expediente/application/referencias.service';
 import { CategoriaClinica, TipoEvento } from '../modules/expediente/domain/categoria-clinica';
+import { HistoriaClinicaService } from '../modules/historia-clinica/application/historia-clinica.service';
 import { AgendaService } from '../modules/medicos/application/agenda.service';
 import { MedicosService } from '../modules/medicos/application/medicos.service';
 import { VerificacionProfesionalService } from '../modules/medicos/application/verificacion-profesional.service';
@@ -168,6 +169,7 @@ export async function sembrarDatosDemo(obtener: Resolver, urlWeb: string): Promi
   const recipes = obtener(RecipesService);
   const examenes = obtener(ExamenesService);
   const emergencia = obtener(EmergenciaService);
+  const historiaClinica = obtener(HistoriaClinicaService);
   const ahora = new Date();
 
   // ---------- Usuarios internos ----------
@@ -253,13 +255,6 @@ export async function sembrarDatosDemo(obtener: Resolver, urlWeb: string): Promi
     { tipo: TipoEvento.CIRUGIA, dias: 3650, titulo: 'Apendicectomía laparoscópica', resumen: 'Cirugía sin complicaciones. Alta a las 48 h.' },
     { tipo: TipoEvento.VACUNA, dias: 190, titulo: 'Vacuna contra la influenza 2026', resumen: 'Dosis única, brazo izquierdo. Lote FLU-26-118.' },
     { tipo: TipoEvento.DIAGNOSTICO, dias: 120, titulo: 'Rinitis alérgica estacional', resumen: 'Se indica loratadina 10 mg en temporada de polen.', medicoId: soto.medicoId },
-    {
-      tipo: TipoEvento.CONSULTA,
-      dias: 90,
-      titulo: 'Chequeo periódico anual',
-      resumen: 'Examen físico dentro de la normalidad. IMC 23,8. Se indica perfil lipídico de control.',
-      medicoId: ruiz.medicoId,
-    },
     { tipo: TipoEvento.VACUNA, dias: 30, titulo: 'Refuerzo antitetánico (Td)', resumen: 'Refuerzo decenal aplicado.' },
   ];
   for (const h of historial) {
@@ -411,6 +406,70 @@ export async function sembrarDatosDemo(obtener: Resolver, urlWeb: string): Promi
     camposPublicos: ['grupoSanguineo', 'alergias', 'condicionesCronicas', 'contactos'],
   });
   const qr = await emergencia.regenerarQr(sofia, sofiaPerfil.id);
+
+  // ---------- Historia clínica ----------
+  // Antecedentes de Sofía (auto-reportados) y de Lucas (registrados por la titular).
+  await historiaClinica.actualizarAntecedentes(sofia, sofiaPerfil.id, {
+    grupoSanguineo: 'O+',
+    alergicos: ['Penicilina (anafilaxia)', 'Polen de olivo'],
+    patologicos: ['Asma leve intermitente desde la infancia', 'Rinitis alérgica estacional'],
+    quirurgicos: ['Apendicectomía laparoscópica (2016), sin complicaciones'],
+    medicamentosActuales: ['Loratadina 10 mg cada 24 h en temporada de polen', 'Salbutamol inhalado 100 mcg a demanda'],
+    hospitalizaciones: ['2016 — apendicitis aguda (48 h)'],
+    inmunizaciones: ['Influenza 2026', 'Td (refuerzo decenal)', 'Hepatitis B (esquema completo)', 'COVID-19 (3 dosis)'],
+    familiares: ['Madre: hipertensión arterial', 'Padre: diabetes mellitus tipo 2', 'Abuela materna: cáncer de mama'],
+    habitos: {
+      tabaco: 'Niega',
+      alcohol: 'Social, 1–2 copas al mes',
+      drogas: 'Niega',
+      actividadFisica: 'Caminata 30 min, 3 veces por semana',
+      alimentacion: 'Balanceada, baja en sal',
+      sueno: '7 horas, reparador',
+    },
+    ginecoObstetricos: {
+      menarquia: '12 años',
+      ultimaMenstruacion: sumarDias(ahora, -12).toISOString().slice(0, 10),
+      gestas: 1,
+      partos: 1,
+      cesareas: 0,
+      abortos: 0,
+      metodoAnticonceptivo: 'DIU de cobre',
+    },
+  });
+  await historiaClinica.actualizarAntecedentes(sofia, lucas.id, {
+    grupoSanguineo: 'A+',
+    patologicos: ['Bronquiolitis a los 8 meses'],
+    inmunizaciones: ['Esquema nacional al día', 'Triple viral (SRP) — refuerzo'],
+    familiares: ['Madre: asma y rinitis alérgica'],
+    habitos: { alimentacion: 'Variada; consume poca verdura', sueno: '10 horas', actividadFisica: 'Natación 2 veces por semana' },
+  });
+
+  // Consulta de hace 3 meses (chequeo anual) con su historia completa.
+  const chequeo = await crearCitaPasada(sofiaPerfil.id, sofia.id, ruiz, 90 * 24, EstadoCita.ATENDIDA, 'Chequeo periódico anual');
+  await historiaClinica.registrarConsulta(ruiz, sofiaPerfil.id, {
+    citaId: chequeo.id,
+    motivoConsulta: 'Chequeo periódico anual',
+    enfermedadActual: 'Paciente femenina de 34 años, asintomática, acude a control anual. Refiere rinitis en primavera controlada con loratadina. Sin crisis de asma en el último año.',
+    revisionPorSistemas: 'Niega cefalea, dolor torácico, disnea, palpitaciones o alteraciones gastrointestinales.',
+    signosVitales: { tensionArterial: '118/76', frecuenciaCardiaca: 72, frecuenciaRespiratoria: 16, temperatura: 36.6, saturacionOxigeno: 98, peso: 63, talla: 164 },
+    examenFisico: 'Buen estado general. Cardiopulmonar: ruidos cardíacos rítmicos sin soplos, murmullo vesicular conservado sin agregados. Abdomen blando, depresible, cicatrices de laparoscopia. Sin edemas.',
+    impresionDiagnostica: ['Adulto sano (Z00.0)', 'Rinitis alérgica estacional (J30.2)'],
+    plan: 'Perfil lipídico, glicemia y hematología de control. Continuar loratadina en temporada. Control en 12 meses.',
+    indicaciones: 'Mantener actividad física y dieta baja en sal.',
+  });
+
+  // Historia de la consulta atendida hace 2 días (Ruiz aún puede corregirla durante 24 h).
+  await historiaClinica.registrarConsulta(ruiz, sofiaPerfil.id, {
+    citaId: citaAtendida.id,
+    motivoConsulta: 'Dolor de cabeza de 4 días',
+    enfermedadActual: 'Cefalea frontal opresiva, bilateral, de intensidad 5/10, de 4 días de evolución, que empeora al final de la jornada laboral. Sin náuseas, fotofobia ni fiebre. Se asocia a congestión nasal y estornudos matutinos.',
+    revisionPorSistemas: 'Rinorrea hialina y prurito nasal. Resto negativo.',
+    signosVitales: { tensionArterial: '122/80', frecuenciaCardiaca: 78, frecuenciaRespiratoria: 16, temperatura: 36.8, saturacionOxigeno: 98, peso: 63.5, talla: 164 },
+    examenFisico: 'Mucosa nasal pálida y edematosa. Sin dolor a la palpación de senos paranasales. Examen neurológico sin déficit focal. Contractura de trapecios.',
+    impresionDiagnostica: ['Cefalea tensional (G44.2)', 'Rinitis alérgica estacional (J30.2)'],
+    plan: 'Acetaminofén 500 mg cada 8 h si hay dolor por 5 días; loratadina 10 mg diaria por 14 días. Laboratorio de control. Referencia a cardiología por palpitaciones ocasionales.',
+    indicaciones: 'Pausas activas en el trabajo, hidratación y evitar exposición a polen. Volver si la cefalea empeora o aparece fiebre.',
+  });
 
   return {
     password: PASSWORD,
