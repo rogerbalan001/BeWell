@@ -236,6 +236,14 @@ class _DetalleState extends State<_Detalle> {
           icon: const Icon(Icons.event_busy),
           label: const Text('Cancelar cita'),
         ),
+      if (esMedico && (c.confirmada || c.atendida))
+        FilledButton.tonalIcon(
+          onPressed: () => context.push(
+            '/medico/pacientes/${c.pacienteId}/historia/consulta?citaId=${c.id}&nombre=${Uri.encodeComponent(c.pacienteNombre)}',
+          ),
+          icon: const Icon(Icons.medical_information_outlined),
+          label: const Text('Registrar historia clínica'),
+        ),
       if (esMedico && c.atendida) ...[
         FilledButton.icon(onPressed: () => context.push('/citas/${c.id}/recipe', extra: c), icon: const Icon(Icons.receipt_long), label: const Text('Emitir récipe')),
         OutlinedButton.icon(

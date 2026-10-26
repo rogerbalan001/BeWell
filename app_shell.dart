@@ -24,6 +24,7 @@ List<_Destino> _destinos(UsuarioSesion? u) => [
         _Destino('/directorio', Icons.person_search_outlined, 'Directorio médico'),
         _Destino('/citas', Icons.event_note_outlined, 'Mis citas'),
         _Destino('/expediente', Icons.folder_shared_outlined, 'Expediente'),
+        _Destino('/historia-clinica', Icons.medical_information_outlined, 'Historia clínica'),
         _Destino('/examenes', Icons.biotech_outlined, 'Exámenes'),
         _Destino('/recipes', Icons.receipt_long_outlined, 'Récipes'),
         _Destino('/emergencia', Icons.qr_code_2, 'Emergencia QR'),

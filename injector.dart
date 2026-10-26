@@ -25,6 +25,11 @@ import '../../features/expediente/data/repositories/expediente_repository_impl.d
 import '../../features/expediente/domain/repositories/expediente_repository.dart';
 import '../../features/expediente/domain/usecases/expediente_usecases.dart';
 import '../../features/expediente/presentation/cubit/expediente_cubits.dart';
+import '../../features/historia_clinica/data/datasources/historia_clinica_remote_data_source.dart';
+import '../../features/historia_clinica/data/repositories/historia_clinica_repository_impl.dart';
+import '../../features/historia_clinica/domain/repositories/historia_clinica_repository.dart';
+import '../../features/historia_clinica/domain/usecases/historia_clinica_usecases.dart';
+import '../../features/historia_clinica/presentation/cubit/historia_clinica_cubit.dart';
 import '../../features/medicos/data/datasources/medicos_remote_data_source.dart';
 import '../../features/medicos/data/repositories/medicos_repository_impl.dart';
 import '../../features/medicos/domain/repositories/medicos_repository.dart';
@@ -138,6 +143,14 @@ void configurarDependencias() {
   sl.registerFactory(() => PermisosCubit(sl()));
   sl.registerFactory(() => ReferenciasCubit(sl()));
   sl.registerFactory(() => MisPacientesCubit(sl()));
+
+  // ---------- Historia clínica ----------
+  sl.registerLazySingleton(() => HistoriaClinicaRemoteDataSource(sl()));
+  sl.registerLazySingleton<HistoriaClinicaRepository>(() => HistoriaClinicaRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => ObtenerHistoriaClinica(sl()));
+  sl.registerLazySingleton(() => ActualizarAntecedentesClinicos(sl()));
+  sl.registerLazySingleton(() => RegistrarConsultaClinica(sl()));
+  sl.registerFactory(() => HistoriaClinicaCubit(sl()));
 
   // ---------- Exámenes ----------
   sl.registerLazySingleton(() => ExamenesRemoteDataSource(sl()));

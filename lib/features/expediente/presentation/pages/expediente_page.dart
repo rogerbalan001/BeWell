@@ -97,6 +97,11 @@ class _Contenido extends StatelessWidget {
             icon: const Icon(Icons.picture_as_pdf_outlined),
             label: const Text('Exportar PDF'),
           ),
+          OutlinedButton.icon(
+            onPressed: () => context.push(esTitular ? '/historia-clinica' : '/medico/pacientes/${r.pacienteId}/historia'),
+            icon: const Icon(Icons.medical_information_outlined),
+            label: const Text('Historia clínica'),
+          ),
           if (esTitular)
             OutlinedButton.icon(onPressed: () => context.push('/expediente/permisos'), icon: const Icon(Icons.admin_panel_settings_outlined), label: const Text('Médicos autorizados')),
           if (!esTitular)

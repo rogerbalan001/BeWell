@@ -23,6 +23,8 @@ import '../../features/expediente/presentation/pages/expediente_page.dart';
 import '../../features/expediente/presentation/pages/mis_pacientes_page.dart';
 import '../../features/expediente/presentation/pages/permisos_page.dart';
 import '../../features/expediente/presentation/pages/referencias_page.dart';
+import '../../features/historia_clinica/presentation/pages/consulta_form_page.dart';
+import '../../features/historia_clinica/presentation/pages/historia_clinica_page.dart';
 import '../../features/inicio/presentation/pages/cargando_page.dart';
 import '../../features/inicio/presentation/pages/inicio_page.dart';
 import '../../features/inicio/presentation/pages/landing_page.dart';
@@ -108,6 +110,7 @@ GoRouter crearRouter(SesionCubit sesion) {
           ),
           GoRoute(path: '/expediente', builder: (_, __) => const ExpedientePage()),
           GoRoute(path: '/expediente/permisos', builder: (_, __) => const PermisosPage()),
+          GoRoute(path: '/historia-clinica', builder: (_, __) => const HistoriaClinicaPage()),
           GoRoute(path: '/referencias', builder: (_, __) => const ReferenciasPage()),
           GoRoute(path: '/examenes', builder: (_, __) => const ExamenesPage()),
           GoRoute(
@@ -121,6 +124,18 @@ GoRouter crearRouter(SesionCubit sesion) {
           GoRoute(path: '/medico/credenciales', builder: (_, __) => const CredencialesPage()),
           GoRoute(path: '/medico/pacientes', builder: (_, __) => const MisPacientesPage()),
           GoRoute(path: '/medico/pacientes/:pacienteId', builder: (_, s) => ExpedientePage(pacienteId: s.pathParameters['pacienteId'])),
+          GoRoute(
+            path: '/medico/pacientes/:pacienteId/historia',
+            builder: (_, s) => HistoriaClinicaPage(pacienteId: s.pathParameters['pacienteId']),
+          ),
+          GoRoute(
+            path: '/medico/pacientes/:pacienteId/historia/consulta',
+            builder: (_, s) => ConsultaFormPage(
+              pacienteId: s.pathParameters['pacienteId']!,
+              pacienteNombre: s.uri.queryParameters['nombre'],
+              citaId: s.uri.queryParameters['citaId'],
+            ),
+          ),
           GoRoute(
             path: '/medico/examenes/solicitar',
             builder: (_, s) => SolicitarExamenesPage(

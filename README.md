@@ -14,7 +14,7 @@ bewell/
 ├── backend/            API NestJS (12 módulos de dominio + shared)
 │   ├── src/modules/<módulo>/{interface,application,domain,infrastructure}
 │   ├── src/seed/seed.ts       datos de demostración
-│   └── test/                  60 pruebas (dominio + casos de uso con adaptadores en memoria)
+│   └── test/                  76 pruebas (dominio + casos de uso con adaptadores en memoria)
 ├── app/                Flutter (lib/core + lib/features/<feature>/{data,domain,presentation})
 ├── docs/BACKLOG.md     historias de usuario de Trello → tareas técnicas (DoD)
 ├── docs/Bewell_Guia_Instalacion.pdf   guía de instalación paso a paso
@@ -36,7 +36,7 @@ npm install
 npm run configurar                    # crea .env con llaves aleatorias (AES, KMS, JWT)
 npm run seed                          # BORRA la BD y carga datos de demostración
 npm run start:dev                     # http://localhost:3000/api/v1  ·  OpenAPI: http://localhost:3000/api/docs
-npm test                              # 60 pruebas unitarias
+npm test                              # 76 pruebas unitarias
 ```
 Para usar Redis como caché de la ficha QR, descomenta `REDIS_URL` en `.env`; sin él se usa caché en memoria.
 
@@ -84,6 +84,7 @@ Fuente: tablero Trello *BeWell* (15 HU). Detalle de tareas en [`docs/BACKLOG.md`
 | 14 | Cita de seguimiento aceptada por ambas partes | To Do | ✅ "Pendiente de aceptación", cancelación automática a las 48 h |
 | 1 | Pagar en la app y liberar al médico después de la consulta | Backlog | ✅ Retención al reservar, liberación a las 24 h, disputa. Pasarela **simulada** (alcance del documento) |
 | 2 | Perfiles de hijos o padres | Backlog | ✅ Selector de perfil, expediente independiente. *Traspaso a mayoría de edad: Sprint 2* |
+| — | Historia clínica del paciente | — | ✅ Antecedentes estructurados (alergias, patológicos, quirúrgicos, medicamentos, familiares, hábitos, gineco-obstétricos) + historia de cada consulta (motivo, enfermedad actual, signos vitales con IMC, examen físico, impresión diagnóstica y plan), corrección en 24 h, exportación PDF |
 | 3 | Línea de tiempo del paciente para el médico | Backlog | ✅ Orden cronológico inverso, filtros por tipo, detalle |
 | 4 | Solicitar exámenes y recibir resultados | Backlog | ✅ Catálogo, orden "pendiente" → "completada", notificación al médico |
 | 6 | Política de cancelación del médico | Backlog | ✅ Flexible / moderada / estricta, visible antes de confirmar, reembolso automático |

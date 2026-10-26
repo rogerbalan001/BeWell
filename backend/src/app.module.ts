@@ -12,6 +12,7 @@ import { DemoModule } from './modules/demo/demo.module';
 import { EmergenciasModule } from './modules/emergencias/emergencias.module';
 import { ExamenesModule } from './modules/examenes/examenes.module';
 import { ExpedienteModule } from './modules/expediente/expediente.module';
+import { HistoriaClinicaModule } from './modules/historia-clinica/historia-clinica.module';
 import { MedicosModule } from './modules/medicos/medicos.module';
 import { NotificacionesModule } from './modules/notificaciones/notificaciones.module';
 import { PagosModule } from './modules/pagos/pagos.module';
@@ -44,6 +45,7 @@ import { SharedModule } from './shared/shared.module';
     PagosModule,
     ExpedienteModule,
     CitasModule,
+    HistoriaClinicaModule,
     ResenasModule,
     ExamenesModule,
     RecipesModule,
