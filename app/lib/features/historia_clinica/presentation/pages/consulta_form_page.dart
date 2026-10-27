@@ -26,6 +26,10 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
   final _form = GlobalKey<FormState>();
   late final ContenidoConsulta? _c = widget.existente?.contenido;
   late final _motivo = TextEditingController(text: _c?.motivoConsulta ?? '');
+  late final _estimulo = TextEditingController(text: _c?.estimuloIatrotropico ?? '');
+  late final _condiciones = TextEditingController(text: _c?.condicionesGenerales ?? '');
+  late final _examenes = TextEditingController(text: _c?.examenes ?? '');
+  late List<String> _problemas = _c?.listaProblemas ?? const [];
   late final _enfermedad = TextEditingController(text: _c?.enfermedadActual ?? '');
   late final _sistemas = TextEditingController(text: _c?.revisionPorSistemas ?? '');
   late final _examen = TextEditingController(text: _c?.examenFisico ?? '');
@@ -41,12 +45,14 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
   late final _sat = TextEditingController(text: _txt(_sv.saturacionOxigeno));
   late final _peso = TextEditingController(text: _txt(_sv.peso));
   late final _talla = TextEditingController(text: _txt(_sv.talla));
+  late final _cintura = TextEditingController(text: _txt(_sv.circunferenciaAbdominal));
 
   bool _guardando = false;
 
   static String _txt(double? v) => v == null ? '' : (v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toString());
 
-  List<TextEditingController> get _todos => [_motivo, _enfermedad, _sistemas, _examen, _plan, _indicaciones, _ta, _fc, _fr, _temp, _sat, _peso, _talla];
+  List<TextEditingController> get _todos =>
+      [_motivo, _estimulo, _condiciones, _examenes, _enfermedad, _sistemas, _examen, _plan, _indicaciones, _ta, _fc, _fr, _temp, _sat, _peso, _talla, _cintura];
 
   @override
   void initState() {
@@ -76,6 +82,7 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
         saturacionOxigeno: _numero(_sat),
         peso: _numero(_peso),
         talla: _numero(_talla),
+        circunferenciaAbdominal: _numero(_cintura),
       );
 
   String? _requerido(String? v) => (v == null || v.trim().isEmpty) ? 'Campo obligatorio' : null;
@@ -102,11 +109,15 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
     setState(() => _guardando = true);
     final contenido = ContenidoConsulta(
       motivoConsulta: _motivo.text.trim(),
+      estimuloIatrotropico: _estimulo.text.trim(),
       enfermedadActual: _enfermedad.text.trim(),
       revisionPorSistemas: _sistemas.text.trim(),
+      condicionesGenerales: _condiciones.text.trim(),
       signosVitales: _signos,
       examenFisico: _examen.text.trim(),
+      listaProblemas: _problemas,
       impresionDiagnostica: _diagnosticos,
+      examenes: _examenes.text.trim(),
       plan: _plan.text.trim(),
       indicaciones: _indicaciones.text.trim(),
     );
@@ -185,37 +196,48 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
                     if (widget.citaId != null) const ChipEstado('Vinculada a la cita', icono: Icons.event_available, color: AppColors.primario),
                   ]),
                 ),
-              bloque('Anamnesis', Icons.record_voice_over_outlined, [
+              bloque('I–II. Motivo y enfermedad actual', Icons.record_voice_over_outlined, [
                 campo(_motivo, 'Motivo de consulta *', validar: _requerido, ayuda: 'En palabras del paciente'),
-                campo(_enfermedad, 'Enfermedad actual *', lineas: 4, validar: _requerido, ayuda: 'Inicio, evolución, síntomas asociados y tratamientos recibidos'),
-                campo(_sistemas, 'Revisión por sistemas', lineas: 3),
+                campo(_estimulo, 'Estímulo iatrotrópico', ayuda: '¿Por qué consulta ahora?'),
+                campo(_enfermedad, 'Enfermedad actual *', lineas: 4, validar: _requerido, ayuda: 'Síntomas en orden cronológico: inicio, duración y tratamiento'),
               ]),
-              bloque('Examen físico', Icons.monitor_heart_outlined, [
+              bloque('VI. Revisión por aparatos y sistemas', Icons.checklist_rtl, [
+                campo(_sistemas, 'Hallazgos positivos por sistema', lineas: 3, ayuda: 'Solo lo positivo; el resto se asume negado'),
+              ]),
+              bloque('VII. Examen físico', Icons.monitor_heart_outlined, [
+                campo(_condiciones, 'Condiciones generales'),
                 Wrap(spacing: 12, runSpacing: 12, children: [
                   SizedBox(
                     width: 150,
-                    child: TextFormField(controller: _ta, validator: _validarTa, decoration: AppTheme.campo('TA', sufijo: 'mmHg', ayuda: '120/80')),
+                    child: TextFormField(controller: _ta, validator: _validarTa, decoration: AppTheme.campo('Presión arterial', sufijo: 'mmHg', ayuda: '120/80')),
                   ),
-                  vital(_fc, 'FC', 'lpm', 20, 250),
+                  vital(_fc, 'Pulso', 'ppm', 20, 250),
                   vital(_fr, 'FR', 'rpm', 4, 80),
                   vital(_temp, 'Temperatura', '°C', 30, 45),
                   vital(_sat, 'SpO₂', '%', 50, 100),
                   vital(_peso, 'Peso', 'kg', 0.3, 400),
                   vital(_talla, 'Talla', 'cm', 20, 250),
+                  vital(_cintura, 'C. abdominal', 'cm', 30, 250),
                 ]),
                 if (imc != null)
                   Align(alignment: Alignment.centerLeft, child: ChipEstado('IMC $imc kg/m²', icono: Icons.straighten, color: AppColors.verdeOscuro)),
-                campo(_examen, 'Hallazgos del examen físico', lineas: 4, ayuda: 'Por aparatos y sistemas'),
+                campo(_examen, 'Hallazgos por aparatos y sistemas', lineas: 4),
               ]),
-              bloque('Impresión diagnóstica y plan', Icons.local_hospital_outlined, [
+              bloque('IX–XII. Problemas, diagnóstico y plan', Icons.local_hospital_outlined, [
                 EditorLista(
-                  etiqueta: 'Impresión diagnóstica *',
-                  ayuda: 'Agrega uno o más diagnósticos (puedes incluir el código CIE-10)',
+                  etiqueta: 'IX. Lista de problemas',
+                  valores: _problemas,
+                  alCambiar: (v) => setState(() => _problemas = v),
+                ),
+                EditorLista(
+                  etiqueta: 'X. Impresión diagnóstica *',
+                  ayuda: 'Uno o más diagnósticos (puedes incluir el código CIE-10)',
                   valores: _diagnosticos,
                   alCambiar: (v) => setState(() => _diagnosticos = v),
                 ),
-                campo(_plan, 'Plan *', lineas: 3, validar: _requerido, ayuda: 'Estudios, tratamiento y seguimiento'),
-                campo(_indicaciones, 'Indicaciones al paciente', lineas: 3),
+                campo(_examenes, 'XI. Exámenes', lineas: 2, ayuda: 'Laboratorio, imagenológicos u otros'),
+                campo(_plan, 'XII. Plan *', lineas: 3, validar: _requerido, ayuda: 'Diagnóstico, preventivo y terapéutico'),
+                campo(_indicaciones, 'Plan educativo (indicaciones al paciente)', lineas: 2),
               ]),
               const Text(
                 'La historia se puede corregir durante 24 horas; después queda fija. El paciente recibe una notificación.',

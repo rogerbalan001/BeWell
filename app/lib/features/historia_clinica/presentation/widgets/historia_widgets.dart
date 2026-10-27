@@ -79,20 +79,27 @@ class TarjetaConsulta extends StatelessWidget {
             style: const TextStyle(color: AppColors.pizarra, fontSize: 13),
           ),
           children: [
-            Wrap(spacing: 6, runSpacing: 6, children: [
-              for (final d in c.impresionDiagnostica) ChipEstado(d, color: AppColors.marino, fondo: AppColors.superficieAzul2, icono: Icons.local_hospital_outlined),
-            ]),
+            seccion('Estímulo iatrotrópico', c.estimuloIatrotropico),
+            seccion('II. Enfermedad actual', c.enfermedadActual),
+            seccion('VI. Revisión por sistemas', c.revisionPorSistemas),
+            seccion('Condiciones generales', c.condicionesGenerales),
             if (!c.signosVitales.vacio) ...[
               const SizedBox(height: 12),
               Wrap(spacing: 6, runSpacing: 6, children: [
                 for (final s in c.signosVitales.resumen) ChipEstado(s, color: AppColors.verdeOscuro, icono: Icons.monitor_heart_outlined),
               ]),
             ],
-            seccion('Enfermedad actual', c.enfermedadActual),
-            seccion('Revisión por sistemas', c.revisionPorSistemas),
-            seccion('Examen físico', c.examenFisico),
-            seccion('Plan', c.plan),
-            seccion('Indicaciones', c.indicaciones),
+            seccion('VII. Examen físico', c.examenFisico),
+            seccion('IX. Lista de problemas', c.listaProblemas.isEmpty ? null : c.listaProblemas.join(' · ')),
+            const SizedBox(height: 12),
+            const Text('X. IMPRESIÓN DIAGNÓSTICA', style: TextStyle(color: AppColors.primario, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+            const SizedBox(height: 6),
+            Wrap(spacing: 6, runSpacing: 6, children: [
+              for (final d in c.impresionDiagnostica) ChipEstado(d, color: AppColors.marino, fondo: AppColors.superficieAzul2, icono: Icons.local_hospital_outlined),
+            ]),
+            seccion('XI. Exámenes', c.examenes),
+            seccion('XII. Plan', c.plan),
+            seccion('Plan educativo', c.indicaciones),
             if (alCorregir != null) ...[
               const SizedBox(height: 14),
               OutlinedButton.icon(onPressed: alCorregir, icon: const Icon(Icons.edit_outlined), label: const Text('Corregir (24 h)')),

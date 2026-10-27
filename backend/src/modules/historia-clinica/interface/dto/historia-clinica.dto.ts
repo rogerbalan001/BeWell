@@ -23,12 +23,21 @@ import { ConsultaClinica } from '../../domain/consulta-clinica';
 import { aPerfilRespuesta } from '../../../perfiles/interface/dto/perfil.dto';
 
 export class HabitosDto {
-  @IsOptional() @IsString() @MaxLength(300) tabaco?: string;
   @IsOptional() @IsString() @MaxLength(300) alcohol?: string;
+  @IsOptional() @IsString() @MaxLength(300) tabaco?: string;
+  @IsOptional() @IsString() @MaxLength(300) cafe?: string;
   @IsOptional() @IsString() @MaxLength(300) drogas?: string;
   @IsOptional() @IsString() @MaxLength(300) actividadFisica?: string;
   @IsOptional() @IsString() @MaxLength(300) alimentacion?: string;
   @IsOptional() @IsString() @MaxLength(300) sueno?: string;
+  @IsOptional() @IsString() @MaxLength(300) vivienda?: string;
+}
+
+export class DatosSocialesDto {
+  @IsOptional() @IsString() @MaxLength(300) estadoCivil?: string;
+  @IsOptional() @IsString() @MaxLength(300) nivelInstruccion?: string;
+  @IsOptional() @IsString() @MaxLength(300) ocupacion?: string;
+  @IsOptional() @IsString() @MaxLength(300) procedencia?: string;
 }
 
 export class GinecoObstetricosDto {
@@ -43,12 +52,16 @@ export class GinecoObstetricosDto {
 
 export class AntecedentesClinicosDto {
   @IsOptional() @IsIn(GRUPOS_SANGUINEOS) grupoSanguineo?: GrupoSanguineo;
+  @IsOptional() @ValidateNested() @Type(() => DatosSocialesDto) datosSociales?: DatosSocialesDto;
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) inmunizaciones?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) infancia?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) alergicos?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) patologicos?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) quirurgicos?: string[];
-  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) alergicos?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) traumatologicos?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) transfusionales?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) epidemiologicos?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) medicamentosActuales?: string[];
-  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) hospitalizaciones?: string[];
-  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) inmunizaciones?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) familiares?: string[];
   @IsOptional() @ValidateNested() @Type(() => HabitosDto) habitos?: HabitosDto;
   @IsOptional() @ValidateNested() @Type(() => GinecoObstetricosDto) ginecoObstetricos?: GinecoObstetricosDto;
@@ -62,15 +75,20 @@ export class SignosVitalesDto {
   @IsOptional() @IsNumber() saturacionOxigeno?: number;
   @IsOptional() @IsNumber() peso?: number;
   @IsOptional() @IsNumber() talla?: number;
+  @IsOptional() @IsNumber() circunferenciaAbdominal?: number;
 }
 
 export class ContenidoConsultaDto {
   @IsString() @IsNotEmpty() @MaxLength(5000) motivoConsulta: string;
+  @IsOptional() @IsString() @MaxLength(5000) estimuloIatrotropico?: string;
   @IsString() @IsNotEmpty() @MaxLength(5000) enfermedadActual: string;
   @IsOptional() @IsString() @MaxLength(5000) revisionPorSistemas?: string;
+  @IsOptional() @IsString() @MaxLength(5000) condicionesGenerales?: string;
   @IsOptional() @ValidateNested() @Type(() => SignosVitalesDto) signosVitales?: SignosVitalesDto;
   @IsOptional() @IsString() @MaxLength(5000) examenFisico?: string;
+  @IsOptional() @IsArray() @ArrayMaxSize(15) @IsString({ each: true }) @MaxLength(300, { each: true }) listaProblemas?: string[];
   @IsArray() @ArrayNotEmpty() @ArrayMaxSize(15) @IsString({ each: true }) @MaxLength(300, { each: true }) impresionDiagnostica: string[];
+  @IsOptional() @IsString() @MaxLength(5000) examenes?: string;
   @IsString() @IsNotEmpty() @MaxLength(5000) plan: string;
   @IsOptional() @IsString() @MaxLength(5000) indicaciones?: string;
 }
@@ -85,6 +103,7 @@ const aMedicoResumen = (m?: Medico) =>
 
 export const aAntecedentesRespuesta = (a: AntecedentesClinicos) => ({
   id: a.id,
+  numeroHistoria: `HC-${a.id.slice(-6).toUpperCase()}`,
   ...a.datos,
   actualizadoEn: a.actualizadoEn,
   actualizadoPorMedico: !!a.actualizadoPorMedicoId,

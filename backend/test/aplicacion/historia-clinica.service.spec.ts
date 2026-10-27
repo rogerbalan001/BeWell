@@ -46,6 +46,7 @@ const consulta = (cambios: Partial<ContenidoConsulta> = {}): ContenidoConsulta =
   enfermedadActual: 'Paciente con HTA en tratamiento, asintomática',
   signosVitales: { tensionArterial: '130/85', peso: 62, talla: 165 },
   examenFisico: 'Ruidos cardíacos rítmicos, sin soplos',
+  listaProblemas: ['Hipertensión arterial'],
   impresionDiagnostica: ['Hipertensión arterial controlada'],
   plan: 'Continuar losartán 50 mg diario',
   ...cambios,

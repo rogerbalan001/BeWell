@@ -9,7 +9,8 @@ import '../../domain/entities/historia_clinica.dart';
 import '../../domain/usecases/historia_clinica_usecases.dart';
 import '../widgets/historia_widgets.dart';
 
-/// Formulario de antecedentes de la historia clínica. Devuelve true al guardar.
+/// Formulario de antecedentes (secciones III a V del modelo de historia clínica
+/// integral, resumidas). Devuelve true al guardar.
 class AntecedentesFormPage extends StatefulWidget {
   const AntecedentesFormPage({
     super.key,
@@ -29,15 +30,38 @@ class AntecedentesFormPage extends StatefulWidget {
   State<AntecedentesFormPage> createState() => _AntecedentesFormPageState();
 }
 
+/// Campo de lista: clave del JSON, etiqueta y ayuda.
+typedef _Lista = ({String clave, String etiqueta, String? ayuda});
+
+const _personales = <_Lista>[
+  (clave: 'inmunizaciones', etiqueta: 'Inmunizaciones', ayuda: null),
+  (clave: 'infancia', etiqueta: 'Enfermedades de la infancia', ayuda: 'Sarampión, varicela, asma, otitis…'),
+  (clave: 'alergicos', etiqueta: 'Alergias', ayuda: 'Medicamentos, alimentos u otras (p. ej. "Penicilina — urticaria")'),
+  (clave: 'patologicos', etiqueta: 'Médicos', ayuda: 'HTA, diabetes, infecciones, ETS, psiquiátricos…'),
+  (clave: 'quirurgicos', etiqueta: 'Quirúrgicos', ayuda: 'Fecha, cirugía y complicaciones'),
+  (clave: 'traumatologicos', etiqueta: 'Traumatológicos', ayuda: null),
+  (clave: 'transfusionales', etiqueta: 'Transfusionales', ayuda: null),
+  (clave: 'epidemiologicos', etiqueta: 'Epidemiológicos', ayuda: 'Viajes, sitios visitados, contacto con animales'),
+  (clave: 'medicamentosActuales', etiqueta: 'Medicamentos actuales', ayuda: 'Nombre, dosis y frecuencia'),
+];
+
 class _AntecedentesFormPageState extends State<AntecedentesFormPage> {
   late String? _grupo = widget.inicial.grupoSanguineo;
-  late List<String> _alergicos = widget.inicial.alergicos;
-  late List<String> _patologicos = widget.inicial.patologicos;
-  late List<String> _medicamentos = widget.inicial.medicamentosActuales;
-  late List<String> _quirurgicos = widget.inicial.quirurgicos;
-  late List<String> _hospitalizaciones = widget.inicial.hospitalizaciones;
-  late List<String> _inmunizaciones = widget.inicial.inmunizaciones;
-  late List<String> _familiares = widget.inicial.familiares;
+  late final Map<String, List<String>> _listas = {
+    'inmunizaciones': widget.inicial.inmunizaciones,
+    'infancia': widget.inicial.infancia,
+    'alergicos': widget.inicial.alergicos,
+    'patologicos': widget.inicial.patologicos,
+    'quirurgicos': widget.inicial.quirurgicos,
+    'traumatologicos': widget.inicial.traumatologicos,
+    'transfusionales': widget.inicial.transfusionales,
+    'epidemiologicos': widget.inicial.epidemiologicos,
+    'medicamentosActuales': widget.inicial.medicamentosActuales,
+    'familiares': widget.inicial.familiares,
+  };
+  late final Map<String, TextEditingController> _sociales = {
+    for (final k in datosSocialesLegibles.keys) k: TextEditingController(text: widget.inicial.datosSociales[k] ?? ''),
+  };
   late final Map<String, TextEditingController> _habitos = {
     for (final k in habitosLegibles.keys) k: TextEditingController(text: widget.inicial.habitos[k] ?? ''),
   };
@@ -55,7 +79,7 @@ class _AntecedentesFormPageState extends State<AntecedentesFormPage> {
 
   @override
   void dispose() {
-    for (final c in [..._habitos.values, _menarquia, _fum, _gestas, _partos, _cesareas, _abortos, _anticonceptivo]) {
+    for (final c in [..._sociales.values, ..._habitos.values, _menarquia, _fum, _gestas, _partos, _cesareas, _abortos, _anticonceptivo]) {
       c.dispose();
     }
     super.dispose();
@@ -63,6 +87,11 @@ class _AntecedentesFormPageState extends State<AntecedentesFormPage> {
 
   String? _texto(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
   int? _entero(TextEditingController c) => int.tryParse(c.text.trim());
+
+  Map<String, String> _pares(Map<String, TextEditingController> m) => {
+        for (final e in m.entries)
+          if (e.value.text.trim().isNotEmpty) e.key: e.value.text.trim(),
+      };
 
   GinecoObstetricos? _gineco() {
     if (!widget.femenino) return null;
@@ -80,19 +109,21 @@ class _AntecedentesFormPageState extends State<AntecedentesFormPage> {
 
   Future<void> _guardar() async {
     setState(() => _guardando = true);
+    final l = _listas;
     final antecedentes = Antecedentes(
       grupoSanguineo: _grupo,
-      alergicos: _alergicos,
-      patologicos: _patologicos,
-      medicamentosActuales: _medicamentos,
-      quirurgicos: _quirurgicos,
-      hospitalizaciones: _hospitalizaciones,
-      inmunizaciones: _inmunizaciones,
-      familiares: _familiares,
-      habitos: {
-        for (final e in _habitos.entries)
-          if (e.value.text.trim().isNotEmpty) e.key: e.value.text.trim(),
-      },
+      datosSociales: _pares(_sociales),
+      inmunizaciones: l['inmunizaciones']!,
+      infancia: l['infancia']!,
+      alergicos: l['alergicos']!,
+      patologicos: l['patologicos']!,
+      quirurgicos: l['quirurgicos']!,
+      traumatologicos: l['traumatologicos']!,
+      transfusionales: l['transfusionales']!,
+      epidemiologicos: l['epidemiologicos']!,
+      medicamentosActuales: l['medicamentosActuales']!,
+      familiares: l['familiares']!,
+      habitos: _pares(_habitos),
       ginecoObstetricos: _gineco(),
     );
     final error = await intentar(() => sl<ActualizarAntecedentesClinicos>()(widget.pacienteId, antecedentes));
@@ -106,6 +137,24 @@ class _AntecedentesFormPageState extends State<AntecedentesFormPage> {
     Navigator.of(context).pop(true);
   }
 
+  Widget _lista(_Lista campo) => EditorLista(
+        etiqueta: campo.etiqueta,
+        ayuda: campo.ayuda,
+        valores: _listas[campo.clave]!,
+        alCambiar: (v) => setState(() => _listas[campo.clave] = v),
+      );
+
+  /// Campos de texto cortos en una rejilla de dos columnas en pantallas anchas.
+  Widget _rejilla(Map<String, TextEditingController> controles, Map<String, String> etiquetas) => LayoutBuilder(
+        builder: (context, c) {
+          final ancho = c.maxWidth >= 560 ? (c.maxWidth - 12) / 2 : c.maxWidth;
+          return Wrap(spacing: 12, runSpacing: 12, children: [
+            for (final e in etiquetas.entries)
+              SizedBox(width: ancho, child: TextField(controller: controles[e.key], decoration: AppTheme.campo(e.value))),
+          ]);
+        },
+      );
+
   @override
   Widget build(BuildContext context) {
     Widget bloque(String titulo, IconData icono, List<Widget> hijos) => Padding(
@@ -113,7 +162,7 @@ class _AntecedentesFormPageState extends State<AntecedentesFormPage> {
           child: SeccionTarjeta(
             titulo: titulo,
             icono: icono,
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               for (var i = 0; i < hijos.length; i++) ...[if (i > 0) const SizedBox(height: 14), hijos[i]],
             ]),
           ),
@@ -137,58 +186,26 @@ class _AntecedentesFormPageState extends State<AntecedentesFormPage> {
         child: ContenidoCentrado(
           maxAncho: 820,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            if (widget.autoReportado)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: Text(
-                  'Estos datos los reportas tú y los ven los médicos que autorices. Escribe un elemento y pulsa + o Enter para agregarlo.',
-                  style: TextStyle(color: AppColors.pizarra),
-                ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Text(
+                widget.autoReportado
+                    ? 'Estos datos los reportas tú y los ven los médicos que autorices. Escribe y pulsa + o Enter para agregar cada elemento; deja vacío lo que no aplique.'
+                    : 'Escribe y pulsa + o Enter para agregar cada elemento; deja vacío lo que no aplique.',
+                style: const TextStyle(color: AppColors.pizarra),
               ),
-            bloque('Datos generales', Icons.bloodtype_outlined, [
+            ),
+            bloque('Identificación', Icons.badge_outlined, [
               const Text('Grupo sanguíneo', style: TextStyle(fontWeight: FontWeight.w600)),
               Wrap(spacing: 6, runSpacing: 6, children: [
                 ChoiceChip(label: const Text('No sé'), selected: _grupo == null, onSelected: (_) => setState(() => _grupo = null)),
                 for (final g in gruposSanguineos) ChoiceChip(label: Text(g), selected: _grupo == g, onSelected: (_) => setState(() => _grupo = g)),
               ]),
-              EditorLista(
-                etiqueta: 'Alergias',
-                ayuda: 'Medicamentos, alimentos u otras (p. ej. "Penicilina — urticaria")',
-                valores: _alergicos,
-                alCambiar: (v) => setState(() => _alergicos = v),
-              ),
+              _rejilla(_sociales, datosSocialesLegibles),
             ]),
-            bloque('Antecedentes personales', Icons.person_outline, [
-              EditorLista(
-                etiqueta: 'Enfermedades (patológicos)',
-                ayuda: 'P. ej. "Hipertensión arterial desde 2019"',
-                valores: _patologicos,
-                alCambiar: (v) => setState(() => _patologicos = v),
-              ),
-              EditorLista(
-                etiqueta: 'Medicamentos actuales',
-                ayuda: 'Nombre, dosis y frecuencia',
-                valores: _medicamentos,
-                alCambiar: (v) => setState(() => _medicamentos = v),
-              ),
-              EditorLista(etiqueta: 'Cirugías (quirúrgicos)', valores: _quirurgicos, alCambiar: (v) => setState(() => _quirurgicos = v)),
-              EditorLista(etiqueta: 'Hospitalizaciones', valores: _hospitalizaciones, alCambiar: (v) => setState(() => _hospitalizaciones = v)),
-              EditorLista(etiqueta: 'Inmunizaciones', valores: _inmunizaciones, alCambiar: (v) => setState(() => _inmunizaciones = v)),
-            ]),
-            bloque('Antecedentes familiares', Icons.family_restroom, [
-              EditorLista(
-                etiqueta: 'Enfermedades en la familia',
-                ayuda: 'P. ej. "Madre: diabetes tipo 2"',
-                valores: _familiares,
-                alCambiar: (v) => setState(() => _familiares = v),
-              ),
-            ]),
-            bloque('Hábitos', Icons.self_improvement, [
-              for (final e in habitosLegibles.entries)
-                TextField(controller: _habitos[e.key], decoration: AppTheme.campo(e.value)),
-            ]),
+            bloque('III. Antecedentes personales', Icons.person_outline, [for (final c in _personales) _lista(c)]),
             if (widget.femenino)
-              bloque('Gineco-obstétricos', Icons.pregnant_woman, [
+              bloque('Ginecobstétricos', Icons.pregnant_woman, [
                 Wrap(spacing: 12, runSpacing: 12, children: [
                   numero(_gestas, 'Gestas'),
                   numero(_partos, 'Partos'),
@@ -199,6 +216,10 @@ class _AntecedentesFormPageState extends State<AntecedentesFormPage> {
                 TextField(controller: _fum, decoration: AppTheme.campo('Fecha de última menstruación (FUM)')),
                 TextField(controller: _anticonceptivo, decoration: AppTheme.campo('Método anticonceptivo')),
               ]),
+            bloque('IV. Antecedentes familiares', Icons.family_restroom, [
+              _lista((clave: 'familiares', etiqueta: 'Enfermedades en la familia', ayuda: 'P. ej. "Madre: diabetes tipo 2"')),
+            ]),
+            bloque('V. Historia personal y social', Icons.self_improvement, [_rejilla(_habitos, habitosLegibles)]),
           ]),
         ),
       ),

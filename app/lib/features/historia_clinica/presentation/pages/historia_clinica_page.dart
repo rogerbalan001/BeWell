@@ -71,6 +71,8 @@ class _Contenido extends StatelessWidget {
           const SizedBox(width: 16),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(h.pacienteNombre, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
+            if (a?.numeroHistoria != null)
+              Text('N.º de historia ${a!.numeroHistoria}', style: const TextStyle(color: AppColors.primario, fontWeight: FontWeight.w700, fontSize: 13)),
             Text(
               [
                 '${h.edad} años',
@@ -139,7 +141,7 @@ class _Contenido extends StatelessWidget {
 
     final antecedentes = SeccionTarjeta(
       titulo: 'Antecedentes',
-      subtitulo: esTitular ? 'Tu información médica de base. Tus médicos autorizados la ven.' : 'Anamnesis remota del paciente',
+      subtitulo: esTitular ? 'Tu información médica de base. Tus médicos autorizados la ven.' : 'Secciones III a V de la historia',
       icono: Icons.history_edu_outlined,
       accion: h.puedeEditarAntecedentes && a != null
           ? IconButton.filledTonal(tooltip: 'Editar antecedentes', icon: const Icon(Icons.edit_outlined), onPressed: () => _editarAntecedentes(context, a))
@@ -160,7 +162,7 @@ class _Contenido extends StatelessWidget {
 
     final consultas = SeccionTarjeta(
       titulo: 'Consultas',
-      subtitulo: 'Motivo, enfermedad actual, examen físico, diagnóstico y plan de cada consulta',
+      subtitulo: 'Anamnesis, examen físico, diagnóstico y plan (secciones I a XII)',
       icono: Icons.medical_information_outlined,
       child: !h.veConsultas
           ? const Text('El paciente no te dio acceso a la sección Consultas.', style: TextStyle(color: AppColors.pizarra))
@@ -235,25 +237,38 @@ class _Antecedentes extends StatelessWidget {
   final Antecedentes a;
   final bool femenino;
 
+  static const _iconos = <String, IconData>{
+    'Inmunizaciones': Icons.vaccines_outlined,
+    'Enfermedades de la infancia': Icons.child_care,
+    'Alergias': Icons.warning_amber_rounded,
+    'Médicos': Icons.coronavirus_outlined,
+    'Quirúrgicos': Icons.healing_outlined,
+    'Traumatológicos': Icons.personal_injury_outlined,
+    'Transfusionales': Icons.bloodtype_outlined,
+    'Epidemiológicos': Icons.public,
+    'Medicamentos actuales': Icons.medication_outlined,
+  };
+
   @override
   Widget build(BuildContext context) {
-    final habitos = [
-      for (final e in habitosLegibles.entries)
-        if (a.habitos[e.key] != null) '${e.value}: ${a.habitos[e.key]}',
-    ];
+    Widget titulo(String t) => Padding(
+          padding: const EdgeInsets.only(top: 4, bottom: 10),
+          child: Text(t.toUpperCase(), style: const TextStyle(color: AppColors.primario, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+        );
     final g = a.ginecoObstetricos;
-    final grupos = <Widget>[
-      GrupoAntecedentes(titulo: 'Alergias', icono: Icons.warning_amber_rounded, valores: a.alergicos, color: AppColors.error),
-      GrupoAntecedentes(titulo: 'Personales patológicos', icono: Icons.coronavirus_outlined, valores: a.patologicos),
-      GrupoAntecedentes(titulo: 'Medicamentos actuales', icono: Icons.medication_outlined, valores: a.medicamentosActuales),
-      GrupoAntecedentes(titulo: 'Quirúrgicos', icono: Icons.healing_outlined, valores: a.quirurgicos),
-      GrupoAntecedentes(titulo: 'Hospitalizaciones', icono: Icons.local_hotel_outlined, valores: a.hospitalizaciones),
-      GrupoAntecedentes(titulo: 'Inmunizaciones', icono: Icons.vaccines_outlined, valores: a.inmunizaciones),
-      GrupoAntecedentes(titulo: 'Familiares', icono: Icons.family_restroom, valores: a.familiares),
-      GrupoAntecedentes(titulo: 'Hábitos', icono: Icons.self_improvement, valores: habitos, color: AppColors.verdeOscuro),
+    // Solo se muestran los grupos con datos: la historia queda resumida.
+    final personales = [
+      for (final e in a.personales.entries)
+        if (e.value.isNotEmpty)
+          GrupoAntecedentes(
+            titulo: e.key,
+            icono: _iconos[e.key] ?? Icons.circle_outlined,
+            valores: e.value,
+            color: e.key == 'Alergias' ? AppColors.error : AppColors.primario,
+          ),
       if (femenino && g != null)
         GrupoAntecedentes(
-          titulo: 'Gineco-obstétricos',
+          titulo: 'Ginecobstétricos',
           icono: Icons.pregnant_woman,
           color: AppColors.ambar,
           valores: [
@@ -264,10 +279,36 @@ class _Antecedentes extends StatelessWidget {
           ],
         ),
     ];
+    final habitos = [
+      for (final e in habitosLegibles.entries)
+        if (a.habitos[e.key] != null) '${e.value}: ${a.habitos[e.key]}',
+    ];
+    final sociales = [
+      for (final e in datosSocialesLegibles.entries)
+        if (a.datosSociales[e.key] != null) '${e.value}: ${a.datosSociales[e.key]}',
+    ];
+    final bloques = <Widget>[
+      if (sociales.isNotEmpty) ...[
+        titulo('Identificación'),
+        GrupoAntecedentes(titulo: 'Datos sociales', icono: Icons.badge_outlined, valores: sociales),
+      ],
+      if (personales.isNotEmpty) ...[
+        titulo('III. Antecedentes personales'),
+        for (var i = 0; i < personales.length; i++) ...[if (i > 0) const SizedBox(height: 14), personales[i]],
+      ],
+      if (a.familiares.isNotEmpty) ...[
+        titulo('IV. Antecedentes familiares'),
+        GrupoAntecedentes(titulo: 'Familiares', icono: Icons.family_restroom, valores: a.familiares),
+      ],
+      if (habitos.isNotEmpty) ...[
+        titulo('V. Historia personal y social'),
+        GrupoAntecedentes(titulo: 'Hábitos', icono: Icons.self_improvement, valores: habitos, color: AppColors.verdeOscuro),
+      ],
+    ];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      for (var i = 0; i < grupos.length; i++) ...[
-        if (i > 0) const Divider(height: 24),
-        grupos[i],
+      for (final b in bloques) ...[
+        if (b is Padding && bloques.first != b) const Divider(height: 28),
+        b,
       ],
     ]);
   }

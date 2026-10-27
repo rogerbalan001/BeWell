@@ -20,17 +20,36 @@ export interface SignosVitales {
   peso?: number;
   /** Centímetros. */
   talla?: number;
+  /** Circunferencia abdominal en centímetros. */
+  circunferenciaAbdominal?: number;
 }
 
-/** Contenido clínico de la consulta (se guarda cifrado a nivel de campo). */
+/**
+ * Contenido clínico de la consulta (se guarda cifrado a nivel de campo).
+ * Resume las secciones I, II y VI a XII del modelo de historia clínica integral.
+ */
 export interface ContenidoConsulta {
+  /** I. Motivo de consulta. */
   motivoConsulta: string;
+  /** I. Estímulo iatrotrópico: por qué consulta ahora. */
+  estimuloIatrotropico?: string;
+  /** II. Enfermedad actual, en orden cronológico. */
   enfermedadActual: string;
+  /** VI. Revisión por aparatos y sistemas. */
   revisionPorSistemas?: string;
+  condicionesGenerales?: string;
   signosVitales: SignosVitales;
+  /** VII. Examen físico. */
   examenFisico: string;
+  /** IX. Lista de problemas. */
+  listaProblemas: string[];
+  /** X. Impresión diagnóstica. */
   impresionDiagnostica: string[];
+  /** XI. Exámenes solicitados (laboratorio, imagen, otros). */
+  examenes?: string;
+  /** XII. Plan diagnóstico, preventivo y terapéutico. */
   plan: string;
+  /** XII. Plan educativo: indicaciones al paciente. */
   indicaciones?: string;
 }
 
@@ -53,6 +72,7 @@ const RANGOS: Record<Exclude<keyof SignosVitales, 'tensionArterial'>, [number, n
   saturacionOxigeno: [50, 100, 'La saturación de oxígeno'],
   peso: [0.3, 400, 'El peso'],
   talla: [20, 250, 'La talla'],
+  circunferenciaAbdominal: [30, 250, 'La circunferencia abdominal'],
 };
 
 const MAX_TEXTO_LARGO = 5000;
@@ -88,13 +108,19 @@ function validarContenido(c: ContenidoConsulta): ContenidoConsulta {
   const diagnosticos = [...new Set((c.impresionDiagnostica ?? []).map((d) => d.trim()).filter(Boolean))];
   asegurar(diagnosticos.length > 0, 'Registra al menos una impresión diagnóstica');
   asegurar(diagnosticos.length <= 15 && diagnosticos.every((d) => d.length <= 300), 'Máximo 15 diagnósticos de 300 caracteres');
+  const problemas = [...new Set((c.listaProblemas ?? []).map((d) => d.trim()).filter(Boolean))];
+  asegurar(problemas.length <= 15 && problemas.every((d) => d.length <= 300), 'Máximo 15 problemas de 300 caracteres');
   return {
     motivoConsulta: texto(c.motivoConsulta, 'El motivo de consulta', true),
+    estimuloIatrotropico: texto(c.estimuloIatrotropico, 'El estímulo iatrotrópico') || undefined,
     enfermedadActual: texto(c.enfermedadActual, 'La enfermedad actual', true),
     revisionPorSistemas: texto(c.revisionPorSistemas, 'La revisión por sistemas') || undefined,
+    condicionesGenerales: texto(c.condicionesGenerales, 'Las condiciones generales') || undefined,
     signosVitales: validarSignos(c.signosVitales ?? {}),
     examenFisico: texto(c.examenFisico, 'El examen físico'),
+    listaProblemas: problemas,
     impresionDiagnostica: diagnosticos,
+    examenes: texto(c.examenes, 'Los exámenes') || undefined,
     plan: texto(c.plan, 'El plan', true),
     indicaciones: texto(c.indicaciones, 'Las indicaciones') || undefined,
   };
@@ -113,11 +139,15 @@ export class ConsultaClinica implements PropsConsultaClinica {
   citaId?: string;
   fecha: Date;
   motivoConsulta: string;
+  estimuloIatrotropico?: string;
   enfermedadActual: string;
   revisionPorSistemas?: string;
+  condicionesGenerales?: string;
   signosVitales: SignosVitales;
   examenFisico: string;
+  listaProblemas: string[];
   impresionDiagnostica: string[];
+  examenes?: string;
   plan: string;
   indicaciones?: string;
   creadaEn: Date;
@@ -167,11 +197,15 @@ export class ConsultaClinica implements PropsConsultaClinica {
   contenido(): ContenidoConsulta {
     return {
       motivoConsulta: this.motivoConsulta,
+      estimuloIatrotropico: this.estimuloIatrotropico,
       enfermedadActual: this.enfermedadActual,
       revisionPorSistemas: this.revisionPorSistemas,
+      condicionesGenerales: this.condicionesGenerales,
       signosVitales: this.signosVitales,
       examenFisico: this.examenFisico,
+      listaProblemas: this.listaProblemas,
       impresionDiagnostica: this.impresionDiagnostica,
+      examenes: this.examenes,
       plan: this.plan,
       indicaciones: this.indicaciones,
     };

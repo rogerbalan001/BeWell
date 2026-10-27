@@ -4,14 +4,24 @@ import '../../../expediente/domain/entities/expediente.dart';
 
 const gruposSanguineos = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-/// Etiquetas de los hábitos psicobiológicos, en el orden en que se muestran.
+/// V. Historia personal y social: hábitos, en el orden en que se muestran.
 const habitosLegibles = <String, String>{
-  'tabaco': 'Tabaco',
   'alcohol': 'Alcohol',
-  'drogas': 'Otras sustancias',
-  'actividadFisica': 'Actividad física',
-  'alimentacion': 'Alimentación',
+  'tabaco': 'Tabaco',
+  'cafe': 'Café',
+  'drogas': 'Drogas',
+  'actividadFisica': 'Ejercicio',
+  'alimentacion': 'Nutrición',
   'sueno': 'Sueño',
+  'vivienda': 'Vivienda',
+};
+
+/// Datos de identificación que no están en el perfil del paciente.
+const datosSocialesLegibles = <String, String>{
+  'estadoCivil': 'Estado civil',
+  'nivelInstruccion': 'Nivel de instrucción',
+  'ocupacion': 'Ocupación',
+  'procedencia': 'Procedencia',
 };
 
 class GinecoObstetricos extends Equatable {
@@ -49,16 +59,21 @@ class GinecoObstetricos extends Equatable {
   List<Object?> get props => [menarquia, ultimaMenstruacion, gestas, partos, cesareas, abortos, metodoAnticonceptivo];
 }
 
-/// Antecedentes de la historia clínica (anamnesis remota del paciente).
+/// Antecedentes de la historia clínica (secciones III a V del modelo integral).
 class Antecedentes extends Equatable {
   const Antecedentes({
+    this.numeroHistoria,
     this.grupoSanguineo,
+    this.datosSociales = const {},
+    this.inmunizaciones = const [],
+    this.infancia = const [],
+    this.alergicos = const [],
     this.patologicos = const [],
     this.quirurgicos = const [],
-    this.alergicos = const [],
+    this.traumatologicos = const [],
+    this.transfusionales = const [],
+    this.epidemiologicos = const [],
     this.medicamentosActuales = const [],
-    this.hospitalizaciones = const [],
-    this.inmunizaciones = const [],
     this.familiares = const [],
     this.habitos = const {},
     this.ginecoObstetricos,
@@ -66,58 +81,64 @@ class Antecedentes extends Equatable {
     this.actualizadoPorMedico = false,
   });
 
+  final String? numeroHistoria;
   final String? grupoSanguineo;
+  final Map<String, String> datosSociales;
+  final List<String> inmunizaciones;
+  final List<String> infancia;
+  final List<String> alergicos;
   final List<String> patologicos;
   final List<String> quirurgicos;
-  final List<String> alergicos;
+  final List<String> traumatologicos;
+  final List<String> transfusionales;
+  final List<String> epidemiologicos;
   final List<String> medicamentosActuales;
-  final List<String> hospitalizaciones;
-  final List<String> inmunizaciones;
   final List<String> familiares;
   final Map<String, String> habitos;
   final GinecoObstetricos? ginecoObstetricos;
   final DateTime? actualizadoEn;
   final bool actualizadoPorMedico;
 
+  /// III. Antecedentes personales que son listas, en el orden del modelo.
+  Map<String, List<String>> get personales => {
+        'Inmunizaciones': inmunizaciones,
+        'Enfermedades de la infancia': infancia,
+        'Alergias': alergicos,
+        'Médicos': patologicos,
+        'Quirúrgicos': quirurgicos,
+        'Traumatológicos': traumatologicos,
+        'Transfusionales': transfusionales,
+        'Epidemiológicos': epidemiologicos,
+        'Medicamentos actuales': medicamentosActuales,
+      };
+
   bool get vacio =>
       grupoSanguineo == null &&
-      patologicos.isEmpty &&
-      quirurgicos.isEmpty &&
-      alergicos.isEmpty &&
-      medicamentosActuales.isEmpty &&
-      hospitalizaciones.isEmpty &&
-      inmunizaciones.isEmpty &&
+      datosSociales.isEmpty &&
+      personales.values.every((l) => l.isEmpty) &&
       familiares.isEmpty &&
       habitos.isEmpty &&
       ginecoObstetricos == null;
 
   Map<String, dynamic> aJson() => {
         if (grupoSanguineo != null) 'grupoSanguineo': grupoSanguineo,
+        'datosSociales': datosSociales,
+        'inmunizaciones': inmunizaciones,
+        'infancia': infancia,
+        'alergicos': alergicos,
         'patologicos': patologicos,
         'quirurgicos': quirurgicos,
-        'alergicos': alergicos,
+        'traumatologicos': traumatologicos,
+        'transfusionales': transfusionales,
+        'epidemiologicos': epidemiologicos,
         'medicamentosActuales': medicamentosActuales,
-        'hospitalizaciones': hospitalizaciones,
-        'inmunizaciones': inmunizaciones,
         'familiares': familiares,
         'habitos': habitos,
         if (ginecoObstetricos != null) 'ginecoObstetricos': ginecoObstetricos!.aJson(),
       };
 
   @override
-  List<Object?> get props => [
-        grupoSanguineo,
-        patologicos,
-        quirurgicos,
-        alergicos,
-        medicamentosActuales,
-        hospitalizaciones,
-        inmunizaciones,
-        familiares,
-        habitos,
-        ginecoObstetricos,
-        actualizadoEn,
-      ];
+  List<Object?> get props => [grupoSanguineo, datosSociales, personales, familiares, habitos, ginecoObstetricos, actualizadoEn];
 }
 
 class SignosVitales extends Equatable {
@@ -129,6 +150,7 @@ class SignosVitales extends Equatable {
     this.saturacionOxigeno,
     this.peso,
     this.talla,
+    this.circunferenciaAbdominal,
   });
 
   final String? tensionArterial;
@@ -138,6 +160,7 @@ class SignosVitales extends Equatable {
   final double? saturacionOxigeno;
   final double? peso;
   final double? talla;
+  final double? circunferenciaAbdominal;
 
   /// Índice de masa corporal (kg/m²) con un decimal.
   double? get imc {
@@ -153,18 +176,20 @@ class SignosVitales extends Equatable {
       temperatura == null &&
       saturacionOxigeno == null &&
       peso == null &&
-      talla == null;
+      talla == null &&
+      circunferenciaAbdominal == null;
 
   /// Lista "etiqueta valor unidad" para mostrar en chips.
   List<String> get resumen => [
-        if (tensionArterial != null) 'TA $tensionArterial mmHg',
-        if (frecuenciaCardiaca != null) 'FC ${_n(frecuenciaCardiaca!)} lpm',
+        if (tensionArterial != null) 'PA $tensionArterial mmHg',
+        if (frecuenciaCardiaca != null) 'Pulso ${_n(frecuenciaCardiaca!)} ppm',
         if (frecuenciaRespiratoria != null) 'FR ${_n(frecuenciaRespiratoria!)} rpm',
         if (temperatura != null) 'T ${_n(temperatura!)} °C',
         if (saturacionOxigeno != null) 'SpO₂ ${_n(saturacionOxigeno!)} %',
         if (peso != null) 'Peso ${_n(peso!)} kg',
         if (talla != null) 'Talla ${_n(talla!)} cm',
         if (imc != null) 'IMC ${_n(imc!)}',
+        if (circunferenciaAbdominal != null) 'C. abd. ${_n(circunferenciaAbdominal!)} cm',
       ];
 
   static String _n(double v) => v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toString();
@@ -177,47 +202,76 @@ class SignosVitales extends Equatable {
         if (saturacionOxigeno != null) 'saturacionOxigeno': saturacionOxigeno,
         if (peso != null) 'peso': peso,
         if (talla != null) 'talla': talla,
+        if (circunferenciaAbdominal != null) 'circunferenciaAbdominal': circunferenciaAbdominal,
       };
 
   @override
-  List<Object?> get props => [tensionArterial, frecuenciaCardiaca, frecuenciaRespiratoria, temperatura, saturacionOxigeno, peso, talla];
+  List<Object?> get props => [tensionArterial, frecuenciaCardiaca, frecuenciaRespiratoria, temperatura, saturacionOxigeno, peso, talla, circunferenciaAbdominal];
 }
 
-/// Contenido de la historia de una consulta (lo que escribe el médico).
+/// Historia de una consulta (secciones I, II y VI a XII del modelo integral).
 class ContenidoConsulta extends Equatable {
   const ContenidoConsulta({
     required this.motivoConsulta,
+    this.estimuloIatrotropico,
     required this.enfermedadActual,
     this.revisionPorSistemas,
+    this.condicionesGenerales,
     this.signosVitales = const SignosVitales(),
     this.examenFisico = '',
+    this.listaProblemas = const [],
     required this.impresionDiagnostica,
+    this.examenes,
     required this.plan,
     this.indicaciones,
   });
 
   final String motivoConsulta;
+  final String? estimuloIatrotropico;
   final String enfermedadActual;
   final String? revisionPorSistemas;
+  final String? condicionesGenerales;
   final SignosVitales signosVitales;
   final String examenFisico;
+  final List<String> listaProblemas;
   final List<String> impresionDiagnostica;
+  final String? examenes;
   final String plan;
   final String? indicaciones;
 
-  Map<String, dynamic> aJson() => {
-        'motivoConsulta': motivoConsulta,
-        'enfermedadActual': enfermedadActual,
-        if (revisionPorSistemas != null && revisionPorSistemas!.isNotEmpty) 'revisionPorSistemas': revisionPorSistemas,
-        'signosVitales': signosVitales.aJson(),
-        'examenFisico': examenFisico,
-        'impresionDiagnostica': impresionDiagnostica,
-        'plan': plan,
-        if (indicaciones != null && indicaciones!.isNotEmpty) 'indicaciones': indicaciones,
-      };
+  Map<String, dynamic> aJson() {
+    bool lleno(String? v) => v != null && v.isNotEmpty;
+    return {
+      'motivoConsulta': motivoConsulta,
+      if (lleno(estimuloIatrotropico)) 'estimuloIatrotropico': estimuloIatrotropico,
+      'enfermedadActual': enfermedadActual,
+      if (lleno(revisionPorSistemas)) 'revisionPorSistemas': revisionPorSistemas,
+      if (lleno(condicionesGenerales)) 'condicionesGenerales': condicionesGenerales,
+      'signosVitales': signosVitales.aJson(),
+      'examenFisico': examenFisico,
+      'listaProblemas': listaProblemas,
+      'impresionDiagnostica': impresionDiagnostica,
+      if (lleno(examenes)) 'examenes': examenes,
+      'plan': plan,
+      if (lleno(indicaciones)) 'indicaciones': indicaciones,
+    };
+  }
 
   @override
-  List<Object?> get props => [motivoConsulta, enfermedadActual, revisionPorSistemas, signosVitales, examenFisico, impresionDiagnostica, plan, indicaciones];
+  List<Object?> get props => [
+        motivoConsulta,
+        estimuloIatrotropico,
+        enfermedadActual,
+        revisionPorSistemas,
+        condicionesGenerales,
+        signosVitales,
+        examenFisico,
+        listaProblemas,
+        impresionDiagnostica,
+        examenes,
+        plan,
+        indicaciones,
+      ];
 }
 
 /// Historia clínica de un encuentro médico.

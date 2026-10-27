@@ -4,15 +4,29 @@ import { generarId } from '../../../shared/domain/id';
 export const GRUPOS_SANGUINEOS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const;
 export type GrupoSanguineo = (typeof GRUPOS_SANGUINEOS)[number];
 
-/** Hábitos psicobiológicos de la anamnesis. */
+/** V. Historia personal y social: hábitos psicobiológicos. */
 export interface Habitos {
-  tabaco?: string;
   alcohol?: string;
+  tabaco?: string;
+  cafe?: string;
   drogas?: string;
   actividadFisica?: string;
   alimentacion?: string;
   sueno?: string;
+  vivienda?: string;
 }
+
+export const CLAVES_HABITOS = ['alcohol', 'tabaco', 'cafe', 'drogas', 'actividadFisica', 'alimentacion', 'sueno', 'vivienda'] as const;
+
+/** Datos de identificación que no están en el perfil del paciente. */
+export interface DatosSociales {
+  estadoCivil?: string;
+  nivelInstruccion?: string;
+  ocupacion?: string;
+  procedencia?: string;
+}
+
+export const CLAVES_SOCIALES = ['estadoCivil', 'nivelInstruccion', 'ocupacion', 'procedencia'] as const;
 
 /** Antecedentes gineco-obstétricos (solo aplican a pacientes de sexo femenino). */
 export interface AntecedentesGinecoObstetricos {
@@ -25,32 +39,59 @@ export interface AntecedentesGinecoObstetricos {
   metodoAnticonceptivo?: string;
 }
 
-/** Contenido clínico de los antecedentes (se guarda cifrado a nivel de campo). */
+/**
+ * Contenido clínico de los antecedentes (se guarda cifrado a nivel de campo).
+ * Sigue las secciones III a V del modelo de historia clínica integral.
+ */
 export interface DatosAntecedentes {
   grupoSanguineo?: GrupoSanguineo;
+  datosSociales: DatosSociales;
+  // III. Antecedentes personales
+  inmunizaciones: string[];
+  infancia: string[];
+  alergicos: string[];
+  /** Médicos, infecciosos, parasitarios, de transmisión sexual y psiquiátricos. */
   patologicos: string[];
   quirurgicos: string[];
-  alergicos: string[];
+  traumatologicos: string[];
+  transfusionales: string[];
+  /** Viajes, sitios visitados y contacto con animales o personas enfermas. */
+  epidemiologicos: string[];
   medicamentosActuales: string[];
-  hospitalizaciones: string[];
-  inmunizaciones: string[];
-  familiares: string[];
-  habitos: Habitos;
   ginecoObstetricos?: AntecedentesGinecoObstetricos;
+  // IV. Antecedentes familiares
+  familiares: string[];
+  // V. Historia personal y social
+  habitos: Habitos;
 }
 
 export const ANTECEDENTES_VACIOS: DatosAntecedentes = {
+  datosSociales: {},
+  inmunizaciones: [],
+  infancia: [],
+  alergicos: [],
   patologicos: [],
   quirurgicos: [],
-  alergicos: [],
+  traumatologicos: [],
+  transfusionales: [],
+  epidemiologicos: [],
   medicamentosActuales: [],
-  hospitalizaciones: [],
-  inmunizaciones: [],
   familiares: [],
   habitos: {},
 };
 
-const LISTAS = ['patologicos', 'quirurgicos', 'alergicos', 'medicamentosActuales', 'hospitalizaciones', 'inmunizaciones', 'familiares'] as const;
+const LISTAS = [
+  'inmunizaciones',
+  'infancia',
+  'alergicos',
+  'patologicos',
+  'quirurgicos',
+  'traumatologicos',
+  'transfusionales',
+  'epidemiologicos',
+  'medicamentosActuales',
+  'familiares',
+] as const;
 const MAX_ELEMENTOS = 50;
 const MAX_TEXTO = 300;
 
@@ -107,11 +148,9 @@ export class AntecedentesClinicos {
     const nuevos: DatosAntecedentes = { ...structuredClone(ANTECEDENTES_VACIOS), grupoSanguineo: datos.grupoSanguineo };
     for (const campo of LISTAS) nuevos[campo] = limpiarLista(datos[campo], campo);
     const h = datos.habitos ?? {};
-    nuevos.habitos = Object.fromEntries(
-      (['tabaco', 'alcohol', 'drogas', 'actividadFisica', 'alimentacion', 'sueno'] as const)
-        .map((k) => [k, limpiarTexto(h[k])])
-        .filter(([, v]) => v !== undefined),
-    );
+    nuevos.habitos = Object.fromEntries(CLAVES_HABITOS.map((k) => [k, limpiarTexto(h[k])]).filter(([, v]) => v !== undefined));
+    const ds = datos.datosSociales ?? {};
+    nuevos.datosSociales = Object.fromEntries(CLAVES_SOCIALES.map((k) => [k, limpiarTexto(ds[k])]).filter(([, v]) => v !== undefined));
     if (datos.ginecoObstetricos) {
       asegurar(admiteGineco, 'Los antecedentes gineco-obstétricos solo aplican a pacientes de sexo femenino');
       const g = datos.ginecoObstetricos;

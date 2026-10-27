@@ -12,6 +12,7 @@ const contenido = (cambios: Partial<ContenidoConsulta> = {}): ContenidoConsulta 
   enfermedadActual: 'Cefalea frontal de 3 días de evolución',
   signosVitales: { tensionArterial: '120/80', frecuenciaCardiaca: 72, peso: 70, talla: 175 },
   examenFisico: 'Sin hallazgos patológicos',
+  listaProblemas: ['Cefalea'],
   impresionDiagnostica: ['Cefalea tensional'],
   plan: 'Analgésicos y control en 1 semana',
   ...cambios,
@@ -32,8 +33,29 @@ describe('AntecedentesClinicos (HU: historia clínica — antecedentes)', () => 
     expect(a.datos.alergicos).toEqual(['Penicilina']);
     expect(a.datos.patologicos).toEqual(['Asma']);
     expect(a.datos.habitos).toEqual({ tabaco: 'Niega' });
+    expect(a.datos.infancia).toEqual([]);
     expect(a.datos.grupoSanguineo).toBe('O+');
     expect(a.tieneAlergias).toBe(true);
+  });
+
+  it('guarda los datos sociales y los antecedentes traumatológicos, transfusionales y epidemiológicos', () => {
+    const a = AntecedentesClinicos.abrir(PACIENTE, AHORA);
+    a.actualizar(
+      {
+        datosSociales: { estadoCivil: 'Casada', ocupacion: ' Docente ', procedencia: '' },
+        traumatologicos: ['Fractura de radio (2010)'],
+        transfusionales: ['Niega'],
+        epidemiologicos: ['Viaje a zona endémica de dengue'],
+        infancia: ['Varicela'],
+      },
+      { usuarioId: PACIENTE },
+      false,
+      AHORA,
+    );
+    expect(a.datos.datosSociales).toEqual({ estadoCivil: 'Casada', ocupacion: 'Docente' });
+    expect(a.datos.traumatologicos).toEqual(['Fractura de radio (2010)']);
+    expect(a.datos.epidemiologicos).toHaveLength(1);
+    expect(a.datos.infancia).toEqual(['Varicela']);
   });
 
   it('rechaza un grupo sanguíneo inválido', () => {
@@ -71,6 +93,14 @@ describe('ConsultaClinica (HU: historia clínica — consultas)', () => {
     expect(() => registrar({ signosVitales: { tensionArterial: '80/120' } })).toThrow('fuera de rango');
     expect(() => registrar({ signosVitales: { temperatura: 50 } })).toThrow('temperatura');
     expect(() => registrar({ signosVitales: { saturacionOxigeno: 120 } })).toThrow('saturación');
+    expect(() => registrar({ signosVitales: { circunferenciaAbdominal: 400 } })).toThrow('circunferencia');
+  });
+
+  it('guarda las secciones del modelo integral: estímulo iatrotrópico, problemas y exámenes', () => {
+    const c = registrar({ estimuloIatrotropico: ' Ya no puede trabajar ', listaProblemas: ['Cefalea', 'Cefalea', ' '], examenes: 'Hematología' });
+    expect(c.estimuloIatrotropico).toBe('Ya no puede trabajar');
+    expect(c.listaProblemas).toEqual(['Cefalea']);
+    expect(c.examenes).toBe('Hematología');
   });
 
   it('no acepta una fecha futura', () => {

@@ -55,6 +55,7 @@ export class HistoriaClinicaController {
     const { fecha, signosVitales, ...resto } = dto;
     const c = await this.historia.registrarConsulta(actor, pacienteId, {
       ...resto,
+      listaProblemas: dto.listaProblemas ?? [],
       signosVitales: signosVitales ?? {},
       examenFisico: dto.examenFisico ?? '',
       fecha: fecha ? new Date(fecha) : undefined,
@@ -82,6 +83,7 @@ export class HistoriaClinicaController {
   ) {
     const c = await this.historia.corregirConsulta(actor, pacienteId, consultaId, {
       ...dto,
+      listaProblemas: dto.listaProblemas ?? [],
       signosVitales: dto.signosVitales ?? {},
       examenFisico: dto.examenFisico ?? '',
     });

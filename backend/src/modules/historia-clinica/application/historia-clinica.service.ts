@@ -190,65 +190,91 @@ export class HistoriaClinicaService {
       ...(valores.length ? valores.map((v) => ({ texto: `- ${v}` })) : [{ texto: 'Niega / no registrado.', color: 'tenue' as const }]),
     ];
 
+    const HABITOS: Record<string, string> = {
+      alcohol: 'Alcohol', tabaco: 'Tabaco', cafe: 'Café', drogas: 'Drogas', actividadFisica: 'Ejercicio',
+      alimentacion: 'Nutrición', sueno: 'Sueño', vivienda: 'Vivienda',
+    };
+    const SOCIALES: Record<string, string> = {
+      estadoCivil: 'Estado civil', nivelInstruccion: 'Instrucción', ocupacion: 'Ocupación', procedencia: 'Procedencia',
+    };
+    const pares = (m: object, etiquetas: Record<string, string>) =>
+      Object.entries(m).map(([k, v]) => `${etiquetas[k] ?? k}: ${v}`);
+    const seccion = (texto: string): LineaPdf => ({ texto, tamano: 13, negrita: true, color: 'primario', espacioAntes: 14 });
+    const dato = (etiqueta: string, valor?: string): LineaPdf[] => (valor ? [{ texto: `${etiqueta}: ${valor}` }] : []);
+
     const lineas: LineaPdf[] = [
       { texto: 'Bewell - Historia clínica', tamano: 18, negrita: true, color: 'primario' },
-      { texto: `Generada el ${fecha(ahora)}`, color: 'tenue' },
+      { texto: `N.º de historia ${antecedentes ? `HC-${antecedentes.id.slice(-6).toUpperCase()}` : '-'} · generada el ${fecha(ahora)}`, color: 'tenue' },
       { texto: paciente.nombreCompleto, tamano: 15, negrita: true, espacioAntes: 12 },
       {
-        texto: `Cédula: ${paciente.cedula ?? 'no registrada'} · Fecha de nacimiento: ${fecha(paciente.fechaNacimiento)} · Edad: ${paciente.edad(ahora)} años · Sexo: ${paciente.sexo}`,
+        texto: `C.I.: ${paciente.cedula ?? 'no registrada'} · Fecha de nacimiento: ${fecha(paciente.fechaNacimiento)} · Edad: ${paciente.edad(ahora)} años · Sexo: ${paciente.sexo}`,
       },
+      ...(antecedentes && Object.keys(antecedentes.datos.datosSociales).length
+        ? [{ texto: pares(antecedentes.datos.datosSociales, SOCIALES).join(' · ') }]
+        : []),
       ...(acceso.esTitular ? [] : [{ texto: `Exportación parcial: secciones autorizadas (${acceso.categorias.join(', ')}).`, color: 'tenue' as const }]),
     ];
 
     if (antecedentes) {
       const a = antecedentes.datos;
-      const habitos = Object.entries(a.habitos).map(([k, v]) => `${k}: ${v}`);
       lineas.push(
-        { texto: 'Antecedentes', tamano: 13, negrita: true, espacioAntes: 14 },
+        seccion('III. Antecedentes personales'),
         { texto: `Grupo sanguíneo: ${a.grupoSanguineo ?? 'no registrado'}` },
-        ...lista('Alergias', a.alergicos),
-        ...lista('Personales patológicos', a.patologicos),
-        ...lista('Quirúrgicos', a.quirurgicos),
-        ...lista('Medicamentos actuales', a.medicamentosActuales),
-        ...lista('Hospitalizaciones', a.hospitalizaciones),
         ...lista('Inmunizaciones', a.inmunizaciones),
-        ...lista('Familiares', a.familiares),
-        ...lista('Hábitos', habitos),
+        ...lista('Enfermedades de la infancia', a.infancia),
+        ...lista('Alergias', a.alergicos),
+        ...lista('Médicos', a.patologicos),
+        ...lista('Quirúrgicos', a.quirurgicos),
+        ...lista('Traumatológicos', a.traumatologicos),
+        ...lista('Transfusionales', a.transfusionales),
+        ...lista('Epidemiológicos', a.epidemiologicos),
+        ...lista('Medicamentos actuales', a.medicamentosActuales),
       );
       if (a.ginecoObstetricos) {
         const g = a.ginecoObstetricos;
         lineas.push(
-          { texto: 'Gineco-obstétricos', negrita: true, espacioAntes: 6 },
+          { texto: 'Ginecobstétricos', negrita: true, espacioAntes: 6 },
           {
             texto: `Menarquia: ${g.menarquia ?? '-'} · FUM: ${g.ultimaMenstruacion ?? '-'} · G${g.gestas ?? 0} P${g.partos ?? 0} C${g.cesareas ?? 0} A${g.abortos ?? 0} · Anticoncepción: ${g.metodoAnticonceptivo ?? '-'}`,
           },
         );
       }
+      lineas.push(seccion('IV. Antecedentes familiares'), ...lista('Familiares', a.familiares).slice(1));
+      lineas.push(seccion('V. Historia personal y social'), ...lista('Hábitos', pares(a.habitos, HABITOS)).slice(1));
     }
 
     if (acceso.categorias.includes(CATEGORIA_CONSULTAS)) {
-      lineas.push({ texto: `Consultas (${consultas.length})`, tamano: 13, negrita: true, espacioAntes: 14 });
+      lineas.push(seccion(`Consultas (${consultas.length})`));
       for (const c of consultas) {
         const medico = medicos.get(c.medicoId);
         const sv = c.signosVitales;
         const signos = [
-          sv.tensionArterial && `TA ${sv.tensionArterial} mmHg`,
-          sv.frecuenciaCardiaca && `FC ${sv.frecuenciaCardiaca} lpm`,
+          sv.tensionArterial && `PA ${sv.tensionArterial} mmHg`,
+          sv.frecuenciaCardiaca && `Pulso ${sv.frecuenciaCardiaca} ppm`,
           sv.frecuenciaRespiratoria && `FR ${sv.frecuenciaRespiratoria} rpm`,
           sv.temperatura && `T ${sv.temperatura} °C`,
           sv.saturacionOxigeno && `SpO2 ${sv.saturacionOxigeno} %`,
           sv.peso && `Peso ${sv.peso} kg`,
           sv.talla && `Talla ${sv.talla} cm`,
           c.imc && `IMC ${c.imc}`,
+          sv.circunferenciaAbdominal && `C. abdominal ${sv.circunferenciaAbdominal} cm`,
         ].filter(Boolean);
-        lineas.push({ texto: `${fecha(c.fecha)} · ${c.motivoConsulta}`, negrita: true, espacioAntes: 10 });
+        lineas.push({ texto: `${fecha(c.fecha)} · ${c.motivoConsulta}`, negrita: true, espacioAntes: 12 });
         if (medico) lineas.push({ texto: `${medico.nombreCompleto} (${medico.especialidades[0]})`, color: 'tenue' });
-        lineas.push({ texto: `Enfermedad actual: ${c.enfermedadActual}` });
-        if (c.revisionPorSistemas) lineas.push({ texto: `Revisión por sistemas: ${c.revisionPorSistemas}` });
-        if (signos.length) lineas.push({ texto: `Signos vitales: ${signos.join(' · ')}` });
-        if (c.examenFisico) lineas.push({ texto: `Examen físico: ${c.examenFisico}` });
-        lineas.push({ texto: `Impresión diagnóstica: ${c.impresionDiagnostica.join('; ')}` }, { texto: `Plan: ${c.plan}` });
-        if (c.indicaciones) lineas.push({ texto: `Indicaciones: ${c.indicaciones}` });
+        lineas.push(
+          ...dato('I. Motivo de consulta', c.motivoConsulta),
+          ...dato('Estímulo iatrotrópico', c.estimuloIatrotropico),
+          ...dato('II. Enfermedad actual', c.enfermedadActual),
+          ...dato('VI. Revisión por sistemas', c.revisionPorSistemas),
+          ...dato('Condiciones generales', c.condicionesGenerales),
+          ...dato('Signos vitales', signos.join(' · ')),
+          ...dato('VII. Examen físico', c.examenFisico),
+          ...dato('IX. Lista de problemas', c.listaProblemas.join('; ')),
+          ...dato('X. Impresión diagnóstica', c.impresionDiagnostica.join('; ')),
+          ...dato('XI. Exámenes', c.examenes),
+          ...dato('XII. Plan', c.plan),
+          ...dato('Plan educativo', c.indicaciones),
+        );
       }
     }
     lineas.push({

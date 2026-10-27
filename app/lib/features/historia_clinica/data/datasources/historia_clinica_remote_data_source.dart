@@ -28,16 +28,22 @@ class HistoriaClinicaMapper {
 
   static Antecedentes antecedentes(Map<String, dynamic> j) {
     final g = j['ginecoObstetricos'];
+    Map<String, String> pares(dynamic v) => (v as Map? ?? const {}).map((k, x) => MapEntry(k.toString(), x.toString()));
     return Antecedentes(
+      numeroHistoria: textoOpcional(j['numeroHistoria']),
       grupoSanguineo: textoOpcional(j['grupoSanguineo']),
+      datosSociales: pares(j['datosSociales']),
+      inmunizaciones: textos(j['inmunizaciones']),
+      infancia: textos(j['infancia']),
+      alergicos: textos(j['alergicos']),
       patologicos: textos(j['patologicos']),
       quirurgicos: textos(j['quirurgicos']),
-      alergicos: textos(j['alergicos']),
+      traumatologicos: textos(j['traumatologicos']),
+      transfusionales: textos(j['transfusionales']),
+      epidemiologicos: textos(j['epidemiologicos']),
       medicamentosActuales: textos(j['medicamentosActuales']),
-      hospitalizaciones: textos(j['hospitalizaciones']),
-      inmunizaciones: textos(j['inmunizaciones']),
       familiares: textos(j['familiares']),
-      habitos: (j['habitos'] as Map? ?? const {}).map((k, v) => MapEntry(k.toString(), v.toString())),
+      habitos: pares(j['habitos']),
       ginecoObstetricos: g == null
           ? null
           : GinecoObstetricos(
@@ -64,6 +70,7 @@ class HistoriaClinicaMapper {
       saturacionOxigeno: _num(j['saturacionOxigeno']),
       peso: _num(j['peso']),
       talla: _num(j['talla']),
+      circunferenciaAbdominal: _num(j['circunferenciaAbdominal']),
     );
   }
 
@@ -75,11 +82,15 @@ class HistoriaClinicaMapper {
         editable: j['editable'] as bool? ?? false,
         contenido: ContenidoConsulta(
           motivoConsulta: j['motivoConsulta'] as String? ?? '',
+          estimuloIatrotropico: textoOpcional(j['estimuloIatrotropico']),
           enfermedadActual: j['enfermedadActual'] as String? ?? '',
           revisionPorSistemas: textoOpcional(j['revisionPorSistemas']),
+          condicionesGenerales: textoOpcional(j['condicionesGenerales']),
           signosVitales: signos(j['signosVitales']),
           examenFisico: j['examenFisico'] as String? ?? '',
+          listaProblemas: textos(j['listaProblemas']),
           impresionDiagnostica: textos(j['impresionDiagnostica']),
+          examenes: textoOpcional(j['examenes']),
           plan: j['plan'] as String? ?? '',
           indicaciones: textoOpcional(j['indicaciones']),
         ),

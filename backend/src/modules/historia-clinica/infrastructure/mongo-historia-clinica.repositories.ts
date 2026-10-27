@@ -94,6 +94,7 @@ export class MongoConsultaClinicaRepository extends ConsultaClinicaRepository {
     return new ConsultaClinica({
       ...contenido,
       signosVitales: contenido.signosVitales ?? {},
+      listaProblemas: contenido.listaProblemas ?? [],
       id: str(d._id),
       pacienteId: str(d.pacienteId),
       medicoId: str(d.medicoId),
