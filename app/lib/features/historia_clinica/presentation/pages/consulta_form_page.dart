@@ -209,7 +209,7 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
                 Wrap(spacing: 12, runSpacing: 12, children: [
                   SizedBox(
                     width: 160,
-                    child: TextFormField(controller: _ta, validator: _validarTa, decoration: AppTheme.campo('PA', sufijo: 'mmHg', ayuda: 'Presión arterial, 120/80')),
+                    child: TextFormField(controller: _ta, validator: _validarTa, decoration: AppTheme.campo('PA', sufijo: 'mmHg', ayuda: '120/80')),
                   ),
                   vital(_fc, 'Pulso', 'ppm', 20, 250),
                   vital(_fr, 'FR', 'rpm', 4, 80),
