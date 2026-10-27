@@ -59,9 +59,46 @@ class EventoClinico extends Equatable {
 
   String get tipoLegible => tiposEvento[tipo] ?? tipo;
 
+  /// Detalles en palabras del paciente: sin claves técnicas ni datos internos.
+  List<(String, String)> get detallesLegibles => [
+        for (final d in detalles.entries)
+          if (_etiquetasDetalle.containsKey(d.key) && d.value.trim().isNotEmpty) (_etiquetasDetalle[d.key]!, _valorLegible(d.key, d.value)),
+      ];
+
+  /// Estado de una orden de exámenes ("Pendiente", "Resultados cargados", "Anulada"), si aplica.
+  String? get estadoOrden => tipo == 'SOLICITUD_EXAMEN' && detalles['estado'] != null ? _valorLegible('estado', detalles['estado']!) : null;
+
   @override
   List<Object?> get props => [id];
 }
+
+/// Claves de `detalles` que se muestran y su etiqueta. Las que no están (autoReportado,
+/// historiaClinica…) son de uso interno y no se muestran.
+const _etiquetasDetalle = <String, String>{
+  'estado': 'Estado de la orden',
+  'motivoAnulacion': 'Motivo de la anulación',
+  'estadoExtraccion': 'Lectura de valores',
+  'tipoMime': 'Archivo',
+  'codigoVerificacion': 'Código de verificación',
+  'modalidad': 'Modalidad',
+  'motivo': 'Motivo de consulta',
+  'medicoDestino': 'Referido a',
+  'especialidadDestino': 'Especialidad',
+};
+
+String _valorLegible(String clave, String valor) => switch ((clave, valor)) {
+      ('estado', 'PENDIENTE') => 'Pendiente',
+      ('estado', 'COMPLETADA') => 'Resultados cargados',
+      ('estado', 'ANULADA') => 'Anulada',
+      ('estadoExtraccion', 'EXTRAIDO') => 'Valores detectados, por revisar',
+      ('estadoExtraccion', 'CONFIRMADO') => 'Valores confirmados',
+      ('estadoExtraccion', 'NO_RECONOCIDO') => 'Guardado como adjunto',
+      ('tipoMime', 'application/pdf') => 'PDF',
+      ('tipoMime', _) when valor.startsWith('image/') => 'Imagen',
+      ('modalidad', 'PRESENCIAL') => 'Presencial',
+      ('modalidad', 'VIRTUAL') => 'En línea',
+      _ => valor,
+    };
 
 class PaginaEventos {
   const PaginaEventos({required this.items, required this.total, required this.categoriasPermitidas, required this.esTitular});
@@ -69,6 +106,17 @@ class PaginaEventos {
   final int total;
   final List<String> categoriasPermitidas;
   final bool esTitular;
+
+  /// Quedan eventos más antiguos por cargar.
+  bool get hayMas => items.length < total;
+
+  /// Agrega la página siguiente al final (los eventos vienen del más reciente al más antiguo).
+  PaginaEventos conSiguiente(PaginaEventos siguiente) => PaginaEventos(
+        items: [...items, ...siguiente.items.where((e) => !items.any((x) => x.id == e.id))],
+        total: siguiente.total,
+        categoriasPermitidas: categoriasPermitidas,
+        esTitular: esTitular,
+      );
 }
 
 class AccesoExpediente {
