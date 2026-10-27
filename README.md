@@ -1,4 +1,4 @@
-# Bewell — MVP Sprint 2
+# Bewell — MVP Sprint 1
 
 Plataforma e-Health (Universidad Metropolitana · Ingeniería de Software · Sección 1).
 Implementación del Producto Mínimo Viable siguiendo la arquitectura definida en el **Taller 1**:
@@ -92,7 +92,7 @@ Fuente: tablero Trello *BeWell* (15 HU). Detalle de tareas en [`docs/BACKLOG.md`
 | 8 | QR de emergencia | Backlog | ✅ Sin sesión, solo la ficha, regeneración invalida el anterior, caché + auditoría |
 | 9 | Decidir qué médico ve qué parte y por cuánto tiempo | Backlog | ✅ Permisos por sección con vencimiento, revocación inmediata, auditoría visible |
 | 0 | Subir PDF/fotos y extraer valores | Sprint 2 | ✅ Carga JPG/PNG/PDF ≤ 10 MB, **OCR real** (Tesseract para fotos, texto incrustado para PDF), revisión y corrección, fallback a adjunto |
-| 5 | Recordatorios de citas y medicamentos | Backlog | ⏭️ Sprint 2 (la bandeja de notificaciones in-app ya existe) |
+| 5 | Recordatorios de citas, medicamentos y exámenes | Sprint 2 | ✅ Citas 24 h y 1 h antes, cada toma del récipe, órdenes pendientes a 1, 3 y 7 días; el paciente activa o desactiva cada tipo. Se envían a la bandeja in-app (push: siguiente sprint) |
 
 ---
 
@@ -125,7 +125,7 @@ Fuente: tablero Trello *BeWell* (15 HU). Detalle de tareas en [`docs/BACKLOG.md`
 
 ---
 
-## 4. Guion para el Product Review (15 de octubre)
+## 4. Guion sugerido para el Product Review (15 de octubre)
 1. **Landing** → "Reservar cita" → registro / inicio de sesión (Sofía).
 2. **Paso 1–3 de agendamiento**: directorio con filtros → horario y modalidad → confirmación con política y pago retenido.
 3. **Mis citas** → detalle → simular cancelación (muestra el reembolso según la política).
