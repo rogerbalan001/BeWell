@@ -106,6 +106,12 @@ class _Contenido extends StatelessWidget {
             OutlinedButton.icon(onPressed: () => context.push('/expediente/permisos'), icon: const Icon(Icons.admin_panel_settings_outlined), label: const Text('Médicos autorizados')),
           if (!esTitular)
             OutlinedButton.icon(
+              onPressed: () => context.push('/medico/pacientes/${r.pacienteId}/examenes?nombre=${Uri.encodeComponent(r.pacienteNombre)}'),
+              icon: const Icon(Icons.biotech_outlined),
+              label: const Text('Órdenes de exámenes'),
+            ),
+          if (!esTitular)
+            OutlinedButton.icon(
               onPressed: () => mostrarDialogoReferir(context, pacienteId: r.pacienteId, pacienteNombre: r.pacienteNombre),
               icon: const Icon(Icons.forward_to_inbox_outlined),
               label: const Text('Referir a especialista'),
@@ -131,8 +137,24 @@ class _Contenido extends StatelessWidget {
         const SizedBox(height: 18),
         if (d.pagina.items.isEmpty)
           const VistaVacia(icono: Icons.history_toggle_off, titulo: 'Sin eventos para mostrar')
-        else
-          LineaTiempo(eventos: d.pagina.items),
+        else ...[
+          LineaTiempo(eventos: d.pagina.items, esTitular: esTitular),
+          Center(
+            child: Column(children: [
+              Text('Mostrando ${d.pagina.items.length} de ${d.pagina.total} eventos', style: const TextStyle(fontSize: 12.5, color: AppColors.pizarra)),
+              if (d.hayMas) ...[
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: d.cargandoMas ? null : () => _cargarMas(context),
+                  icon: d.cargandoMas
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.expand_more),
+                  label: Text(d.cargandoMas ? 'Cargando…' : 'Ver eventos anteriores'),
+                ),
+              ],
+            ]),
+          ),
+        ],
       ]),
     );
 
@@ -228,6 +250,11 @@ class _Contenido extends StatelessWidget {
         'VACUNA' => 'VACUNAS',
         _ => 'CIRUGIAS',
       };
+
+  Future<void> _cargarMas(BuildContext context) async {
+    final error = await context.read<ExpedienteCubit>().cargarMas();
+    if (error != null && context.mounted) mostrarMensaje(context, error, error: true);
+  }
 
   Widget? _botonAgregar(BuildContext context, ResumenExpediente r) {
     final tipos = <String>[

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatos.dart';
@@ -17,10 +18,20 @@ IconData iconoEvento(String tipo) => switch (tipo) {
       _ => Icons.psychology_outlined,
     };
 
+/// Pantalla del paciente donde está el documento que originó el evento.
+String? _rutaDocumento(EventoClinico e) => switch (e.tipo) {
+      'RECETA' => '/recipes',
+      'EXAMEN' || 'SOLICITUD_EXAMEN' => '/examenes',
+      _ => null,
+    };
+
 /// Línea de tiempo del paciente (del evento más reciente al más antiguo).
 class LineaTiempo extends StatelessWidget {
-  const LineaTiempo({super.key, required this.eventos});
+  const LineaTiempo({super.key, required this.eventos, this.esTitular = false});
   final List<EventoClinico> eventos;
+
+  /// El titular puede ir al récipe o examen desde el detalle; el médico lo ve en su propia pantalla.
+  final bool esTitular;
 
   @override
   Widget build(BuildContext context) {
@@ -78,9 +89,20 @@ class LineaTiempo extends StatelessWidget {
             ],
             const Divider(height: 28),
             Text(e.resumen.isEmpty ? 'Sin detalle adicional.' : e.resumen, style: const TextStyle(height: 1.6)),
-            if (e.detalles.isNotEmpty) ...[
+            if (e.detallesLegibles.isNotEmpty) ...[
               const SizedBox(height: 16),
-              for (final d in e.detalles.entries.where((x) => x.key != 'autoReportado')) FilaDato(d.key, d.value),
+              for (final (etiqueta, valor) in e.detallesLegibles) FilaDato(etiqueta, valor),
+            ],
+            if (esTitular && _rutaDocumento(e) != null) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  context.push(_rutaDocumento(e)!);
+                },
+                icon: const Icon(Icons.open_in_new, size: 18),
+                label: Text(e.tipo == 'RECETA' ? 'Ver récipe' : 'Ver mis exámenes'),
+              ),
             ],
             if (e.autoReportado) ...[
               const SizedBox(height: 12),
@@ -104,6 +126,15 @@ class _Evento extends StatelessWidget {
         ChipEstado(e.tipoLegible, color: AppColors.primario, fondo: AppColors.superficieAzul2),
         Text(Formatos.fechaHora(e.fecha), style: const TextStyle(color: AppColors.pizarra, fontSize: 12.5)),
         if (e.autoReportado) const ChipEstado('Auto-reportado', color: AppColors.ambar),
+        if (e.estadoOrden != null)
+          ChipEstado(
+            e.estadoOrden!,
+            color: switch (e.detalles['estado']) {
+              'COMPLETADA' => AppColors.verdeOscuro,
+              'ANULADA' => AppColors.pizarraClara,
+              _ => AppColors.ambar,
+            },
+          ),
       ]),
       const SizedBox(height: 8),
       Text(e.titulo, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
