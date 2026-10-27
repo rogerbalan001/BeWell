@@ -151,7 +151,7 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
           decoration: AppTheme.campo(etiqueta, ayuda: ayuda),
         );
     Widget vital(TextEditingController c, String etiqueta, String unidad, double min, double max) => SizedBox(
-          width: 150,
+          width: 160,
           child: TextFormField(
             controller: c,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -208,8 +208,8 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
                 campo(_condiciones, 'Condiciones generales'),
                 Wrap(spacing: 12, runSpacing: 12, children: [
                   SizedBox(
-                    width: 150,
-                    child: TextFormField(controller: _ta, validator: _validarTa, decoration: AppTheme.campo('Presión arterial', sufijo: 'mmHg', ayuda: '120/80')),
+                    width: 160,
+                    child: TextFormField(controller: _ta, validator: _validarTa, decoration: AppTheme.campo('PA', sufijo: 'mmHg', ayuda: 'Presión arterial, 120/80')),
                   ),
                   vital(_fc, 'Pulso', 'ppm', 20, 250),
                   vital(_fr, 'FR', 'rpm', 4, 80),
@@ -217,7 +217,7 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
                   vital(_sat, 'SpO₂', '%', 50, 100),
                   vital(_peso, 'Peso', 'kg', 0.3, 400),
                   vital(_talla, 'Talla', 'cm', 20, 250),
-                  vital(_cintura, 'C. abdominal', 'cm', 30, 250),
+                  vital(_cintura, 'Cintura', 'cm', 30, 250),
                 ]),
                 if (imc != null)
                   Align(alignment: Alignment.centerLeft, child: ChipEstado('IMC $imc kg/m²', icono: Icons.straighten, color: AppColors.verdeOscuro)),
