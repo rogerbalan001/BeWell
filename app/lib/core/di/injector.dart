@@ -48,6 +48,11 @@ import '../../features/recipes/data/repositories/recipes_repository_impl.dart';
 import '../../features/recipes/domain/repositories/recipes_repository.dart';
 import '../../features/recipes/domain/usecases/recipes_usecases.dart';
 import '../../features/recipes/presentation/cubit/recipes_cubit.dart';
+import '../../features/recordatorios/data/datasources/recordatorios_remote_data_source.dart';
+import '../../features/recordatorios/data/repositories/recordatorios_repository_impl.dart';
+import '../../features/recordatorios/domain/repositories/recordatorios_repository.dart';
+import '../../features/recordatorios/domain/usecases/recordatorios_usecases.dart';
+import '../../features/recordatorios/presentation/cubit/recordatorios_cubit.dart';
 import '../../features/resenas/data/datasources/resenas_remote_data_source.dart';
 import '../../features/resenas/data/repositories/resenas_repository_impl.dart';
 import '../../features/resenas/domain/repositories/resenas_repository.dart';
@@ -179,4 +184,10 @@ void configurarDependencias() {
   sl.registerLazySingleton<NotificacionesRepository>(() => NotificacionesRepositoryImpl(sl()));
   sl.registerLazySingleton(() => ConsultarNotificaciones(sl()));
   sl.registerLazySingleton(() => NotificacionesCubit(sl()));
+
+  // ---------- Recordatorios (HU-5) ----------
+  sl.registerLazySingleton(() => RecordatoriosRemoteDataSource(sl()));
+  sl.registerLazySingleton<RecordatoriosRepository>(() => RecordatoriosRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => GestionarRecordatorios(sl()));
+  sl.registerFactory(() => RecordatoriosCubit(sl()));
 }

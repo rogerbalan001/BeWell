@@ -17,6 +17,7 @@ IconData _icono(String tipo) => switch (tipo) {
       'EMERGENCIA' => Icons.emergency_outlined,
       'VERIFICACION' => Icons.verified_outlined,
       'PERMISO' => Icons.lock_open_outlined,
+      'RECORDATORIO' => Icons.alarm_outlined,
       _ => Icons.notifications_none,
     };
 
@@ -28,6 +29,10 @@ class NotificacionesPage extends StatelessWidget {
     final d = n.datos;
     if (d['citaId'] != null) {
       context.push('/citas/${d['citaId']}');
+    } else if (n.tipo == 'RECORDATORIO' && d['tipo'] == 'MEDICAMENTOS') {
+      context.push('/recipes');
+    } else if (n.tipo == 'RECORDATORIO' && d['tipo'] == 'EXAMENES') {
+      context.push('/examenes');
     } else if (n.tipo == 'REFERENCIA') {
       context.push('/referencias');
     } else if (n.tipo == 'EXAMEN' && d['examenId'] == null) {

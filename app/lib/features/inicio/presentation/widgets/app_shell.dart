@@ -28,6 +28,7 @@ List<_Destino> _destinos(UsuarioSesion? u) => [
         _Destino('/examenes', Icons.biotech_outlined, 'Exámenes'),
         _Destino('/recipes', Icons.receipt_long_outlined, 'Récipes'),
         _Destino('/emergencia', Icons.qr_code_2, 'Emergencia QR'),
+        _Destino('/recordatorios', Icons.alarm_outlined, 'Recordatorios'),
         _Destino('/referencias', Icons.forward_to_inbox_outlined, 'Referencias'),
         _Destino('/perfiles', Icons.family_restroom, 'Mi familia'),
       ],
