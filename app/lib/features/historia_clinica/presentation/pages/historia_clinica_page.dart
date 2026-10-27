@@ -294,7 +294,7 @@ class _Antecedentes extends StatelessWidget {
       ],
       if (personales.isNotEmpty) ...[
         titulo('III. Antecedentes personales'),
-        for (var i = 0; i < personales.length; i++) ...[if (i > 0) const SizedBox(height: 14), personales[i]],
+        for (var i = 0; i < personales.length; i++) ...[if (i > 0) const SizedBox(height: 10), personales[i]],
       ],
       if (a.familiares.isNotEmpty) ...[
         titulo('IV. Antecedentes familiares'),
@@ -307,7 +307,7 @@ class _Antecedentes extends StatelessWidget {
     ];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       for (final b in bloques) ...[
-        if (b is Padding && bloques.first != b) const Divider(height: 28),
+        if (b is Padding && bloques.first != b) const Divider(height: 22),
         b,
       ],
     ]);

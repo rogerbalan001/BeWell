@@ -6,7 +6,7 @@ import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../domain/entities/historia_clinica.dart';
 
-/// Bloque "título + viñetas" de un grupo de antecedentes.
+/// Grupo de antecedentes resumido en una línea: título y elementos.
 class GrupoAntecedentes extends StatelessWidget {
   const GrupoAntecedentes({super.key, required this.titulo, required this.icono, required this.valores, this.color = AppColors.primario});
   final String titulo;
@@ -16,25 +16,22 @@ class GrupoAntecedentes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        Icon(icono, size: 18, color: color),
-        const SizedBox(width: 8),
-        Expanded(child: Text(titulo, style: const TextStyle(fontWeight: FontWeight.w700))),
-      ]),
-      const SizedBox(height: 6),
-      if (valores.isEmpty)
-        const Text('Niega / no registrado', style: TextStyle(color: AppColors.pizarraClara, fontSize: 13))
-      else
-        for (final v in valores)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Padding(padding: const EdgeInsets.only(top: 6), child: Icon(Icons.circle, size: 6, color: color)),
-              const SizedBox(width: 8),
-              Expanded(child: Text(v, style: const TextStyle(fontSize: 14))),
-            ]),
-          ),
+    // Una sola línea por grupo: el título y sus elementos separados por "·".
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(padding: const EdgeInsets.only(top: 2), child: Icon(icono, size: 18, color: color)),
+      const SizedBox(width: 10),
+      Expanded(
+        child: Text.rich(
+          TextSpan(children: [
+            TextSpan(text: '$titulo  ', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.marino)),
+            TextSpan(
+              text: valores.isEmpty ? 'Niega / no registrado' : valores.join(' · '),
+              style: TextStyle(color: valores.isEmpty ? AppColors.pizarraClara : AppColors.pizarra),
+            ),
+          ]),
+          style: const TextStyle(fontSize: 14, height: 1.45),
+        ),
+      ),
     ]);
   }
 }
