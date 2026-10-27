@@ -11,6 +11,7 @@ import { ExamenRepository, SolicitudExamenRepository } from './domain/repositori
 import { ExamenDoc, ExamenSchema, SolicitudExamenDoc, SolicitudExamenSchema } from './infrastructure/examenes.schemas';
 import { MongoExamenRepository, MongoSolicitudExamenRepository } from './infrastructure/mongo-examenes.repositories';
 import { OcrNoDisponibleAdapter, OcrSimuladoAdapter } from './infrastructure/ocr.adapters';
+import { OcrTesseractAdapter } from './infrastructure/ocr-tesseract.adapter';
 import { ExamenesController } from './interface/examenes.controller';
 
 @Module({
@@ -32,8 +33,17 @@ import { ExamenesController } from './interface/examenes.controller';
     {
       provide: ServicioOcr,
       inject: [ConfigService],
-      useFactory: (config: ConfigService) =>
-        config.get<string>('OCR_PROVIDER') === 'simulado' ? new OcrSimuladoAdapter() : new OcrNoDisponibleAdapter(),
+      // OCR_PROVIDER: "tesseract" (OCR real), "simulado" (plantillas de demo) o vacío (todo queda como adjunto).
+      useFactory: (config: ConfigService) => {
+        switch (config.get<string>('OCR_PROVIDER')) {
+          case 'tesseract':
+            return new OcrTesseractAdapter();
+          case 'simulado':
+            return new OcrSimuladoAdapter();
+          default:
+            return new OcrNoDisponibleAdapter();
+        }
+      },
     },
   ],
 })

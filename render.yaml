@@ -36,8 +36,9 @@ services:
         generateValue: true
       - key: URL_SIGNING_SECRET
         generateValue: true
+      # OCR real (Tesseract en español). "simulado" vuelve a las plantillas de demo.
       - key: OCR_PROVIDER
-        value: simulado
+        value: tesseract
       # El disco del plan gratuito es efímero: los archivos subidos se pierden al reiniciar.
       - key: STORAGE_DIR
         value: /tmp/bewell-storage

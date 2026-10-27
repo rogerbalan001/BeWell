@@ -42,7 +42,8 @@ const PLANTILLAS: { clave: RegExp; resultados: Extraido[] }[] = [
  * analitos según el nombre del examen, con su nivel de confianza, para
  * ejercitar el flujo "extraer → revisar/corregir → confirmar". Los archivos
  * cuyo nombre contiene "ilegible" simulan un documento no reconocido.
- * Se sustituye por un proveedor real (Textract, Document AI…) en el Sprint 2.
+ * Desde el Sprint 2 el OCR real es OcrTesseractAdapter (OCR_PROVIDER=tesseract);
+ * este adaptador queda para demos sin conexión.
  */
 @Injectable()
 export class OcrSimuladoAdapter extends ServicioOcr {

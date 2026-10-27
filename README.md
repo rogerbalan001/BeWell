@@ -91,7 +91,7 @@ Fuente: tablero Trello *BeWell* (15 HU). Detalle de tareas en [`docs/BACKLOG.md`
 | 7 | Récipes con firma y código verificable | Backlog | ✅ ECDSA P-256 + JCS (RFC 8785), QR, verificación pública, guardado en expediente |
 | 8 | QR de emergencia | Backlog | ✅ Sin sesión, solo la ficha, regeneración invalida el anterior, caché + auditoría |
 | 9 | Decidir qué médico ve qué parte y por cuánto tiempo | Backlog | ✅ Permisos por sección con vencimiento, revocación inmediata, auditoría visible |
-| 0 | Subir PDF/fotos y extraer valores | Backlog | 🟡 Carga JPG/PNG/PDF ≤ 10 MB, revisión y corrección, fallback a adjunto. **OCR simulado** (el documento lo ubica en sprints posteriores) |
+| 0 | Subir PDF/fotos y extraer valores | Sprint 2 | ✅ Carga JPG/PNG/PDF ≤ 10 MB, **OCR real** (Tesseract para fotos, texto incrustado para PDF), revisión y corrección, fallback a adjunto |
 | 5 | Recordatorios de citas y medicamentos | Backlog | ⏭️ Sprint 2 (la bandeja de notificaciones in-app ya existe) |
 
 ---
@@ -118,7 +118,7 @@ Fuente: tablero Trello *BeWell* (15 HU). Detalle de tareas en [`docs/BACKLOG.md`
 
 ### Simplificaciones del MVP (documentadas)
 - **Pasarela de pagos simulada** (`PasarelaSimuladaAdapter`) detrás del puerto `PasarelaPagos`.
-- **OCR simulado** (`OCR_PROVIDER=simulado`): devuelve plantillas de analitos según el examen; un archivo con "ilegible" en el nombre simula un documento no reconocido.
+- **OCR** (`OCR_PROVIDER`): `tesseract` lee fotos con Tesseract (español) y el texto de los PDF digitales, y reconoce 18 analitos comunes (`extractor-analitos.ts`). `simulado` devuelve plantillas de demo (un archivo con "ilegible" en el nombre simula un documento no reconocido). Un PDF escaneado sin texto queda como adjunto.
 - **Almacenamiento local cifrado** en lugar de S3 (mismo puerto).
 - **KMS local** en lugar de un KMS gestionado (mismo puerto).
 - Transacciones multi-documento: la doble reserva se impide con índice único parcial y el pago fallido se compensa cancelando la cita.
@@ -130,7 +130,7 @@ Fuente: tablero Trello *BeWell* (15 HU). Detalle de tareas en [`docs/BACKLOG.md`
 2. **Paso 1–3 de agendamiento**: directorio con filtros → horario y modalidad → confirmación con política y pago retenido.
 3. **Mis citas** → detalle → simular cancelación (muestra el reembolso según la política).
 4. **Médico (Ruiz)**: agenda de hoy → cita en curso → *Marcar como atendida* con nota y diagnóstico → *Emitir récipe* → *Solicitar exámenes*.
-5. **Paciente**: récipe con QR → abrir `/#/verificar/<código>` sin sesión (farmacia). Reseñar la consulta. Subir resultados de la orden (OCR simulado) y corregir valores.
+5. **Paciente**: récipe con QR → abrir `/#/verificar/<código>` sin sesión (farmacia). Reseñar la consulta. Subir resultados de la orden (foto o PDF; el OCR propone los valores) y corregirlos.
 6. **Expediente**: línea de tiempo con filtros, exportar PDF, conceder/revocar acceso a la Dra. Soto, ver auditoría.
 7. **Referencias**: aprobar la referencia a Cardiología → entrar como Dr. Campos y proponer horario → aceptar como Sofía.
 8. **QR de emergencia**: abrir `/#/e/<token>` sin sesión (vista pública) y con `emergencia@bewell.app` (vista ampliada).
