@@ -125,7 +125,7 @@ Fuente: tablero Trello *BeWell* (15 HU). Detalle de tareas en [`docs/BACKLOG.md`
 
 ---
 
-## 4. Guion sugerido para el Product Review (15 de octubre)
+## 4. Guion para el Product Review (15 de octubre)
 1. **Landing** → "Reservar cita" → registro / inicio de sesión (Sofía).
 2. **Paso 1–3 de agendamiento**: directorio con filtros → horario y modalidad → confirmación con política y pago retenido.
 3. **Mis citas** → detalle → simular cancelación (muestra el reembolso según la política).
