@@ -18,6 +18,7 @@ import { NotificacionesModule } from './modules/notificaciones/notificaciones.mo
 import { PagosModule } from './modules/pagos/pagos.module';
 import { PerfilesModule } from './modules/perfiles/perfiles.module';
 import { RecipesModule } from './modules/recipes/recipes.module';
+import { RecordatoriosModule } from './modules/recordatorios/recordatorios.module';
 import { ResenasModule } from './modules/resenas/resenas.module';
 import { ErroresDominioFilter } from './shared/interface/http/errores-dominio.filter';
 import { SharedModule } from './shared/shared.module';
@@ -50,6 +51,7 @@ import { SharedModule } from './shared/shared.module';
     ExamenesModule,
     RecipesModule,
     EmergenciasModule,
+    RecordatoriosModule,
     DemoModule,
   ],
   controllers: [SaludController],
