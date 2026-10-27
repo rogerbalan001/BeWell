@@ -1,4 +1,4 @@
-# Bewell — MVP Sprint 1
+# Bewell — MVP Sprint 2
 
 Plataforma e-Health (Universidad Metropolitana · Ingeniería de Software · Sección 1).
 Implementación del Producto Mínimo Viable siguiendo la arquitectura definida en el **Taller 1**:
