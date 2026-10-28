@@ -35,6 +35,7 @@ import '../../features/medicos/presentation/pages/directorio_page.dart';
 import '../../features/medicos/presentation/pages/mi_agenda_page.dart';
 import '../../features/medicos/presentation/pages/perfil_medico_page.dart';
 import '../../features/notificaciones/presentation/notificaciones_page.dart';
+import '../../features/recordatorios/presentation/pages/recordatorios_page.dart';
 import '../../features/perfiles/presentation/pages/perfiles_page.dart';
 import '../../features/recipes/presentation/pages/emitir_recipe_page.dart';
 import '../../features/recipes/presentation/pages/recipes_page.dart';
@@ -95,6 +96,7 @@ GoRouter crearRouter(SesionCubit sesion) {
         routes: [
           GoRoute(path: '/inicio', builder: (_, __) => const InicioPage()),
           GoRoute(path: '/notificaciones', builder: (_, __) => const NotificacionesPage()),
+          GoRoute(path: '/recordatorios', builder: (_, __) => const RecordatoriosPage()),
           GoRoute(path: '/perfiles', builder: (_, __) => const PerfilesPage()),
           GoRoute(path: '/directorio', builder: (_, __) => const DirectorioPage()),
           GoRoute(path: '/medicos/:id', builder: (_, s) => PerfilMedicoPage(medicoId: s.pathParameters['id']!)),
