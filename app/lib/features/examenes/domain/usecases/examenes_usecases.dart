@@ -36,3 +36,13 @@ class SolicitarExamenes {
   Future<SolicitudExamen> call({required String pacienteId, required List<String> examenes, String? indicaciones, String? citaId}) =>
       _r.solicitar(pacienteId: pacienteId, examenes: examenes, indicaciones: indicaciones, citaId: citaId);
 }
+
+/// HU médico: seguir el estado de las órdenes del paciente y anular las que sobran.
+class GestionarOrdenesExamen {
+  const GestionarOrdenesExamen(this._r);
+  final ExamenesRepository _r;
+  static const motivoMinimo = 5;
+
+  Future<List<SolicitudExamen>> listar(String pacienteId) => _r.solicitudes(pacienteId: pacienteId);
+  Future<SolicitudExamen> anular(String solicitudId, String motivo) => _r.anularSolicitud(solicitudId, motivo.trim());
+}

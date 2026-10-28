@@ -16,6 +16,7 @@ import '../../features/emergencia/presentation/pages/ficha_emergencia_page.dart'
 import '../../features/emergencia/presentation/pages/visor_emergencia_page.dart';
 import '../../features/examenes/domain/entities/examen.dart';
 import '../../features/examenes/presentation/pages/examenes_page.dart';
+import '../../features/examenes/presentation/pages/ordenes_examenes_page.dart';
 import '../../features/examenes/presentation/pages/revisar_resultados_page.dart';
 import '../../features/examenes/presentation/pages/solicitar_examenes_page.dart';
 import '../../features/examenes/presentation/pages/subir_examen_page.dart';
@@ -38,7 +39,6 @@ import '../../features/perfiles/presentation/pages/perfiles_page.dart';
 import '../../features/recipes/presentation/pages/emitir_recipe_page.dart';
 import '../../features/recipes/presentation/pages/recipes_page.dart';
 import '../../features/recipes/presentation/pages/verificar_recipe_page.dart';
-import '../../features/recordatorios/presentation/pages/recordatorios_page.dart';
 
 /// Convierte el stream del SesionCubit en un Listenable para go_router.
 class _Refresco extends ChangeNotifier {
@@ -95,7 +95,6 @@ GoRouter crearRouter(SesionCubit sesion) {
         routes: [
           GoRoute(path: '/inicio', builder: (_, __) => const InicioPage()),
           GoRoute(path: '/notificaciones', builder: (_, __) => const NotificacionesPage()),
-          GoRoute(path: '/recordatorios', builder: (_, __) => const RecordatoriosPage()),
           GoRoute(path: '/perfiles', builder: (_, __) => const PerfilesPage()),
           GoRoute(path: '/directorio', builder: (_, __) => const DirectorioPage()),
           GoRoute(path: '/medicos/:id', builder: (_, s) => PerfilMedicoPage(medicoId: s.pathParameters['id']!)),
@@ -137,6 +136,10 @@ GoRouter crearRouter(SesionCubit sesion) {
               pacienteNombre: s.uri.queryParameters['nombre'],
               citaId: s.uri.queryParameters['citaId'],
             ),
+          ),
+          GoRoute(
+            path: '/medico/pacientes/:pacienteId/examenes',
+            builder: (_, s) => OrdenesExamenesPage(pacienteId: s.pathParameters['pacienteId']!, pacienteNombre: s.uri.queryParameters['nombre']),
           ),
           GoRoute(
             path: '/medico/examenes/solicitar',

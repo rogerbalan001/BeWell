@@ -13,7 +13,7 @@ import { MedicosService } from '../../medicos/application/medicos.service';
 import { PerfilesService } from '../../perfiles/application/perfiles.service';
 import { ExamenMedico, ResultadoAnalito } from '../domain/examen-medico';
 import { ExamenRepository, SolicitudExamenRepository } from '../domain/repositorios';
-import { SolicitudExamen } from '../domain/solicitud-examen';
+import { EstadoSolicitud, SolicitudExamen } from '../domain/solicitud-examen';
 import { ServicioOcr } from './servicio-ocr';
 
 export interface ArchivoExamen {
@@ -85,6 +85,27 @@ export class ExamenesService {
     return solicitud;
   }
 
+  /** El médico que indicó la orden la anula mientras siga pendiente; se avisa al paciente. */
+  async anularSolicitud(actor: Actor, solicitudId: string, motivo: string): Promise<SolicitudExamen> {
+    if (!actor.medicoId) throw new AccesoDenegadoError('Solo un médico puede anular órdenes de exámenes');
+    const solicitud = await this.obtenerSolicitud(solicitudId);
+    solicitud.anular(actor.medicoId, motivo, this.reloj.ahora());
+    await this.solicitudes.guardar(solicitud);
+    await this.expediente.actualizarEventoDeDocumento(solicitud.id, TipoEvento.SOLICITUD_EXAMEN, {
+      estado: solicitud.estado,
+      motivoAnulacion: solicitud.motivoAnulacion ?? '',
+    });
+    const medico = await this.medicos.obtener(actor.medicoId);
+    await this.notificador.notificar({
+      usuarioId: await this.perfiles.titularDe(solicitud.pacienteId),
+      tipo: 'EXAMEN',
+      titulo: 'Orden de exámenes anulada',
+      mensaje: `${medico.nombreCompleto} anuló la orden de ${solicitud.examenes.join(', ')}. Motivo: ${solicitud.motivoAnulacion}. Ya no necesitas hacerte esos exámenes.`,
+      datos: { solicitudId: solicitud.id, pacienteId: solicitud.pacienteId },
+    });
+    return solicitud;
+  }
+
   async listarSolicitudes(actor: Actor, pacienteId?: string): Promise<SolicitudExamen[]> {
     if (actor.medicoId) {
       const propias = await this.solicitudes.listarPorMedico(actor.medicoId);
@@ -105,6 +126,7 @@ export class ExamenesService {
     await this.asegurarCarga(actor, datos.pacienteId);
     const solicitud = datos.solicitudId ? await this.obtenerSolicitud(datos.solicitudId) : undefined;
     if (solicitud && solicitud.pacienteId !== datos.pacienteId) throw new ReglaNegocioError('La orden no corresponde al paciente');
+    if (solicitud?.estado === EstadoSolicitud.ANULADA) throw new ReglaNegocioError('Esa orden fue anulada por el médico; sube el examen sin asociarlo a la orden');
 
     const guardado = await this.almacenamiento.guardar('examenes', archivo.contenido, archivo.tipoMime, archivo.nombreOriginal);
     const examen = ExamenMedico.cargar(
@@ -150,6 +172,8 @@ export class ExamenesService {
     if (solicitud) {
       solicitud.completar(examen.id, this.reloj.ahora());
       await this.solicitudes.guardar(solicitud);
+      // La orden en la línea de tiempo deja de verse como "pendiente".
+      await this.expediente.actualizarEventoDeDocumento(solicitud.id, TipoEvento.SOLICITUD_EXAMEN, { estado: solicitud.estado });
       const [medico, paciente] = await Promise.all([this.medicos.obtener(solicitud.medicoId), this.perfiles.obtener(datos.pacienteId)]);
       await this.notificador.notificar({
         usuarioId: medico.usuarioId,

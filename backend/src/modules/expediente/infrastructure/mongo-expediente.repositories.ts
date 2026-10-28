@@ -157,6 +157,11 @@ export class MongoEventoClinicoRepository extends EventoClinicoRepository {
     return { items: docs.map((d) => this.aDominio(d)), total };
   }
 
+  async actualizarDetallesPorDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>): Promise<void> {
+    const cambios = Object.fromEntries(Object.entries(detalles).map(([clave, valor]) => [`detalles.${clave}`, valor]));
+    await this.modelo.updateMany({ documentoOrigenId: oid(documentoOrigenId), tipo }, { $set: cambios });
+  }
+
   private aDominio(d: EventoClinicoDoc): EventoClinico {
     return new EventoClinico({
       id: str(d._id),

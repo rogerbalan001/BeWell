@@ -92,6 +92,8 @@ export class MongoSolicitudExamenRepository extends SolicitudExamenRepository {
         examenResultadoIds: s.examenResultadoIds.map(oid),
         creadaEn: s.creadaEn,
         completadaEn: s.completadaEn,
+        motivoAnulacion: this.cifrador.cifrarOpcional(s.motivoAnulacion),
+        anuladaEn: s.anuladaEn,
       },
       { upsert: true },
     );
@@ -122,6 +124,8 @@ export class MongoSolicitudExamenRepository extends SolicitudExamenRepository {
       examenResultadoIds: (d.examenResultadoIds ?? []).map(str),
       creadaEn: d.creadaEn,
       completadaEn: d.completadaEn,
+      motivoAnulacion: this.cifrador.descifrarOpcional(d.motivoAnulacion),
+      anuladaEn: d.anuladaEn,
     });
   }
 }

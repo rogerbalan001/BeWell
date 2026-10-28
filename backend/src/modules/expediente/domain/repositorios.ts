@@ -32,6 +32,11 @@ export abstract class EventoClinicoRepository {
     tipo: TipoEvento | undefined,
     paginacion: Paginacion,
   ): Promise<{ items: EventoClinico[]; total: number }>;
+  /**
+   * Agrega o reemplaza claves de `detalles` en los eventos generados por un
+   * documento de otro módulo (p. ej. el estado de una orden de exámenes).
+   */
+  abstract actualizarDetallesPorDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>): Promise<void>;
 }
 
 export abstract class ReferenciaRepository {

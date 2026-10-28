@@ -32,6 +32,8 @@ class ExamenesRemoteDataSource {
   Future<Map<String, dynamic>> validar(String id) async => mapa(await _api.post('/examenes/$id/validar'));
   Future<String> url(String id) async => mapa(await _api.get('/examenes/$id/archivo'))['url'] as String;
   Future<Map<String, dynamic>> solicitar(Map<String, dynamic> datos) async => mapa(await _api.post('/examenes/solicitudes', data: datos));
+  Future<Map<String, dynamic>> anular(String id, String motivo) async =>
+      mapa(await _api.post('/examenes/solicitudes/$id/anular', data: {'motivo': motivo}));
 }
 
 class ExamenMapper {
@@ -67,5 +69,9 @@ class ExamenMapper {
         creadaEn: fecha(j['creadaEn']),
         medico: ExpedienteMapper.medico(j['medico']),
         citaId: textoOpcional(j['citaId']),
+        examenResultadoIds: textos(j['examenResultadoIds']),
+        completadaEn: fechaOpcional(j['completadaEn']),
+        motivoAnulacion: textoOpcional(j['motivoAnulacion']),
+        anuladaEn: fechaOpcional(j['anuladaEn']),
       );
 }

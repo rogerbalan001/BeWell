@@ -18,3 +18,23 @@ class ExamenesCubit extends RecursoCubit<DatosExamenes> {
         return DatosExamenes(examenes, solicitudes);
       }, silencioso: silencioso);
 }
+
+/// Órdenes de exámenes de un paciente, vistas por el médico.
+class OrdenesExamenesCubit extends RecursoCubit<List<SolicitudExamen>> {
+  OrdenesExamenesCubit(this._gestion);
+  final GestionarOrdenesExamen _gestion;
+
+  String? _pacienteId;
+
+  Future<void> cargar(String pacienteId, {bool silencioso = false}) {
+    _pacienteId = pacienteId;
+    return ejecutar(() => _gestion.listar(pacienteId), silencioso: silencioso);
+  }
+
+  /// Devuelve el mensaje de error o `null` si la orden quedó anulada.
+  Future<String?> anular(String solicitudId, String motivo) async {
+    final error = await intentar(() => _gestion.anular(solicitudId, motivo));
+    if (error == null && _pacienteId != null) await cargar(_pacienteId!, silencioso: true);
+    return error;
+  }
+}

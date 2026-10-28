@@ -24,6 +24,10 @@ import { CATALOGO_EXAMENES } from '../domain/catalogo-examenes';
 import { ExamenMedico } from '../domain/examen-medico';
 import { SolicitudExamen } from '../domain/solicitud-examen';
 
+export class AnularSolicitudDto {
+  @IsString() @IsNotEmpty() @MaxLength(500) motivo: string;
+}
+
 export class SolicitarExamenesDto {
   @IsMongoId() pacienteId: string;
   @IsArray() @ArrayNotEmpty() @IsString({ each: true }) examenes: string[];
@@ -91,6 +95,13 @@ export class ExamenesController {
     return (await this.solicitudesRespuesta([await this.examenes.solicitar(actor, dto)]))[0];
   }
 
+  /** HU: el médico anula una orden pendiente (p. ej. la indicó por error). */
+  @Roles(RolUsuario.MEDICO)
+  @Post('solicitudes/:id/anular')
+  async anularSolicitud(@ActorActual() actor: Actor, @Param('id', ParseObjectIdPipe) id: string, @Body() dto: AnularSolicitudDto) {
+    return (await this.solicitudesRespuesta([await this.examenes.anularSolicitud(actor, id, dto.motivo)]))[0];
+  }
+
   @Get('solicitudes')
   async solicitudes(@ActorActual() actor: Actor, @Query() q: FiltroPacienteDto) {
     return this.solicitudesRespuesta(await this.examenes.listarSolicitudes(actor, q.pacienteId));
@@ -152,6 +163,8 @@ export class ExamenesController {
       examenResultadoIds: s.examenResultadoIds,
       creadaEn: s.creadaEn,
       completadaEn: s.completadaEn,
+      motivoAnulacion: s.motivoAnulacion,
+      anuladaEn: s.anuladaEn,
     }));
   }
 }

@@ -38,4 +38,7 @@ class ExamenesRepositoryImpl implements ExamenesRepository {
         if (indicaciones != null && indicaciones.isNotEmpty) 'indicaciones': indicaciones,
         if (citaId != null) 'citaId': citaId,
       }));
+
+  @override
+  Future<SolicitudExamen> anularSolicitud(String solicitudId, String motivo) async => ExamenMapper.solicitud(await _r.anular(solicitudId, motivo));
 }

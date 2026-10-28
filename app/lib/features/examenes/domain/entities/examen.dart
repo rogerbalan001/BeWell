@@ -69,6 +69,10 @@ class SolicitudExamen extends Equatable {
     required this.creadaEn,
     this.medico,
     this.citaId,
+    this.examenResultadoIds = const [],
+    this.completadaEn,
+    this.motivoAnulacion,
+    this.anuladaEn,
   });
   final String id;
   final String pacienteId;
@@ -78,8 +82,22 @@ class SolicitudExamen extends Equatable {
   final DateTime creadaEn;
   final MedicoResumen? medico;
   final String? citaId;
+  final List<String> examenResultadoIds;
+  final DateTime? completadaEn;
+  final String? motivoAnulacion;
+  final DateTime? anuladaEn;
 
   bool get pendiente => estado == 'PENDIENTE';
+  bool get completada => estado == 'COMPLETADA';
+  bool get anulada => estado == 'ANULADA';
+
+  String get estadoLegible => switch (estado) {
+        'PENDIENTE' => 'Pendiente',
+        'COMPLETADA' => 'Resultados cargados',
+        'ANULADA' => 'Anulada',
+        _ => estado,
+      };
+
   @override
   List<Object?> get props => [id, estado];
 }

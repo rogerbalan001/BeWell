@@ -35,6 +35,9 @@ export class SolicitudExamenDoc {
   @Prop({ type: [Types.ObjectId], default: [] }) examenResultadoIds: Types.ObjectId[];
   @Prop({ required: true }) creadaEn: Date;
   @Prop() completadaEn?: Date;
+  /** Cifrado a nivel de campo, igual que las indicaciones. */
+  @Prop() motivoAnulacion?: string;
+  @Prop() anuladaEn?: Date;
 }
 export const SolicitudExamenSchema = SchemaFactory.createForClass(SolicitudExamenDoc);
 SolicitudExamenSchema.index({ pacienteId: 1, estado: 1 });

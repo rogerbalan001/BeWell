@@ -135,6 +135,11 @@ export class ExpedienteService {
     return evento;
   }
 
+  /** Uso interno: refleja en la línea de tiempo un cambio del documento de origen (p. ej. orden completada o anulada). */
+  async actualizarEventoDeDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>): Promise<void> {
+    await this.eventos.actualizarDetallesPorDocumento(documentoOrigenId, tipo, detalles);
+  }
+
   /**
    * HU: el paciente puede exportar su expediente completo en PDF. Un médico
    * autorizado exporta solo las secciones permitidas. Devuelve una URL de

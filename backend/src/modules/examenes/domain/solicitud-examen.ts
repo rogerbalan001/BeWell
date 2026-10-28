@@ -19,6 +19,8 @@ export interface PropsSolicitud {
   examenResultadoIds: string[];
   creadaEn: Date;
   completadaEn?: Date;
+  motivoAnulacion?: string;
+  anuladaEn?: Date;
 }
 
 /** «Entity» SolicitudExamen (orden médica, equivalente a ServiceRequest en FHIR). */
@@ -33,6 +35,8 @@ export class SolicitudExamen implements PropsSolicitud {
   examenResultadoIds: string[];
   creadaEn: Date;
   completadaEn?: Date;
+  motivoAnulacion?: string;
+  anuladaEn?: Date;
 
   constructor(props: PropsSolicitud) {
     Object.assign(this, props);
@@ -62,5 +66,22 @@ export class SolicitudExamen implements PropsSolicitud {
       this.estado = EstadoSolicitud.COMPLETADA;
       this.completadaEn = ahora;
     }
+  }
+
+  /** El médico que la indicó puede anular una orden mientras siga pendiente. */
+  anular(medicoId: string, motivo: string, ahora: Date): void {
+    asegurar(this.medicoId === medicoId, 'Solo el médico que indicó la orden puede anularla');
+    if (this.estado !== EstadoSolicitud.PENDIENTE) {
+      throw new ReglaNegocioError(
+        this.estado === EstadoSolicitud.COMPLETADA
+          ? 'La orden ya tiene resultados cargados; no se puede anular'
+          : 'La orden ya estaba anulada',
+      );
+    }
+    const texto = motivo?.trim() ?? '';
+    asegurar(texto.length >= 5, 'Indica el motivo de la anulación (al menos 5 caracteres)');
+    this.estado = EstadoSolicitud.ANULADA;
+    this.motivoAnulacion = texto;
+    this.anuladaEn = ahora;
   }
 }

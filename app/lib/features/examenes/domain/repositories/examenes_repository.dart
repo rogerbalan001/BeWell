@@ -9,4 +9,5 @@ abstract class ExamenesRepository {
   Future<Examen> validar(String examenId);
   Future<String> urlArchivo(String examenId);
   Future<SolicitudExamen> solicitar({required String pacienteId, required List<String> examenes, String? indicaciones, String? citaId});
+  Future<SolicitudExamen> anularSolicitud(String solicitudId, String motivo);
 }

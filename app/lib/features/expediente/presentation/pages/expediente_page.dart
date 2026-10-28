@@ -137,24 +137,8 @@ class _Contenido extends StatelessWidget {
         const SizedBox(height: 18),
         if (d.pagina.items.isEmpty)
           const VistaVacia(icono: Icons.history_toggle_off, titulo: 'Sin eventos para mostrar')
-        else ...[
-          LineaTiempo(eventos: d.pagina.items, esTitular: esTitular),
-          Center(
-            child: Column(children: [
-              Text('Mostrando ${d.pagina.items.length} de ${d.pagina.total} eventos', style: const TextStyle(fontSize: 12.5, color: AppColors.pizarra)),
-              if (d.hayMas) ...[
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: d.cargandoMas ? null : () => _cargarMas(context),
-                  icon: d.cargandoMas
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.expand_more),
-                  label: Text(d.cargandoMas ? 'Cargando…' : 'Ver eventos anteriores'),
-                ),
-              ],
-            ]),
-          ),
-        ],
+        else
+          LineaTiempo(eventos: d.pagina.items),
       ]),
     );
 
@@ -250,11 +234,6 @@ class _Contenido extends StatelessWidget {
         'VACUNA' => 'VACUNAS',
         _ => 'CIRUGIAS',
       };
-
-  Future<void> _cargarMas(BuildContext context) async {
-    final error = await context.read<ExpedienteCubit>().cargarMas();
-    if (error != null && context.mounted) mostrarMensaje(context, error, error: true);
-  }
 
   Widget? _botonAgregar(BuildContext context, ResumenExpediente r) {
     final tipos = <String>[
