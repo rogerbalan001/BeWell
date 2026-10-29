@@ -168,7 +168,7 @@ class _AntecedentesFormPageState extends State<AntecedentesFormPage> {
       for (final (k, e) in const [('gestas', 'Embarazos'), ('partos', 'Partos'), ('cesareas', 'Cesáreas'), ('abortos', 'Abortos'), ('perdidasFetales', 'Pérdidas fetales')])
         SizedBox(width: 130, child: TextField(controller: _gineco[k], keyboardType: TextInputType.number, decoration: AppTheme.campo(e))),
     ];
-    final ginecoTextos = const [
+    const ginecoTextos = [
       ('menarquia', 'Menarquia (edad)'),
       ('ultimaMenstruacion', 'Fecha de última menstruación (FUM)'),
       ('trastornosMenstruales', 'Trastornos menstruales'),
