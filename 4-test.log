@@ -1,0 +1,14 @@
+
+::group::✅ Passing tests
+✅ /home/runner/work/BeWell/BeWell/app/test/linea_tiempo_test.dart: los detalles se muestran en palabras y se ocultan las claves internas
+✅ /home/runner/work/BeWell/BeWell/app/test/widget_test.dart: las iniciales se calculan con nombre y apellido
+✅ /home/runner/work/BeWell/BeWell/app/test/linea_tiempo_test.dart: una orden de exámenes muestra su estado
+✅ /home/runner/work/BeWell/BeWell/app/test/widget_test.dart: una cita atendida permite reportar problema solo mientras el pago sigue retenido
+✅ /home/runner/work/BeWell/BeWell/app/test/linea_tiempo_test.dart: "Ver más" agrega la página siguiente sin repetir eventos
+✅ /home/runner/work/BeWell/BeWell/app/test/recordatorios_test.dart: cada tipo de recordatorio se activa o desactiva por separado
+✅ /home/runner/work/BeWell/BeWell/app/test/recordatorios_test.dart: el código que envía la API se traduce al tipo
+✅ /home/runner/work/BeWell/BeWell/app/test/ordenes_examenes_test.dart: el estado de la orden se muestra en palabras del médico
+✅ /home/runner/work/BeWell/BeWell/app/test/ordenes_examenes_test.dart: solo una orden pendiente se puede anular
+::endgroup::
+
+🎉 9 tests passed.
