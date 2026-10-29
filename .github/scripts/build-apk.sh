@@ -20,6 +20,8 @@ allprojects { p ->
   }
 }
 EOF
+# Ícono de la app: corazón blanco sobre azul Bewell (ícono adaptativo + versiones clásicas).
+cp -r assets/icono/android/res/. android/app/src/main/res/
 flutter pub get
 flutter build apk --release --dart-define=API_URL="${API_URL}"
 ls -lh build/app/outputs/flutter-apk/
