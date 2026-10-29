@@ -8,6 +8,18 @@ MANIFEST=android/app/src/main/AndroidManifest.xml
 grep -q 'android.permission.INTERNET' "$MANIFEST" || \
   sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' "$MANIFEST"
 sed -i 's#android:label="[^"]*"#android:label="Bewell"#' "$MANIFEST"
+# Algunos plugins (file_picker) compilan contra android-34, pero sus dependencias exigen compileSdk 36:
+# se fuerza 36 en todas las librerías Android antes de que el plugin de Android cierre su configuración.
+mkdir -p "$HOME/.gradle/init.d"
+cat > "$HOME/.gradle/init.d/compile-sdk.gradle" <<'EOF'
+allprojects { p ->
+  p.afterEvaluate {
+    if (p.plugins.hasPlugin('com.android.library')) {
+      p.android.compileSdkVersion 36
+    }
+  }
+}
+EOF
 flutter pub get
 flutter build apk --release --dart-define=API_URL="${API_URL}"
 ls -lh build/app/outputs/flutter-apk/
