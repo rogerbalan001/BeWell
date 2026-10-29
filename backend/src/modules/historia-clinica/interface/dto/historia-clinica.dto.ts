@@ -3,12 +3,14 @@ import {
   ArrayMaxSize,
   ArrayNotEmpty,
   IsArray,
+  IsBoolean,
   IsDateString,
   IsIn,
   IsInt,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   Max,
@@ -22,24 +24,6 @@ import { AntecedentesClinicos, GRUPOS_SANGUINEOS, GrupoSanguineo } from '../../d
 import { ConsultaClinica } from '../../domain/consulta-clinica';
 import { aPerfilRespuesta } from '../../../perfiles/interface/dto/perfil.dto';
 
-export class HabitosDto {
-  @IsOptional() @IsString() @MaxLength(300) alcohol?: string;
-  @IsOptional() @IsString() @MaxLength(300) tabaco?: string;
-  @IsOptional() @IsString() @MaxLength(300) cafe?: string;
-  @IsOptional() @IsString() @MaxLength(300) drogas?: string;
-  @IsOptional() @IsString() @MaxLength(300) actividadFisica?: string;
-  @IsOptional() @IsString() @MaxLength(300) alimentacion?: string;
-  @IsOptional() @IsString() @MaxLength(300) sueno?: string;
-  @IsOptional() @IsString() @MaxLength(300) vivienda?: string;
-}
-
-export class DatosSocialesDto {
-  @IsOptional() @IsString() @MaxLength(300) estadoCivil?: string;
-  @IsOptional() @IsString() @MaxLength(300) nivelInstruccion?: string;
-  @IsOptional() @IsString() @MaxLength(300) ocupacion?: string;
-  @IsOptional() @IsString() @MaxLength(300) procedencia?: string;
-}
-
 export class GinecoObstetricosDto {
   @IsOptional() @IsString() @MaxLength(300) menarquia?: string;
   @IsOptional() @IsString() @MaxLength(300) ultimaMenstruacion?: string;
@@ -47,28 +31,42 @@ export class GinecoObstetricosDto {
   @IsOptional() @IsInt() @Min(0) @Max(30) partos?: number;
   @IsOptional() @IsInt() @Min(0) @Max(30) cesareas?: number;
   @IsOptional() @IsInt() @Min(0) @Max(30) abortos?: number;
+  @IsOptional() @IsInt() @Min(0) @Max(30) perdidasFetales?: number;
+  @IsOptional() @IsString() @MaxLength(300) eclampsia?: string;
+  @IsOptional() @IsString() @MaxLength(300) menopausia?: string;
+  @IsOptional() @IsString() @MaxLength(300) trastornosMenstruales?: string;
   @IsOptional() @IsString() @MaxLength(300) metodoAnticonceptivo?: string;
 }
 
+/** Los campos de texto por clave (identificación, hábitos, familiares…) los valida el dominio contra el catálogo. */
 export class AntecedentesClinicosDto {
   @IsOptional() @IsIn(GRUPOS_SANGUINEOS) grupoSanguineo?: GrupoSanguineo;
-  @IsOptional() @ValidateNested() @Type(() => DatosSocialesDto) datosSociales?: DatosSocialesDto;
+  @IsOptional() @IsObject() datosSociales?: Record<string, string>;
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) inmunizaciones?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) infancia?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) alergicos?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) parasitosis?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) infecciones?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) transmisionSexual?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) epidemiologicos?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) patologicos?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) quirurgicos?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) traumatologicos?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) psiquiatricos?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) laborales?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) intoxicaciones?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) radiaciones?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) transfusionales?: string[];
-  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) epidemiologicos?: string[];
   @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) medicamentosActuales?: string[];
-  @IsOptional() @IsArray() @ArrayMaxSize(50) @IsString({ each: true }) @MaxLength(300, { each: true }) familiares?: string[];
-  @IsOptional() @ValidateNested() @Type(() => HabitosDto) habitos?: HabitosDto;
+  @IsOptional() @IsObject() familiares?: Record<string, string[]>;
+  @IsOptional() @IsObject() habitos?: Record<string, string>;
   @IsOptional() @ValidateNested() @Type(() => GinecoObstetricosDto) ginecoObstetricos?: GinecoObstetricosDto;
 }
 
 export class SignosVitalesDto {
   @IsOptional() @IsString() @MaxLength(9) tensionArterial?: string;
+  @IsOptional() @IsString() @MaxLength(9) tensionArterialAcostado?: string;
+  @IsOptional() @IsString() @MaxLength(9) tensionArterialDePie?: string;
   @IsOptional() @IsNumber() frecuenciaCardiaca?: number;
   @IsOptional() @IsNumber() frecuenciaRespiratoria?: number;
   @IsOptional() @IsNumber() temperatura?: number;
@@ -82,14 +80,20 @@ export class ContenidoConsultaDto {
   @IsString() @IsNotEmpty() @MaxLength(5000) motivoConsulta: string;
   @IsOptional() @IsString() @MaxLength(5000) estimuloIatrotropico?: string;
   @IsString() @IsNotEmpty() @MaxLength(5000) enfermedadActual: string;
+  @IsOptional() @IsObject() revisionSistemas?: Record<string, string>;
   @IsOptional() @IsString() @MaxLength(5000) revisionPorSistemas?: string;
   @IsOptional() @IsString() @MaxLength(5000) condicionesGenerales?: string;
   @IsOptional() @ValidateNested() @Type(() => SignosVitalesDto) signosVitales?: SignosVitalesDto;
+  @IsOptional() @IsObject() examenRegiones?: Record<string, string>;
   @IsOptional() @IsString() @MaxLength(5000) examenFisico?: string;
+  @IsOptional() @IsString() @MaxLength(5000) resumenDatosPositivos?: string;
   @IsOptional() @IsArray() @ArrayMaxSize(15) @IsString({ each: true }) @MaxLength(300, { each: true }) listaProblemas?: string[];
+  @IsOptional() @IsBoolean() consentimientoInformado?: boolean;
   @IsArray() @ArrayNotEmpty() @ArrayMaxSize(15) @IsString({ each: true }) @MaxLength(300, { each: true }) impresionDiagnostica: string[];
-  @IsOptional() @IsString() @MaxLength(5000) examenes?: string;
-  @IsString() @IsNotEmpty() @MaxLength(5000) plan: string;
+  @IsOptional() @IsObject() examenes?: Record<string, string>;
+  @IsOptional() @IsString() @MaxLength(5000) planDiagnostico?: string;
+  @IsOptional() @IsString() @MaxLength(5000) planPreventivo?: string;
+  @IsOptional() @IsString() @MaxLength(5000) plan?: string;
   @IsOptional() @IsString() @MaxLength(5000) indicaciones?: string;
 }
 

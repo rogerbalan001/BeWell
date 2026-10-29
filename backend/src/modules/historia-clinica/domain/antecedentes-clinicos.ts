@@ -1,102 +1,69 @@
 import { asegurar } from '../../../shared/domain/errores';
 import { generarId } from '../../../shared/domain/id';
+import {
+  CLAVES_HABITOS,
+  CLAVES_IDENTIFICACION,
+  limpiarTextos,
+  LISTAS_PERSONALES,
+  Textos,
+  TIPOS_FAMILIARES,
+} from './catalogo-historia';
 
 export const GRUPOS_SANGUINEOS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const;
 export type GrupoSanguineo = (typeof GRUPOS_SANGUINEOS)[number];
 
-/** V. Historia personal y social: hábitos psicobiológicos. */
-export interface Habitos {
-  alcohol?: string;
-  tabaco?: string;
-  cafe?: string;
-  drogas?: string;
-  actividadFisica?: string;
-  alimentacion?: string;
-  sueno?: string;
-  vivienda?: string;
-}
+export type ListaPersonal = (typeof LISTAS_PERSONALES)[number];
+export type TipoFamiliar = (typeof TIPOS_FAMILIARES)[number];
+export type Habitos = Textos<(typeof CLAVES_HABITOS)[number]>;
+/** Identificación del encabezado que no está en el perfil (lugar de nacimiento, religión, contacto…). */
+export type DatosSociales = Textos<(typeof CLAVES_IDENTIFICACION)[number]>;
 
-export const CLAVES_HABITOS = ['alcohol', 'tabaco', 'cafe', 'drogas', 'actividadFisica', 'alimentacion', 'sueno', 'vivienda'] as const;
-
-/** Datos de identificación que no están en el perfil del paciente. */
-export interface DatosSociales {
-  estadoCivil?: string;
-  nivelInstruccion?: string;
-  ocupacion?: string;
-  procedencia?: string;
-}
-
-export const CLAVES_SOCIALES = ['estadoCivil', 'nivelInstruccion', 'ocupacion', 'procedencia'] as const;
-
-/** Antecedentes gineco-obstétricos (solo aplican a pacientes de sexo femenino). */
+/** III.10 Antecedentes ginecobstétricos (solo aplican a pacientes de sexo femenino). */
 export interface AntecedentesGinecoObstetricos {
   menarquia?: string;
   ultimaMenstruacion?: string;
+  /** Embarazos. */
   gestas?: number;
   partos?: number;
   cesareas?: number;
   abortos?: number;
+  perdidasFetales?: number;
+  eclampsia?: string;
+  menopausia?: string;
+  trastornosMenstruales?: string;
   metodoAnticonceptivo?: string;
 }
 
 /**
  * Contenido clínico de los antecedentes (se guarda cifrado a nivel de campo).
- * Sigue las secciones III a V del modelo de historia clínica integral.
+ * Sigue el encabezado y las secciones III a V del modelo de historia clínica integral.
  */
-export interface DatosAntecedentes {
+export type DatosAntecedentes = {
   grupoSanguineo?: GrupoSanguineo;
   datosSociales: DatosSociales;
-  // III. Antecedentes personales
-  inmunizaciones: string[];
-  infancia: string[];
-  alergicos: string[];
-  /** Médicos, infecciosos, parasitarios, de transmisión sexual y psiquiátricos. */
-  patologicos: string[];
-  quirurgicos: string[];
-  traumatologicos: string[];
-  transfusionales: string[];
-  /** Viajes, sitios visitados y contacto con animales o personas enfermas. */
-  epidemiologicos: string[];
-  medicamentosActuales: string[];
   ginecoObstetricos?: AntecedentesGinecoObstetricos;
-  // IV. Antecedentes familiares
-  familiares: string[];
-  // V. Historia personal y social
+  /** IV. Antecedentes familiares por tipo (alérgicos, metabólicos, neoplasias…). */
+  familiares: Partial<Record<TipoFamiliar, string[]>>;
+  /** V. Historia personal y social. */
   habitos: Habitos;
-}
+  /** V. Medicamentos que toma actualmente. */
+  medicamentosActuales: string[];
+} & Record<ListaPersonal, string[]>;
 
 export const ANTECEDENTES_VACIOS: DatosAntecedentes = {
   datosSociales: {},
-  inmunizaciones: [],
-  infancia: [],
-  alergicos: [],
-  patologicos: [],
-  quirurgicos: [],
-  traumatologicos: [],
-  transfusionales: [],
-  epidemiologicos: [],
-  medicamentosActuales: [],
-  familiares: [],
+  familiares: {},
   habitos: {},
+  medicamentosActuales: [],
+  ...(Object.fromEntries(LISTAS_PERSONALES.map((k) => [k, []])) as unknown as Record<ListaPersonal, string[]>),
 };
 
-const LISTAS = [
-  'inmunizaciones',
-  'infancia',
-  'alergicos',
-  'patologicos',
-  'quirurgicos',
-  'traumatologicos',
-  'transfusionales',
-  'epidemiologicos',
-  'medicamentosActuales',
-  'familiares',
-] as const;
 const MAX_ELEMENTOS = 50;
 const MAX_TEXTO = 300;
 
-const limpiarLista = (valores: string[] | undefined, nombre: string): string[] => {
-  const lista = [...new Set((valores ?? []).map((v) => v.trim()).filter(Boolean))];
+const limpiarLista = (valores: unknown, nombre: string): string[] => {
+  asegurar(valores === undefined || valores === null || Array.isArray(valores), `${nombre} debe ser una lista`);
+  const lista = [...new Set(((valores as unknown[]) ?? []).map((v) => String(v).trim()).filter(Boolean))];
   asegurar(lista.length <= MAX_ELEMENTOS, `Máximo ${MAX_ELEMENTOS} elementos en ${nombre}`);
   asegurar(lista.every((v) => v.length <= MAX_TEXTO), `Cada elemento de ${nombre} admite máximo ${MAX_TEXTO} caracteres`);
   return lista;
@@ -115,10 +82,14 @@ const conteo = (valor: number | undefined, nombre: string): number | undefined =
   return valor;
 };
 
+/** Antecedentes familiares guardados antes como una sola lista pasan a "otros". */
+export const normalizarFamiliares = (v: unknown): Partial<Record<TipoFamiliar, string[]>> =>
+  Array.isArray(v) ? (v.length ? { otros: v.map(String) } : {}) : ((v as Partial<Record<TipoFamiliar, string[]>>) ?? {});
+
 /**
  * «Entity» AntecedentesClinicos: la parte estable de la historia clínica del
- * paciente (anamnesis remota). Hay un documento por paciente, independiente
- * del médico; lo completa el paciente o un médico con permiso de escritura.
+ * paciente (identificación y anamnesis remota). Hay un documento por paciente,
+ * independiente del médico; lo completa el paciente o un médico con permiso de escritura.
  */
 export class AntecedentesClinicos {
   constructor(
@@ -146,11 +117,16 @@ export class AntecedentesClinicos {
       `Grupo sanguíneo inválido: ${datos.grupoSanguineo}`,
     );
     const nuevos: DatosAntecedentes = { ...structuredClone(ANTECEDENTES_VACIOS), grupoSanguineo: datos.grupoSanguineo };
-    for (const campo of LISTAS) nuevos[campo] = limpiarLista(datos[campo], campo);
-    const h = datos.habitos ?? {};
-    nuevos.habitos = Object.fromEntries(CLAVES_HABITOS.map((k) => [k, limpiarTexto(h[k])]).filter(([, v]) => v !== undefined));
-    const ds = datos.datosSociales ?? {};
-    nuevos.datosSociales = Object.fromEntries(CLAVES_SOCIALES.map((k) => [k, limpiarTexto(ds[k])]).filter(([, v]) => v !== undefined));
+    for (const campo of LISTAS_PERSONALES) nuevos[campo] = limpiarLista(datos[campo], campo);
+    nuevos.medicamentosActuales = limpiarLista(datos.medicamentosActuales, 'medicamentosActuales');
+    const familiares = normalizarFamiliares(datos.familiares);
+    nuevos.familiares = {};
+    for (const tipo of TIPOS_FAMILIARES) {
+      const lista = limpiarLista(familiares[tipo], `familiares ${tipo}`);
+      if (lista.length) nuevos.familiares[tipo] = lista;
+    }
+    nuevos.habitos = limpiarTextos(datos.habitos, CLAVES_HABITOS, MAX_TEXTO, 'Hábitos');
+    nuevos.datosSociales = limpiarTextos(datos.datosSociales, CLAVES_IDENTIFICACION, MAX_TEXTO, 'Identificación');
     if (datos.ginecoObstetricos) {
       asegurar(admiteGineco, 'Los antecedentes gineco-obstétricos solo aplican a pacientes de sexo femenino');
       const g = datos.ginecoObstetricos;
@@ -161,6 +137,10 @@ export class AntecedentesClinicos {
         partos: conteo(g.partos, 'Partos'),
         cesareas: conteo(g.cesareas, 'Cesáreas'),
         abortos: conteo(g.abortos, 'Abortos'),
+        perdidasFetales: conteo(g.perdidasFetales, 'Pérdidas fetales'),
+        eclampsia: limpiarTexto(g.eclampsia),
+        menopausia: limpiarTexto(g.menopausia),
+        trastornosMenstruales: limpiarTexto(g.trastornosMenstruales),
         metodoAnticonceptivo: limpiarTexto(g.metodoAnticonceptivo),
       };
       const resueltos = (gineco.partos ?? 0) + (gineco.cesareas ?? 0) + (gineco.abortos ?? 0);

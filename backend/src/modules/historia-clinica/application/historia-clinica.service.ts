@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AlmacenamientoArchivos } from '../../../shared/application/almacenamiento-archivos';
-import { GeneradorPdf, LineaPdf } from '../../../shared/application/generador-pdf';
+import { GeneradorPdf } from '../../../shared/application/generador-pdf';
 import { Notificador } from '../../../shared/application/notificador';
 import { RegistroAuditoria } from '../../../shared/application/registro-auditoria';
 import { AccesoDenegadoError, ConflictoError, NoEncontradoError, ReglaNegocioError } from '../../../shared/domain/errores';
@@ -17,6 +17,7 @@ import { PerfilPaciente } from '../../perfiles/domain/perfil-paciente';
 import { AntecedentesClinicos, DatosAntecedentes } from '../domain/antecedentes-clinicos';
 import { ConsultaClinica, ContenidoConsulta } from '../domain/consulta-clinica';
 import { AntecedentesClinicosRepository, ConsultaClinicaRepository } from '../domain/repositorios';
+import { lineasHistoriaPdf } from './historia-pdf';
 
 /** Sección del expediente que protege los antecedentes. */
 export const CATEGORIA_ANTECEDENTES = CategoriaClinica.DIAGNOSTICOS;
@@ -185,103 +186,14 @@ export class HistoriaClinicaService {
     const medicos = new Map((await this.medicos.obtenerVarios(consultas.map((c) => c.medicoId))).map((m) => [m.id, m]));
     const ahora = this.reloj.ahora();
     const fecha = (d: Date) => d.toISOString().slice(0, 10);
-    const lista = (titulo: string, valores: string[]): LineaPdf[] => [
-      { texto: titulo, negrita: true, espacioAntes: 6 },
-      ...(valores.length ? valores.map((v) => ({ texto: `- ${v}` })) : [{ texto: 'Niega / no registrado.', color: 'tenue' as const }]),
-    ];
-
-    const HABITOS: Record<string, string> = {
-      alcohol: 'Alcohol', tabaco: 'Tabaco', cafe: 'Café', drogas: 'Drogas', actividadFisica: 'Ejercicio',
-      alimentacion: 'Nutrición', sueno: 'Sueño', vivienda: 'Vivienda',
-    };
-    const SOCIALES: Record<string, string> = {
-      estadoCivil: 'Estado civil', nivelInstruccion: 'Instrucción', ocupacion: 'Ocupación', procedencia: 'Procedencia',
-    };
-    const pares = (m: object, etiquetas: Record<string, string>) =>
-      Object.entries(m).map(([k, v]) => `${etiquetas[k] ?? k}: ${v}`);
-    const seccion = (texto: string): LineaPdf => ({ texto, tamano: 13, negrita: true, color: 'primario', espacioAntes: 14 });
-    const dato = (etiqueta: string, valor?: string): LineaPdf[] => (valor ? [{ texto: `${etiqueta}: ${valor}` }] : []);
-
-    const lineas: LineaPdf[] = [
-      { texto: 'Bewell - Historia clínica', tamano: 18, negrita: true, color: 'primario' },
-      { texto: `N.º de historia ${antecedentes ? `HC-${antecedentes.id.slice(-6).toUpperCase()}` : '-'} · generada el ${fecha(ahora)}`, color: 'tenue' },
-      { texto: paciente.nombreCompleto, tamano: 15, negrita: true, espacioAntes: 12 },
-      {
-        texto: `C.I.: ${paciente.cedula ?? 'no registrada'} · Fecha de nacimiento: ${fecha(paciente.fechaNacimiento)} · Edad: ${paciente.edad(ahora)} años · Sexo: ${paciente.sexo}`,
-      },
-      ...(antecedentes && Object.keys(antecedentes.datos.datosSociales).length
-        ? [{ texto: pares(antecedentes.datos.datosSociales, SOCIALES).join(' · ') }]
-        : []),
-      ...(acceso.esTitular ? [] : [{ texto: `Exportación parcial: secciones autorizadas (${acceso.categorias.join(', ')}).`, color: 'tenue' as const }]),
-    ];
-
-    if (antecedentes) {
-      const a = antecedentes.datos;
-      lineas.push(
-        seccion('III. Antecedentes personales'),
-        { texto: `Grupo sanguíneo: ${a.grupoSanguineo ?? 'no registrado'}` },
-        ...lista('Inmunizaciones', a.inmunizaciones),
-        ...lista('Enfermedades de la infancia', a.infancia),
-        ...lista('Alergias', a.alergicos),
-        ...lista('Médicos', a.patologicos),
-        ...lista('Quirúrgicos', a.quirurgicos),
-        ...lista('Traumatológicos', a.traumatologicos),
-        ...lista('Transfusionales', a.transfusionales),
-        ...lista('Epidemiológicos', a.epidemiologicos),
-        ...lista('Medicamentos actuales', a.medicamentosActuales),
-      );
-      if (a.ginecoObstetricos) {
-        const g = a.ginecoObstetricos;
-        lineas.push(
-          { texto: 'Ginecobstétricos', negrita: true, espacioAntes: 6 },
-          {
-            texto: `Menarquia: ${g.menarquia ?? '-'} · FUM: ${g.ultimaMenstruacion ?? '-'} · G${g.gestas ?? 0} P${g.partos ?? 0} C${g.cesareas ?? 0} A${g.abortos ?? 0} · Anticoncepción: ${g.metodoAnticonceptivo ?? '-'}`,
-          },
-        );
-      }
-      lineas.push(seccion('IV. Antecedentes familiares'), ...lista('Familiares', a.familiares).slice(1));
-      lineas.push(seccion('V. Historia personal y social'), ...lista('Hábitos', pares(a.habitos, HABITOS)).slice(1));
-    }
-
-    if (acceso.categorias.includes(CATEGORIA_CONSULTAS)) {
-      lineas.push(seccion(`Consultas (${consultas.length})`));
-      for (const c of consultas) {
-        const medico = medicos.get(c.medicoId);
-        const sv = c.signosVitales;
-        const signos = [
-          sv.tensionArterial && `PA ${sv.tensionArterial} mmHg`,
-          sv.frecuenciaCardiaca && `Pulso ${sv.frecuenciaCardiaca} ppm`,
-          sv.frecuenciaRespiratoria && `FR ${sv.frecuenciaRespiratoria} rpm`,
-          sv.temperatura && `T ${sv.temperatura} °C`,
-          sv.saturacionOxigeno && `SpO2 ${sv.saturacionOxigeno} %`,
-          sv.peso && `Peso ${sv.peso} kg`,
-          sv.talla && `Talla ${sv.talla} cm`,
-          c.imc && `IMC ${c.imc}`,
-          sv.circunferenciaAbdominal && `C. abdominal ${sv.circunferenciaAbdominal} cm`,
-        ].filter(Boolean);
-        lineas.push({ texto: `${fecha(c.fecha)} · ${c.motivoConsulta}`, negrita: true, espacioAntes: 12 });
-        if (medico) lineas.push({ texto: `${medico.nombreCompleto} (${medico.especialidades[0]})`, color: 'tenue' });
-        lineas.push(
-          ...dato('I. Motivo de consulta', c.motivoConsulta),
-          ...dato('Estímulo iatrotrópico', c.estimuloIatrotropico),
-          ...dato('II. Enfermedad actual', c.enfermedadActual),
-          ...dato('VI. Revisión por sistemas', c.revisionPorSistemas),
-          ...dato('Condiciones generales', c.condicionesGenerales),
-          ...dato('Signos vitales', signos.join(' · ')),
-          ...dato('VII. Examen físico', c.examenFisico),
-          ...dato('IX. Lista de problemas', c.listaProblemas.join('; ')),
-          ...dato('X. Impresión diagnóstica', c.impresionDiagnostica.join('; ')),
-          ...dato('XI. Exámenes', c.examenes),
-          ...dato('XII. Plan', c.plan),
-          ...dato('Plan educativo', c.indicaciones),
-        );
-      }
-    }
-    lineas.push({
-      texto: 'Documento generado por Bewell. La información clínica es propiedad del paciente y su uso está sujeto a su consentimiento.',
-      tamano: 8,
-      color: 'tenue',
-      espacioAntes: 20,
+    const lineas = lineasHistoriaPdf({
+      paciente,
+      antecedentes,
+      consultas,
+      verConsultas: acceso.categorias.includes(CATEGORIA_CONSULTAS),
+      parcial: acceso.esTitular ? undefined : `Exportación parcial: secciones autorizadas (${acceso.categorias.join(', ')}).`,
+      medicos,
+      ahora,
     });
 
     const contenido = this.pdf.generar(`Historia clínica ${paciente.nombreCompleto}`, lineas);

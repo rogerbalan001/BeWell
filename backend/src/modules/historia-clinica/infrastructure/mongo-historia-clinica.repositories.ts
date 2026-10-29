@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CifradorCampos } from '../../../shared/application/cifrador-campos';
 import { oid, oidOpcional, str, strOpcional } from '../../../shared/infrastructure/mongo/mongo.utils';
-import { ANTECEDENTES_VACIOS, AntecedentesClinicos, DatosAntecedentes } from '../domain/antecedentes-clinicos';
-import { ConsultaClinica, ContenidoConsulta } from '../domain/consulta-clinica';
+import { ANTECEDENTES_VACIOS, AntecedentesClinicos, DatosAntecedentes, normalizarFamiliares } from '../domain/antecedentes-clinicos';
+import { ConsultaClinica, ContenidoConsulta, normalizarExamenes } from '../domain/consulta-clinica';
 import { AntecedentesClinicosRepository, ConsultaClinicaRepository } from '../domain/repositorios';
 import { AntecedentesClinicosDoc, ConsultaClinicaDoc } from './historia-clinica.schemas';
 
@@ -35,7 +35,12 @@ export class MongoAntecedentesClinicosRepository extends AntecedentesClinicosRep
   async buscarPorPaciente(pacienteId: string): Promise<AntecedentesClinicos | null> {
     const d = await this.modelo.findOne({ pacienteId: oid(pacienteId) }).lean();
     if (!d) return null;
-    const datos: DatosAntecedentes = { ...structuredClone(ANTECEDENTES_VACIOS), ...JSON.parse(this.cifrador.descifrar(d.datos)) };
+    const guardados = JSON.parse(this.cifrador.descifrar(d.datos));
+    const datos: DatosAntecedentes = {
+      ...structuredClone(ANTECEDENTES_VACIOS),
+      ...guardados,
+      familiares: normalizarFamiliares(guardados.familiares),
+    };
     return new AntecedentesClinicos(
       str(d._id),
       str(d.pacienteId),
@@ -95,6 +100,9 @@ export class MongoConsultaClinicaRepository extends ConsultaClinicaRepository {
       ...contenido,
       signosVitales: contenido.signosVitales ?? {},
       listaProblemas: contenido.listaProblemas ?? [],
+      revisionSistemas: contenido.revisionSistemas ?? {},
+      examenRegiones: contenido.examenRegiones ?? {},
+      examenes: normalizarExamenes(contenido.examenes),
       id: str(d._id),
       pacienteId: str(d.pacienteId),
       medicoId: str(d.medicoId),

@@ -2,6 +2,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/json.dart';
 import '../../../expediente/data/datasources/expediente_remote_data_source.dart';
 import '../../../expediente/domain/entities/expediente.dart';
+import '../../domain/entities/catalogo_historia.dart';
 import '../../domain/entities/historia_clinica.dart';
 
 class HistoriaClinicaRemoteDataSource {
@@ -25,25 +26,23 @@ class HistoriaClinicaRemoteDataSource {
 class HistoriaClinicaMapper {
   static double? _num(dynamic v) => v == null ? null : (v as num).toDouble();
   static int? _entero(dynamic v) => v == null ? null : (v as num).toInt();
+  static Map<String, String> _textos(dynamic v) => (v as Map? ?? const {}).map((k, x) => MapEntry(k.toString(), x.toString()));
+  static Map<String, List<String>> _listas(dynamic v) {
+    // Historias anteriores guardaban los familiares como una sola lista.
+    if (v is List) return v.isEmpty ? const {} : {'otros': textos(v)};
+    return (v as Map? ?? const {}).map((k, x) => MapEntry(k.toString(), textos(x)));
+  }
 
   static Antecedentes antecedentes(Map<String, dynamic> j) {
     final g = j['ginecoObstetricos'];
-    Map<String, String> pares(dynamic v) => (v as Map? ?? const {}).map((k, x) => MapEntry(k.toString(), x.toString()));
     return Antecedentes(
       numeroHistoria: textoOpcional(j['numeroHistoria']),
       grupoSanguineo: textoOpcional(j['grupoSanguineo']),
-      datosSociales: pares(j['datosSociales']),
-      inmunizaciones: textos(j['inmunizaciones']),
-      infancia: textos(j['infancia']),
-      alergicos: textos(j['alergicos']),
-      patologicos: textos(j['patologicos']),
-      quirurgicos: textos(j['quirurgicos']),
-      traumatologicos: textos(j['traumatologicos']),
-      transfusionales: textos(j['transfusionales']),
-      epidemiologicos: textos(j['epidemiologicos']),
+      datosSociales: _textos(j['datosSociales']),
+      personales: {for (final (_, c) in antecedentesPersonales) c.clave: textos(j[c.clave])},
+      familiares: _listas(j['familiares']),
+      habitos: _textos(j['habitos']),
       medicamentosActuales: textos(j['medicamentosActuales']),
-      familiares: textos(j['familiares']),
-      habitos: pares(j['habitos']),
       ginecoObstetricos: g == null
           ? null
           : GinecoObstetricos(
@@ -53,6 +52,10 @@ class HistoriaClinicaMapper {
               partos: _entero(g['partos']),
               cesareas: _entero(g['cesareas']),
               abortos: _entero(g['abortos']),
+              perdidasFetales: _entero(g['perdidasFetales']),
+              eclampsia: textoOpcional(g['eclampsia']),
+              menopausia: textoOpcional(g['menopausia']),
+              trastornosMenstruales: textoOpcional(g['trastornosMenstruales']),
               metodoAnticonceptivo: textoOpcional(g['metodoAnticonceptivo']),
             ),
       actualizadoEn: fechaOpcional(j['actualizadoEn']),
@@ -64,6 +67,8 @@ class HistoriaClinicaMapper {
     final j = v == null ? const <String, dynamic>{} : mapa(v);
     return SignosVitales(
       tensionArterial: textoOpcional(j['tensionArterial']),
+      tensionArterialAcostado: textoOpcional(j['tensionArterialAcostado']),
+      tensionArterialDePie: textoOpcional(j['tensionArterialDePie']),
       frecuenciaCardiaca: _num(j['frecuenciaCardiaca']),
       frecuenciaRespiratoria: _num(j['frecuenciaRespiratoria']),
       temperatura: _num(j['temperatura']),
@@ -74,27 +79,38 @@ class HistoriaClinicaMapper {
     );
   }
 
-  static ConsultaClinica consulta(Map<String, dynamic> j) => ConsultaClinica(
-        id: j['id'] as String,
-        fecha: fecha(j['fecha']),
-        citaId: textoOpcional(j['citaId']),
-        medico: ExpedienteMapper.medico(j['medico']),
-        editable: j['editable'] as bool? ?? false,
-        contenido: ContenidoConsulta(
-          motivoConsulta: j['motivoConsulta'] as String? ?? '',
-          estimuloIatrotropico: textoOpcional(j['estimuloIatrotropico']),
-          enfermedadActual: j['enfermedadActual'] as String? ?? '',
-          revisionPorSistemas: textoOpcional(j['revisionPorSistemas']),
-          condicionesGenerales: textoOpcional(j['condicionesGenerales']),
-          signosVitales: signos(j['signosVitales']),
-          examenFisico: j['examenFisico'] as String? ?? '',
-          listaProblemas: textos(j['listaProblemas']),
-          impresionDiagnostica: textos(j['impresionDiagnostica']),
-          examenes: textoOpcional(j['examenes']),
-          plan: j['plan'] as String? ?? '',
-          indicaciones: textoOpcional(j['indicaciones']),
-        ),
-      );
+  static ConsultaClinica consulta(Map<String, dynamic> j) {
+    final examenes = j['examenes'];
+    return ConsultaClinica(
+      id: j['id'] as String,
+      fecha: fecha(j['fecha']),
+      creadaEn: fechaOpcional(j['creadaEn']),
+      citaId: textoOpcional(j['citaId']),
+      medico: ExpedienteMapper.medico(j['medico']),
+      editable: j['editable'] as bool? ?? false,
+      contenido: ContenidoConsulta(
+        motivoConsulta: j['motivoConsulta'] as String? ?? '',
+        estimuloIatrotropico: textoOpcional(j['estimuloIatrotropico']),
+        enfermedadActual: j['enfermedadActual'] as String? ?? '',
+        revisionSistemas: _textos(j['revisionSistemas']),
+        revisionPorSistemas: textoOpcional(j['revisionPorSistemas']),
+        condicionesGenerales: textoOpcional(j['condicionesGenerales']),
+        signosVitales: signos(j['signosVitales']),
+        examenRegiones: _textos(j['examenRegiones']),
+        examenFisico: j['examenFisico'] as String? ?? '',
+        resumenDatosPositivos: textoOpcional(j['resumenDatosPositivos']),
+        listaProblemas: textos(j['listaProblemas']),
+        consentimientoInformado: j['consentimientoInformado'] as bool? ?? false,
+        impresionDiagnostica: textos(j['impresionDiagnostica']),
+        // Historias anteriores guardaban los exámenes como un solo texto.
+        examenes: examenes is String ? (examenes.isEmpty ? const {} : {'otros': examenes}) : _textos(examenes),
+        planDiagnostico: textoOpcional(j['planDiagnostico']),
+        planPreventivo: textoOpcional(j['planPreventivo']),
+        plan: j['plan'] as String? ?? '',
+        indicaciones: textoOpcional(j['indicaciones']),
+      ),
+    );
+  }
 
   static HistoriaClinica historia(Map<String, dynamic> j) {
     final p = mapa(j['paciente']);
@@ -102,6 +118,9 @@ class HistoriaClinicaMapper {
     return HistoriaClinica(
       pacienteId: p['id'] as String,
       pacienteNombre: p['nombreCompleto'] as String,
+      nombres: textoOpcional(p['nombres']),
+      apellidos: textoOpcional(p['apellidos']),
+      fechaNacimiento: p['fechaNacimiento'] == null ? null : DateTime.tryParse(p['fechaNacimiento'] as String),
       edad: (p['edad'] as num?)?.toInt() ?? 0,
       sexo: p['sexo'] as String? ?? '',
       cedula: textoOpcional(p['cedula']),

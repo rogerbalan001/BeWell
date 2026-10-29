@@ -15,6 +15,16 @@ import {
   NuevaConsultaDto,
 } from './dto/historia-clinica.dto';
 
+/** Valores por defecto de las partes opcionales de la consulta. */
+const completar = (dto: ContenidoConsultaDto) => ({
+  listaProblemas: dto.listaProblemas ?? [],
+  revisionSistemas: dto.revisionSistemas ?? {},
+  examenRegiones: dto.examenRegiones ?? {},
+  examenes: dto.examenes ?? {},
+  examenFisico: dto.examenFisico ?? '',
+  plan: dto.plan ?? '',
+});
+
 /**
  * «Boundary» HistoriaClinicaController. HU: historia clínica del paciente
  * (antecedentes + historia de cada consulta), con el mismo control de
@@ -55,9 +65,8 @@ export class HistoriaClinicaController {
     const { fecha, signosVitales, ...resto } = dto;
     const c = await this.historia.registrarConsulta(actor, pacienteId, {
       ...resto,
-      listaProblemas: dto.listaProblemas ?? [],
+      ...completar(dto),
       signosVitales: signosVitales ?? {},
-      examenFisico: dto.examenFisico ?? '',
       fecha: fecha ? new Date(fecha) : undefined,
     });
     return aConsultaRespuesta(c, await this.mapaMedicos([c.medicoId]), actor.medicoId);
@@ -83,9 +92,8 @@ export class HistoriaClinicaController {
   ) {
     const c = await this.historia.corregirConsulta(actor, pacienteId, consultaId, {
       ...dto,
-      listaProblemas: dto.listaProblemas ?? [],
+      ...completar(dto),
       signosVitales: dto.signosVitales ?? {},
-      examenFisico: dto.examenFisico ?? '',
     });
     return aConsultaRespuesta(c, await this.mapaMedicos([c.medicoId]), actor.medicoId);
   }

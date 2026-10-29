@@ -24,6 +24,7 @@ import { ExpedienteService } from '../modules/expediente/application/expediente.
 import { ReferenciasService } from '../modules/expediente/application/referencias.service';
 import { CategoriaClinica, TipoEvento } from '../modules/expediente/domain/categoria-clinica';
 import { HistoriaClinicaService } from '../modules/historia-clinica/application/historia-clinica.service';
+import { antecedentesLucas, antecedentesSofia, consultaCefalea, consultaChequeo } from './historia-demo';
 import { AgendaService } from '../modules/medicos/application/agenda.service';
 import { MedicosService } from '../modules/medicos/application/medicos.service';
 import { VerificacionProfesionalService } from '../modules/medicos/application/verificacion-profesional.service';
@@ -409,81 +410,15 @@ export async function sembrarDatosDemo(obtener: Resolver, urlWeb: string): Promi
 
   // ---------- Historia clínica ----------
   // Antecedentes de Sofía (auto-reportados) y de Lucas (registrados por la titular).
-  await historiaClinica.actualizarAntecedentes(sofia, sofiaPerfil.id, {
-    grupoSanguineo: 'O+',
-    datosSociales: { estadoCivil: 'Casada', nivelInstruccion: 'Universitario', ocupacion: 'Docente de primaria', procedencia: 'Caracas, Distrito Capital' },
-    inmunizaciones: ['Influenza 2026', 'Td (refuerzo decenal)', 'Hepatitis B (esquema completo)', 'COVID-19 (3 dosis)'],
-    infancia: ['Varicela a los 6 años', 'Asma bronquial', 'Faringoamigdalitis a repetición'],
-    alergicos: ['Penicilina (anafilaxia)', 'Polen de olivo'],
-    patologicos: ['Asma leve intermitente, sin crisis desde 2020', 'Rinitis alérgica estacional'],
-    quirurgicos: ['Apendicectomía laparoscópica (2016), sin complicaciones'],
-    traumatologicos: ['Esguince de tobillo derecho (2019)'],
-    transfusionales: ['Niega'],
-    epidemiologicos: ['Viaje a Mérida en 2025', 'Convive con un perro vacunado'],
-    medicamentosActuales: ['Loratadina 10 mg cada 24 h en temporada de polen', 'Salbutamol inhalado 100 mcg a demanda'],
-    familiares: ['Madre: hipertensión arterial', 'Padre: diabetes mellitus tipo 2', 'Abuela materna: cáncer de mama'],
-    habitos: {
-      alcohol: 'Social, 1–2 copas al mes',
-      tabaco: 'Niega',
-      cafe: '2 tazas al día',
-      drogas: 'Niega',
-      actividadFisica: 'Caminata 30 min, 3 veces por semana',
-      alimentacion: 'Balanceada, baja en sal',
-      sueno: '7 horas, reparador',
-      vivienda: 'Apartamento con todos los servicios',
-    },
-    ginecoObstetricos: {
-      menarquia: '12 años',
-      ultimaMenstruacion: sumarDias(ahora, -12).toISOString().slice(0, 10),
-      gestas: 1,
-      partos: 1,
-      cesareas: 0,
-      abortos: 0,
-      metodoAnticonceptivo: 'DIU de cobre',
-    },
-  });
-  await historiaClinica.actualizarAntecedentes(sofia, lucas.id, {
-    grupoSanguineo: 'A+',
-    infancia: ['Bronquiolitis a los 8 meses', 'Otitis media (2023)'],
-    inmunizaciones: ['Esquema nacional al día', 'Triple viral (SRP) — refuerzo'],
-    familiares: ['Madre: asma y rinitis alérgica'],
-    habitos: { alimentacion: 'Variada; consume poca verdura', sueno: '10 horas', actividadFisica: 'Natación 2 veces por semana' },
-  });
+  await historiaClinica.actualizarAntecedentes(sofia, sofiaPerfil.id, antecedentesSofia(sumarDias(ahora, -12).toISOString().slice(0, 10)));
+  await historiaClinica.actualizarAntecedentes(sofia, lucas.id, antecedentesLucas);
 
   // Consulta de hace 3 meses (chequeo anual) con su historia completa.
   const chequeo = await crearCitaPasada(sofiaPerfil.id, sofia.id, ruiz, 90 * 24, EstadoCita.ATENDIDA, 'Chequeo periódico anual');
-  await historiaClinica.registrarConsulta(ruiz, sofiaPerfil.id, {
-    citaId: chequeo.id,
-    motivoConsulta: 'Chequeo periódico anual',
-    estimuloIatrotropico: 'Control anual solicitado por su empleador.',
-    enfermedadActual: 'Paciente femenina de 34 años, asintomática, acude a control anual. Refiere rinitis en primavera controlada con loratadina. Sin crisis de asma en el último año.',
-    revisionPorSistemas: 'Niega cefalea, dolor torácico, disnea, palpitaciones o alteraciones gastrointestinales.',
-    condicionesGenerales: 'Buenas condiciones generales, eupneica, hidratada.',
-    signosVitales: { tensionArterial: '118/76', frecuenciaCardiaca: 72, frecuenciaRespiratoria: 16, temperatura: 36.6, saturacionOxigeno: 98, peso: 63, talla: 164, circunferenciaAbdominal: 78 },
-    examenFisico: 'Buen estado general. Cardiopulmonar: ruidos cardíacos rítmicos sin soplos, murmullo vesicular conservado sin agregados. Abdomen blando, depresible, cicatrices de laparoscopia. Sin edemas.',
-    listaProblemas: ['Rinitis alérgica'],
-    impresionDiagnostica: ['Adulto sano (Z00.0)', 'Rinitis alérgica estacional (J30.2)'],
-    examenes: 'Perfil lipídico, glicemia en ayunas y hematología completa.',
-    plan: 'Continuar loratadina en temporada. Control en 12 meses con resultados.',
-    indicaciones: 'Mantener actividad física y dieta baja en sal.',
-  });
+  await historiaClinica.registrarConsulta(ruiz, sofiaPerfil.id, { ...consultaChequeo, citaId: chequeo.id });
 
   // Historia de la consulta atendida hace 2 días (Ruiz aún puede corregirla durante 24 h).
-  await historiaClinica.registrarConsulta(ruiz, sofiaPerfil.id, {
-    citaId: citaAtendida.id,
-    motivoConsulta: 'Dolor de cabeza de 4 días',
-    estimuloIatrotropico: 'El dolor no cede con acetaminofén y le impide terminar su jornada.',
-    enfermedadActual: 'Cefalea frontal opresiva, bilateral, de intensidad 5/10, de 4 días de evolución, que empeora al final de la jornada laboral. Sin náuseas, fotofobia ni fiebre. Se asocia a congestión nasal y estornudos matutinos.',
-    revisionPorSistemas: 'Rinorrea hialina y prurito nasal. Resto negativo.',
-    condicionesGenerales: 'Regulares condiciones generales por dolor, afebril.',
-    signosVitales: { tensionArterial: '122/80', frecuenciaCardiaca: 78, frecuenciaRespiratoria: 16, temperatura: 36.8, saturacionOxigeno: 98, peso: 63.5, talla: 164, circunferenciaAbdominal: 79 },
-    examenFisico: 'Mucosa nasal pálida y edematosa. Sin dolor a la palpación de senos paranasales. Examen neurológico sin déficit focal. Contractura de trapecios.',
-    listaProblemas: ['Cefalea', 'Congestión nasal', 'Palpitaciones ocasionales'],
-    impresionDiagnostica: ['Cefalea tensional (G44.2)', 'Rinitis alérgica estacional (J30.2)'],
-    examenes: 'Perfil lipídico, glicemia en ayunas, hematología completa. ECG en la consulta de cardiología.',
-    plan: 'Acetaminofén 500 mg cada 8 h si hay dolor por 5 días; loratadina 10 mg diaria por 14 días. Referencia a cardiología por palpitaciones ocasionales.',
-    indicaciones: 'Pausas activas en el trabajo, hidratación y evitar exposición a polen. Volver si la cefalea empeora o aparece fiebre.',
-  });
+  await historiaClinica.registrarConsulta(ruiz, sofiaPerfil.id, { ...consultaCefalea, citaId: citaAtendida.id });
 
   return {
     password: PASSWORD,
