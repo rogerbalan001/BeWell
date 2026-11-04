@@ -9,6 +9,7 @@ import '../../features/auth/presentation/cubit/sesion_cubit.dart';
 import '../../features/auth/presentation/pages/acceso_page.dart';
 import '../../features/citas/domain/entities/cita.dart';
 import '../../features/citas/presentation/cubit/citas_cubits.dart';
+import '../../features/chat/presentation/pages/chat_page.dart';
 import '../../features/citas/presentation/pages/cita_detalle_page.dart';
 import '../../features/citas/presentation/pages/confirmacion_cita_page.dart';
 import '../../features/citas/presentation/pages/mis_citas_page.dart';
@@ -110,6 +111,10 @@ GoRouter crearRouter(SesionCubit sesion) {
           GoRoute(
             path: '/citas/:id',
             builder: (_, s) => CitaDetallePage(citaId: s.pathParameters['id']!, resultadoPago: s.uri.queryParameters['pago']),
+          ),
+          GoRoute(
+            path: '/citas/:id/chat',
+            builder: (_, s) => ChatPage(citaId: s.pathParameters['id']!, conQuien: s.uri.queryParameters['con']),
           ),
           GoRoute(
             path: '/citas/:id/recipe',

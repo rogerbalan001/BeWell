@@ -19,6 +19,7 @@ IconData _icono(String tipo) => switch (tipo) {
       'PERMISO' => Icons.lock_open_outlined,
       'RECORDATORIO' => Icons.alarm_outlined,
       'PAGO' => Icons.payments_outlined,
+      'CHAT' => Icons.chat_bubble_outline,
       _ => Icons.notifications_none,
     };
 
@@ -28,7 +29,9 @@ class NotificacionesPage extends StatelessWidget {
   void _abrir(BuildContext context, Notificacion n) {
     context.read<NotificacionesCubit>().marcarLeida(n.id);
     final d = n.datos;
-    if (d['citaId'] != null) {
+    if (n.tipo == 'CHAT' && d['citaId'] != null) {
+      context.push('/citas/${d['citaId']}/chat');
+    } else if (d['citaId'] != null) {
       context.push('/citas/${d['citaId']}');
     } else if (n.tipo == 'RECORDATORIO' && d['tipo'] == 'MEDICAMENTOS') {
       context.push('/recipes');
