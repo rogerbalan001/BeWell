@@ -16,10 +16,10 @@ class ExamenesRemoteDataSource {
       listaDeMapas(await _api.get('/examenes/solicitudes', query: {if (pacienteId != null) 'pacienteId': pacienteId}));
   Future<List<Map<String, dynamic>>> catalogo() async => listaDeMapas(await _api.get('/examenes/catalogo'));
 
-  Future<Map<String, dynamic>> subir(String pacienteId, String titulo, ArchivoExamen archivo, String? solicitudId, DateTime? fecha) async {
+  Future<Map<String, dynamic>> subir(String pacienteId, String? titulo, ArchivoExamen archivo, String? solicitudId, DateTime? fecha) async {
     final form = FormData.fromMap({
       'pacienteId': pacienteId,
-      'titulo': titulo,
+      if (titulo != null && titulo.trim().isNotEmpty) 'titulo': titulo.trim(),
       if (solicitudId != null) 'solicitudId': solicitudId,
       if (fecha != null) 'fechaExamen': Formatos.iso(fecha),
       'archivo': MultipartFile.fromBytes(archivo.bytes, filename: archivo.nombre, contentType: DioMediaType.parse(tipoMime(archivo.nombre))),
@@ -29,6 +29,8 @@ class ExamenesRemoteDataSource {
 
   Future<Map<String, dynamic>> confirmar(String id, List<ResultadoAnalito> r) async =>
       mapa(await _api.put('/examenes/$id/resultados', data: {'resultados': r.map((x) => x.aJson()).toList()}));
+  Future<Map<String, dynamic>> clasificar(String id, String categoria, String tipo) async =>
+      mapa(await _api.put('/examenes/$id/clasificacion', data: {'categoria': categoria, 'tipo': tipo}));
   Future<Map<String, dynamic>> validar(String id) async => mapa(await _api.post('/examenes/$id/validar'));
   Future<String> url(String id) async => mapa(await _api.get('/examenes/$id/archivo'))['url'] as String;
   Future<Map<String, dynamic>> solicitar(Map<String, dynamic> datos) async => mapa(await _api.post('/examenes/solicitudes', data: datos));
@@ -48,6 +50,8 @@ class ExamenMapper {
         cargadoEn: fecha(j['cargadoEn']),
         solicitudId: textoOpcional(j['solicitudId']),
         fechaExamen: fechaOpcional(j['fechaExamen']),
+        clasificacion: clasificacion(j['clasificacion']),
+        tituloAutomatico: j['tituloAutomatico'] as bool? ?? false,
         resultados: listaDeMapas(j['resultados'])
             .map((r) => ResultadoAnalito(
                   analito: r['analito'] as String,
@@ -59,6 +63,17 @@ class ExamenMapper {
                 ))
             .toList(),
       );
+
+  static ClasificacionExamen? clasificacion(dynamic v) {
+    if (v == null) return null;
+    final j = mapa(v);
+    return ClasificacionExamen(
+      categoria: j['categoria'] as String,
+      tipo: j['tipo'] as String,
+      origen: j['origen'] as String? ?? 'PACIENTE',
+      confianza: j['confianza'] == null ? null : numero(j['confianza']),
+    );
+  }
 
   static SolicitudExamen solicitud(Map<String, dynamic> j) => SolicitudExamen(
         id: j['id'] as String,

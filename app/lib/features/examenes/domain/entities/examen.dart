@@ -22,6 +22,30 @@ class ResultadoAnalito extends Equatable {
   List<Object?> get props => [analito, valor, unidad, rangoReferencia];
 }
 
+/// Categoría para lo que no está en el catálogo.
+const categoriaOtro = 'Otro';
+
+/// Categoría y tipo de un examen. Con origen IA es una sugerencia que el paciente puede corregir.
+class ClasificacionExamen extends Equatable {
+  const ClasificacionExamen({required this.categoria, required this.tipo, required this.origen, this.confianza});
+  final String categoria;
+  final String tipo;
+
+  /// IA (sugerido por la app) o PACIENTE (elegido o corregido por el paciente).
+  final String origen;
+
+  /// 0–1, solo en las sugerencias de la IA.
+  final double? confianza;
+
+  bool get sugeridaPorIa => origen == 'IA';
+
+  /// "92 %" para mostrar junto a la sugerencia.
+  String? get confianzaLegible => confianza == null ? null : '${(confianza! * 100).round()} %';
+
+  @override
+  List<Object?> get props => [categoria, tipo, origen, confianza];
+}
+
 class Examen extends Equatable {
   const Examen({
     required this.id,
@@ -35,6 +59,8 @@ class Examen extends Equatable {
     required this.cargadoEn,
     this.solicitudId,
     this.fechaExamen,
+    this.clasificacion,
+    this.tituloAutomatico = false,
   });
   final String id;
   final String pacienteId;
@@ -47,6 +73,13 @@ class Examen extends Equatable {
   final DateTime cargadoEn;
   final String? solicitudId;
   final DateTime? fechaExamen;
+  final ClasificacionExamen? clasificacion;
+
+  /// El paciente no le puso nombre: el título es el tipo sugerido o elegido.
+  final bool tituloAutomatico;
+
+  /// Sin categoría ni tipo: la IA no reconoció el documento y el paciente debe elegirlos.
+  bool get sinClasificar => clasificacion == null;
 
   bool get esPdf => tipoMime == 'application/pdf';
   String get estadoLegible => switch (estadoExtraccion) {
@@ -56,7 +89,7 @@ class Examen extends Equatable {
       };
 
   @override
-  List<Object?> get props => [id, estadoExtraccion, resultados, validadoPorMedico];
+  List<Object?> get props => [id, estadoExtraccion, resultados, validadoPorMedico, clasificacion, titulo];
 }
 
 class SolicitudExamen extends Equatable {

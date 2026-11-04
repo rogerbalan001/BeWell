@@ -18,8 +18,12 @@ class ExamenesRepositoryImpl implements ExamenesRepository {
       (await _r.catalogo()).map((c) => CategoriaCatalogo(c['categoria'] as String, textos(c['examenes']))).toList();
 
   @override
-  Future<Examen> subir({required String pacienteId, required String titulo, required ArchivoExamen archivo, String? solicitudId, DateTime? fechaExamen}) async =>
+  Future<Examen> subir({required String pacienteId, String? titulo, required ArchivoExamen archivo, String? solicitudId, DateTime? fechaExamen}) async =>
       ExamenMapper.examen(await _r.subir(pacienteId, titulo, archivo, solicitudId, fechaExamen));
+
+  @override
+  Future<Examen> corregirClasificacion(String examenId, {required String categoria, required String tipo}) async =>
+      ExamenMapper.examen(await _r.clasificar(examenId, categoria, tipo));
 
   @override
   Future<Examen> confirmarResultados(String examenId, List<ResultadoAnalito> resultados) async => ExamenMapper.examen(await _r.confirmar(examenId, resultados));

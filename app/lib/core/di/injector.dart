@@ -168,6 +168,7 @@ void configurarDependencias() {
   sl.registerLazySingleton<ExamenesRepository>(() => ExamenesRepositoryImpl(sl()));
   sl.registerLazySingleton(() => ListarExamenes(sl()));
   sl.registerLazySingleton(() => SubirExamen(sl()));
+  sl.registerLazySingleton(() => ClasificarExamen(sl()));
   sl.registerLazySingleton(() => ConfirmarResultados(sl()));
   sl.registerLazySingleton(() => SolicitarExamenes(sl()));
   sl.registerLazySingleton(() => GestionarOrdenesExamen(sl()));

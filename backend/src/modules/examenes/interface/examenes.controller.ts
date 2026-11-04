@@ -45,7 +45,8 @@ export class SolicitarExamenesDto {
 /** Campos de texto del multipart de carga. */
 export class CargarExamenDto {
   @IsMongoId() pacienteId: string;
-  @IsString() @IsNotEmpty() @MaxLength(150) titulo: string;
+  /** Opcional: si el paciente no escribe el nombre, se toma del tipo que sugiere la IA. */
+  @IsOptional() @IsString() @MaxLength(150) titulo?: string;
   @IsOptional() @IsMongoId() solicitudId?: string;
   @IsOptional() @IsDateString() fechaExamen?: string;
 }

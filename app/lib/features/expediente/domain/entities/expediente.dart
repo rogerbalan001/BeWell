@@ -78,6 +78,8 @@ const _etiquetasDetalle = <String, String>{
   'estado': 'Estado de la orden',
   'motivoAnulacion': 'Motivo de la anulación',
   'estadoExtraccion': 'Lectura de valores',
+  'categoria': 'Categoría',
+  'tipoExamen': 'Tipo de examen',
   'tipoMime': 'Archivo',
   'codigoVerificacion': 'Código de verificación',
   'modalidad': 'Modalidad',
