@@ -11,6 +11,9 @@ export enum CategoriaClinica {
 
 export const TODAS_LAS_CATEGORIAS = Object.values(CategoriaClinica);
 
+/** Sección del expediente que protege los antecedentes. */
+export const CATEGORIA_ANTECEDENTES = CategoriaClinica.DIAGNOSTICOS;
+
 /** Tipos de evento de la línea de tiempo (HU: consultas, diagnósticos, cirugías, vacunas, exámenes). */
 export enum TipoEvento {
   CONSULTA = 'CONSULTA',

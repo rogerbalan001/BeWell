@@ -44,11 +44,11 @@ export class ExpedienteController {
 
   @Get(':pacienteId')
   async resumen(@ActorActual() actor: Actor, @Param('pacienteId', ParseObjectIdPipe) pacienteId: string) {
-    const { expediente, paciente, acceso } = await this.expediente.resumen(actor, pacienteId);
+    const { expediente, paciente, acceso, antecedentes } = await this.expediente.resumen(actor, pacienteId);
     return {
       id: expediente.id,
       paciente: aPerfilRespuesta(paciente),
-      antecedentes: expediente.antecedentes,
+      antecedentes,
       actualizadoEn: expediente.actualizadoEn,
       acceso,
     };

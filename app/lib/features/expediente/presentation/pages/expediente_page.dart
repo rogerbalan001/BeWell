@@ -165,19 +165,21 @@ class _Contenido extends StatelessWidget {
         accion: r.acceso.puedeEscribir('DIAGNOSTICOS')
             ? IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () => _editarAntecedentes(context, r))
             : null,
-        child: r.antecedentes.isEmpty
-            ? const Text('Sin antecedentes registrados.', style: TextStyle(color: AppColors.pizarra))
-            : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                for (final a in r.antecedentes)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const Icon(Icons.circle, size: 8, color: AppColors.primario),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(a)),
-                    ]),
-                  ),
-              ]),
+        child: !r.acceso.categorias.contains('DIAGNOSTICOS')
+            ? const Text('El paciente no te ha dado acceso a esta sección.', style: TextStyle(color: AppColors.pizarra))
+            : r.antecedentes.isEmpty
+                ? const Text('Sin antecedentes registrados.', style: TextStyle(color: AppColors.pizarra))
+                : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    for (final a in r.antecedentes)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const Icon(Icons.circle, size: 8, color: AppColors.primario),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(a)),
+                        ]),
+                      ),
+                  ]),
       ),
       const SizedBox(height: 16),
       SeccionTarjeta(
