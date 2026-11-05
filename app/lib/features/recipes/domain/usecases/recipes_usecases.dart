@@ -8,7 +8,8 @@ class ListarRecipes {
   Future<List<Recipe>> emitidos() => _r.emitidos();
 }
 
-/// HU médico: emitir récipes digitales con firma y código verificable.
+/// HU médico: emitir récipes digitales con código verificable (mantener documentación y evitar errores de lectura).
+/// Cada récipe se firma digitalmente para que la verificación detecte cualquier alteración.
 class EmitirRecipe {
   const EmitirRecipe(this._r);
   final RecipesRepository _r;
