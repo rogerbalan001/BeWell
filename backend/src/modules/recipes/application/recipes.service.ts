@@ -28,7 +28,10 @@ export interface ResultadoVerificacion {
   paciente?: PerfilPaciente;
 }
 
-/** «Control» HU: emitir récipes digitales con firma y código verificable. */
+/**
+ * «Control» HU: emitir récipes digitales con código verificable. La firma digital
+ * (ECDSA) es el mecanismo que permite verificar el código y detectar alteraciones.
+ */
 @Injectable()
 export class RecipesService {
   constructor(

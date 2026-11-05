@@ -21,7 +21,7 @@ describe('Firma digital (JCS RFC 8785 + ECDSA P-256)', () => {
   });
 });
 
-describe('RecipesService (HU: récipes digitales con firma y código verificable)', () => {
+describe('RecipesService (HU: récipes digitales con código verificable)', () => {
   async function consultaAtendida() {
     const ctx = crearContexto();
     const medico = await ctx.medicoVerificado('Mateo');
@@ -54,6 +54,23 @@ describe('RecipesService (HU: récipes digitales con firma y código verificable
     const anulado = await ctx.recipes.verificar(recipe.codigoVerificacion);
     expect(anulado.valido).toBe(false);
     expect(anulado.firmaValida).toBe(true);
+  });
+
+  it('un récipe vencido deja de ser válido, aunque su firma siga siendo correcta', async () => {
+    const { ctx, medico, cita } = await consultaAtendida();
+    ctx.reloj.avanzarHoras(1);
+    await ctx.citas.marcarAtendida(medico, cita.id, {});
+    const recipe = await ctx.recipes.emitir(medico, cita.id, { items: ITEMS, validoDias: 30 });
+    ctx.reloj.avanzarHoras(29 * 24);
+    expect((await ctx.recipes.verificar(recipe.codigoVerificacion)).vigente).toBe(true);
+
+    ctx.reloj.avanzarHoras(2 * 24);
+    const vencido = await ctx.recipes.verificar(recipe.codigoVerificacion);
+    expect(vencido.encontrado).toBe(true);
+    expect(vencido.vigente).toBe(false);
+    expect(vencido.valido).toBe(false);
+    expect(vencido.firmaValida).toBe(true);
+    expect(vencido.integro).toBe(true);
   });
 
   it('un código inexistente no es válido', async () => {
