@@ -9,7 +9,7 @@ import { Actor, RolUsuario } from '../../../shared/domain/roles';
 import { MedicosService } from '../../medicos/application/medicos.service';
 import { PerfilesService } from '../../perfiles/application/perfiles.service';
 import { PerfilPaciente } from '../../perfiles/domain/perfil-paciente';
-import { CategoriaClinica, categoriaDe, TipoEvento } from '../domain/categoria-clinica';
+import { CATEGORIA_ANTECEDENTES, CategoriaClinica, categoriaDe, TipoEvento } from '../domain/categoria-clinica';
 import { EventoClinico, PropsEventoClinico } from '../domain/evento-clinico';
 import { ExpedienteClinico } from '../domain/expediente-clinico';
 import { PermisoAcceso } from '../domain/permiso-acceso';
@@ -55,15 +55,15 @@ export class ExpedienteService {
   async resumen(
     actor: Actor,
     pacienteId: string,
-  ): Promise<{ expediente: ExpedienteClinico; paciente: PerfilPaciente; acceso: AccesoExpediente }> {
+  ): Promise<{ expediente: ExpedienteClinico; paciente: PerfilPaciente; acceso: AccesoExpediente; antecedentes: string[] }> {
     const acceso = await this.politica.asegurarLectura(actor, pacienteId);
     const [expediente, paciente] = await Promise.all([this.obtenerOCrear(pacienteId), this.perfiles.obtener(pacienteId)]);
     await this.auditar(actor, acceso, 'LEER_RESUMEN', 'expediente', expediente.id, pacienteId);
-    return { expediente, paciente, acceso };
+    return { expediente, paciente, acceso, antecedentes: acceso.categorias.includes(CATEGORIA_ANTECEDENTES) ? expediente.antecedentes : [] };
   }
 
   async actualizarAntecedentes(actor: Actor, pacienteId: string, antecedentes: string[]): Promise<ExpedienteClinico> {
-    await this.politica.asegurarEscritura(actor, pacienteId, CategoriaClinica.DIAGNOSTICOS);
+    await this.politica.asegurarEscritura(actor, pacienteId, CATEGORIA_ANTECEDENTES);
     const expediente = await this.obtenerOCrear(pacienteId);
     expediente.actualizarAntecedentes(antecedentes, this.reloj.ahora());
     await this.expedientes.guardar(expediente);
@@ -167,8 +167,12 @@ export class ExpedienteService {
         texto: `Cédula: ${paciente.cedula ?? 'no registrada'} · Fecha de nacimiento: ${fecha(paciente.fechaNacimiento)} · Edad: ${paciente.edad(ahora)} años · Sexo: ${paciente.sexo}`,
       },
       ...(acceso.esTitular ? [] : [{ texto: `Exportación parcial: secciones autorizadas (${acceso.categorias.join(', ')}).`, color: 'tenue' as const }]),
-      { texto: 'Antecedentes', tamano: 13, negrita: true, espacioAntes: 14 },
-      ...(expediente.antecedentes.length ? expediente.antecedentes.map((a) => ({ texto: `- ${a}` })) : [{ texto: 'Sin antecedentes registrados.', color: 'tenue' as const }]),
+      ...(acceso.categorias.includes(CATEGORIA_ANTECEDENTES)
+        ? [
+            { texto: 'Antecedentes', tamano: 13, negrita: true, espacioAntes: 14 },
+            ...(expediente.antecedentes.length ? expediente.antecedentes.map((a) => ({ texto: `- ${a}` })) : [{ texto: 'Sin antecedentes registrados.', color: 'tenue' as const }]),
+          ]
+        : []),
       { texto: `Línea de tiempo (${eventos.length} eventos)`, tamano: 13, negrita: true, espacioAntes: 14 },
     ];
     for (const e of eventos) {

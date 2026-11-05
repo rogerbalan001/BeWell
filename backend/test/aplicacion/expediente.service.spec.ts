@@ -53,6 +53,27 @@ describe('ExpedienteService (HU: dueño de mi expediente y línea de tiempo)', (
     ).rejects.toThrow('escritura');
   });
 
+  it('los antecedentes solo llegan a quien tiene la sección Diagnósticos, también en el PDF', async () => {
+    const { ctx, paciente, perfil, medico } = await escenario();
+    const textoPdf = async (url: string) => {
+      const archivo = await ctx.almacenamiento.leer(ctx.almacenamiento.resolverTokenLectura(url.split('/archivos/')[1]));
+      return archivo.contenido.toString('latin1');
+    };
+    await ctx.expediente.actualizarAntecedentes(paciente, perfil.id, ['Asma']);
+    const validoHasta = sumarDias(ctx.reloj.ahora(), 30);
+
+    await ctx.expediente.concederAcceso(paciente, perfil.id, { medicoId: medico.medicoId!, categorias: [CategoriaClinica.LABORATORIOS], validoHasta, escritura: false });
+    expect((await ctx.expediente.resumen(medico, perfil.id)).antecedentes).toEqual([]);
+    expect(await textoPdf(await ctx.expediente.exportarPdf(medico, perfil.id))).not.toContain('Asma');
+
+    const conDiagnosticos = await ctx.medicoVerificado('Daniel');
+    await ctx.expediente.concederAcceso(paciente, perfil.id, { medicoId: conDiagnosticos.medicoId!, categorias: [CategoriaClinica.DIAGNOSTICOS], validoHasta, escritura: false });
+    expect((await ctx.expediente.resumen(conDiagnosticos, perfil.id)).antecedentes).toEqual(['Asma']);
+    expect(await textoPdf(await ctx.expediente.exportarPdf(conDiagnosticos, perfil.id))).toContain('Asma');
+
+    expect((await ctx.expediente.resumen(paciente, perfil.id)).antecedentes).toEqual(['Asma']);
+  });
+
   it('la revocación y el vencimiento cortan el acceso de inmediato', async () => {
     const { ctx, paciente, perfil, medico } = await escenario();
     const permiso = await ctx.expediente.concederAcceso(paciente, perfil.id, {

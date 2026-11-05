@@ -10,7 +10,7 @@ import { CitasService } from '../../citas/application/citas.service';
 import { EstadoCita } from '../../citas/domain/cita';
 import { ExpedienteService } from '../../expediente/application/expediente.service';
 import { AccesoExpediente, PoliticaAccesoExpediente } from '../../expediente/application/politica-acceso-expediente';
-import { CategoriaClinica, TipoEvento } from '../../expediente/domain/categoria-clinica';
+import { CATEGORIA_ANTECEDENTES, CategoriaClinica, TipoEvento } from '../../expediente/domain/categoria-clinica';
 import { MedicosService } from '../../medicos/application/medicos.service';
 import { PerfilesService } from '../../perfiles/application/perfiles.service';
 import { PerfilPaciente } from '../../perfiles/domain/perfil-paciente';
@@ -19,8 +19,6 @@ import { ConsultaClinica, ContenidoConsulta } from '../domain/consulta-clinica';
 import { AntecedentesClinicosRepository, ConsultaClinicaRepository } from '../domain/repositorios';
 import { lineasHistoriaPdf } from './historia-pdf';
 
-/** Sección del expediente que protege los antecedentes. */
-export const CATEGORIA_ANTECEDENTES = CategoriaClinica.DIAGNOSTICOS;
 /** Sección del expediente que protege las historias de cada consulta. */
 export const CATEGORIA_CONSULTAS = CategoriaClinica.CONSULTAS;
 
