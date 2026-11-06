@@ -1,0 +1,20 @@
+PASS test/dominio/historia-clinica.spec.ts
+PASS test/aplicacion/expediente.service.spec.ts
+PASS test/aplicacion/citas.service.spec.ts (5.15 s)
+PASS test/aplicacion/historia-clinica.service.spec.ts (5.146 s)
+[32m[Nest] 2378  - [39m11/06/2026, 5:05:00 PM [32m    LOG[39m [38;5;3m[PagosService] [39m[32mPagos liberados: 1[39m
+[32m[Nest] 2378  - [39m11/06/2026, 5:05:00 PM [32m    LOG[39m [38;5;3m[CitasService] [39m[32mPropuestas vencidas: 1[39m
+PASS test/dominio/cita-y-pago.spec.ts
+PASS test/dominio/clinico.spec.ts
+PASS test/aplicacion/recipes-y-emergencias.spec.ts
+PASS test/dominio/extractor-analitos.spec.ts
+PASS test/dominio/politica-y-medico.spec.ts
+PASS test/aplicacion/recordatorios.service.spec.ts
+PASS test/dominio/recordatorios.spec.ts
+PASS test/dominio/solicitud-examen.spec.ts
+
+Test Suites: 12 passed, 12 total
+Tests:       106 passed, 106 total
+Snapshots:   0 total
+Time:        6.131 s
+Ran all test suites.
