@@ -45,22 +45,39 @@ class InicioPage extends StatelessWidget {
 }
 
 Widget _accesos(BuildContext context, List<(IconData, String, String, String)> items) {
-  return Wrap(spacing: 14, runSpacing: 14, children: [
-    for (final (icono, titulo, texto, ruta) in items)
-      SizedBox(
-        width: 270,
-        child: BwTarjeta(
-          onTap: () => context.push(ruta),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            CircleAvatar(backgroundColor: AppColors.superficieAzul2, child: Icon(icono, color: AppColors.primario)),
-            const SizedBox(height: 12),
-            Text(titulo, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-            const SizedBox(height: 4),
-            Text(texto, style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
-          ]),
+  final t = Theme.of(context).textTheme;
+  return LayoutBuilder(builder: (context, c) {
+    const hueco = 12.0;
+    final columnas = c.maxWidth >= 900 ? 3 : (c.maxWidth >= 520 ? 2 : 1);
+    final ancho = (c.maxWidth - hueco * (columnas - 1)) / columnas;
+    return Wrap(spacing: hueco, runSpacing: hueco, children: [
+      for (final (icono, titulo, texto, ruta) in items)
+        SizedBox(
+          width: ancho,
+          child: BwTarjeta(
+            padding: const EdgeInsets.all(18),
+            onTap: () => context.push(ruta),
+            child: Row(children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(color: AppColors.superficieAzul2, borderRadius: BorderRadius.circular(12)),
+                child: Icon(icono, color: AppColors.primario, size: 21),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(titulo, style: t.titleSmall),
+                  const SizedBox(height: 2),
+                  Text(texto, style: t.bodySmall?.copyWith(color: AppColors.pizarra)),
+                ]),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.pizarraClara),
+            ]),
+          ),
         ),
-      ),
-  ]);
+    ]);
+  });
 }
 
 class _InicioPaciente extends StatelessWidget {
@@ -70,16 +87,19 @@ class _InicioPaciente extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       BlocBuilder<PerfilActivoCubit, PerfilesState>(builder: (context, s) {
-        return BwTarjeta(
+        return SizedBox(
+          width: double.infinity,
+          child: BwTarjeta(
           color: AppColors.marino,
           borde: Colors.transparent,
           padding: const EdgeInsets.all(24),
           child: Wrap(alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.center, spacing: 16, runSpacing: 16, children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('PERFIL ACTIVO', style: TextStyle(color: Color(0xB3FFFFFF), fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-              const SizedBox(height: 6),
-              Text(s.seleccionado?.nombreCompleto ?? '—', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
-              Text('${s.perfiles.length} perfiles en tu familia', style: const TextStyle(color: Colors.white70)),
+              Text('Perfil activo', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: const Color(0xB3FFFFFF))),
+              const SizedBox(height: 4),
+              Text(s.seleccionado?.nombreCompleto ?? '—', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.white)),
+              const SizedBox(height: 2),
+              Text(s.perfiles.length == 1 ? 'Solo tú en tu familia' : '${s.perfiles.length} perfiles en tu familia', style: const TextStyle(color: Colors.white70)),
             ]),
             FilledButton.icon(
               style: FilledButton.styleFrom(backgroundColor: Colors.white, foregroundColor: AppColors.marino),
@@ -88,11 +108,14 @@ class _InicioPaciente extends StatelessWidget {
               label: const Text('Reservar cita'),
             ),
           ]),
+          ),
         );
       }),
       const SizedBox(height: 16),
       const _ProximaCita(),
-      const SizedBox(height: 20),
+      const SizedBox(height: 28),
+      Text('Accesos rápidos', style: Theme.of(context).textTheme.titleMedium),
+      const SizedBox(height: 12),
       _accesos(context, const [
         (Icons.folder_shared_outlined, 'Mi expediente', 'Línea de tiempo y antecedentes', '/expediente'),
         (Icons.admin_panel_settings_outlined, 'Médicos autorizados', 'Quién ve qué y hasta cuándo', '/expediente/permisos'),
@@ -124,9 +147,10 @@ class _ProximaCita extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(c.pendienteAceptacion ? 'PROPUESTA POR RESPONDER' : 'PRÓXIMA CONSULTA',
-                    style: const TextStyle(fontSize: 11, color: AppColors.pizarra, fontWeight: FontWeight.w700, letterSpacing: 1)),
-                Text('${Formatos.fechaLarga(c.inicio)}, ${Formatos.hora(c.inicio)}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                Text(c.pendienteAceptacion ? 'Propuesta por responder' : 'Próxima consulta',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(color: c.pendienteAceptacion ? AppColors.ambar : AppColors.primarioOscuro)),
+                const SizedBox(height: 2),
+                Text('${Formatos.fechaLarga(c.inicio)}, ${Formatos.hora(c.inicio)}', style: Theme.of(context).textTheme.titleMedium),
                 Text('${c.medicoNombre} · ${c.esVirtual ? 'Videollamada' : 'Presencial'} · ${c.pacienteNombre}', style: const TextStyle(color: AppColors.pizarra)),
               ]),
             ),
@@ -192,7 +216,9 @@ class _InicioMedico extends StatelessWidget {
           },
         ),
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 28),
+      Text('Accesos rápidos', style: Theme.of(context).textTheme.titleMedium),
+      const SizedBox(height: 12),
       _accesos(context, const [
         (Icons.schedule, 'Mi agenda', 'Horario, modalidades y política', '/medico/agenda'),
         (Icons.folder_shared_outlined, 'Mis pacientes', 'Expedientes autorizados', '/medico/pacientes'),

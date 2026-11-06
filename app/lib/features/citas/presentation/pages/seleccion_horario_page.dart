@@ -136,7 +136,7 @@ class _FormularioState extends State<_Formulario> {
 
     final resumen = BwTarjeta(
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const Text('RESUMEN PRELIMINAR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.2, color: AppColors.pizarra)),
+        const Text('Resumen preliminar', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.pizarra)),
         const SizedBox(height: 12),
         const Row(children: [Text('Paciente:', style: TextStyle(color: AppColors.pizarra)), SizedBox(width: 8), SelectorPerfil()]),
         const Divider(height: 24),

@@ -45,7 +45,15 @@ class _VisorEmergenciaPageState extends State<VisorEmergenciaPage> {
       appBar: AppBar(
         backgroundColor: AppColors.error,
         foregroundColor: Colors.white,
-        title: const Row(children: [Icon(Icons.emergency), SizedBox(width: 8), Text('Ficha médica de emergencia')]),
+        title: const Row(children: [Icon(Icons.emergency), SizedBox(width: 8), Flexible(child: Text('Ficha médica de emergencia', overflow: TextOverflow.ellipsis))]),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            onPressed: () => context.go('/'),
+            child: const Text('Ir a Bewell'),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SingleChildScrollView(
         child: ContenidoCentrado(

@@ -218,7 +218,7 @@ class _EditorState extends State<_Editor> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(color: AppColors.marino, borderRadius: BorderRadius.circular(28)),
       child: Column(children: [
-        const Text('PASE MÉDICO DE EMERGENCIA', style: TextStyle(color: Color(0xB3FFFFFF), fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+        const Text('Pase médico de emergencia', style: TextStyle(color: Color(0xB3FFFFFF), fontSize: 12, fontWeight: FontWeight.w800)),
         const SizedBox(height: 6),
         Text(widget.nombre, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
         if (_grupo != null) Text('Grupo $_grupo', style: const TextStyle(color: Colors.white70)),

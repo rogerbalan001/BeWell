@@ -325,7 +325,7 @@ class _Identificacion extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 22),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('IDENTIFICACIÓN', style: TextStyle(color: AppColors.primario, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+            const Text('Identificación', style: TextStyle(color: AppColors.primario, fontSize: 12, fontWeight: FontWeight.w800)),
             const SizedBox(height: 14),
             RejillaAdaptable(minAncho: 200, espacio: 16, children: [
               CampoDato('Apellidos', h.apellidos),

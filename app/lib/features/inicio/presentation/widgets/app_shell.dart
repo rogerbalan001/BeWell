@@ -44,6 +44,9 @@ List<_Destino> _destinos(UsuarioSesion? u) => [
     ];
 
 /// Estructura principal: navegación lateral en escritorio y menú en móvil.
+///
+/// El logo siempre lleva al inicio. Cuando la pantalla actual se abrió encima
+/// de otra (detalle de una cita, un formulario…), la barra muestra «Atrás».
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.child, required this.ubicacion});
   final Widget child;
@@ -53,80 +56,153 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final usuario = context.watch<SesionCubit>().state.usuario;
     final destinos = _destinos(usuario);
-    var indice = destinos.lastIndexWhere((d) => ubicacion == d.ruta || ubicacion.startsWith('${d.ruta}/'));
-    if (indice < 0) indice = 0;
+    final indice = destinos.lastIndexWhere((d) => ubicacion == d.ruta || ubicacion.startsWith('${d.ruta}/'));
     final ancho = MediaQuery.sizeOf(context).width;
     final escritorio = ancho >= 1100;
-
-    final barra = AppBar(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
-      elevation: 0,
-      scrolledUnderElevation: 1,
-      titleSpacing: escritorio ? 24 : 0,
-      title: escritorio ? null : const BwLogo(tamano: 30),
-      actions: [
-        if (usuario?.esPaciente ?? false) Padding(padding: const EdgeInsets.only(right: 8), child: SelectorPerfil(compacto: ancho < 600)),
-        const _Campana(),
-        PopupMenuButton<String>(
-          tooltip: 'Cuenta',
-          icon: CircleAvatar(
-            radius: 16,
-            backgroundColor: AppColors.primario,
-            child: Text((usuario?.nombreMostrado ?? '?').substring(0, 1).toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 14)),
-          ),
-          onSelected: (v) async {
-            if (v == 'salir') await context.read<SesionCubit>().cerrarSesion();
-          },
-          itemBuilder: (_) => [
-            PopupMenuItem(enabled: false, child: Text(usuario?.email ?? '')),
-            const PopupMenuItem(value: 'salir', child: Row(children: [Icon(Icons.logout, size: 18), SizedBox(width: 8), Text('Cerrar sesión')])),
-          ],
-        ),
-        const SizedBox(width: 12),
-      ],
+    // En las secciones del menú siempre se muestra el menú (☰ en móvil); «Atrás»
+    // solo aparece en pantallas de detalle abiertas encima de otra.
+    final esSeccion = destinos.any((d) => d.ruta == ubicacion);
+    final puedeVolver = !esSeccion && GoRouter.of(context).canPop();
+    final atras = IconButton(
+      tooltip: 'Atrás',
+      icon: const Icon(Icons.arrow_back_rounded),
+      onPressed: () => GoRouter.of(context).pop(),
     );
+
+    final acciones = <Widget>[
+      if (usuario?.esPaciente ?? false) Padding(padding: const EdgeInsets.only(right: 4), child: SelectorPerfil(compacto: ancho < 600)),
+      const _Campana(),
+      _MenuCuenta(usuario: usuario),
+      SizedBox(width: escritorio ? 20 : 8),
+    ];
 
     if (escritorio) {
       return Scaffold(
         body: Row(children: [
           Container(
-            width: 260,
-            color: Colors.white,
+            width: 264,
+            decoration: const BoxDecoration(color: AppColors.superficie, border: Border(right: BorderSide(color: AppColors.borde))),
             child: SafeArea(
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                const Padding(padding: EdgeInsets.fromLTRB(24, 20, 24, 28), child: BwLogo(tamano: 34)),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 18, 20, 22),
+                  child: Align(alignment: Alignment.centerLeft, child: BwLogo(tamano: 32)),
+                ),
                 Expanded(
                   child: ListView(padding: const EdgeInsets.symmetric(horizontal: 12), children: [
                     for (var i = 0; i < destinos.length; i++) _ItemNav(destinos[i], activo: i == indice),
                   ]),
                 ),
-                const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: ChipEstado('Datos clínicos cifrados', color: AppColors.verdeOscuro, icono: Icons.lock_outline),
-                ),
+                const _SelloPrivacidad(),
               ]),
             ),
           ),
-          const VerticalDivider(width: 1, color: AppColors.borde),
-          Expanded(child: Scaffold(appBar: barra, body: child)),
+          Expanded(
+            child: Scaffold(
+              appBar: AppBar(
+                toolbarHeight: 64,
+                automaticallyImplyLeading: false,
+                leading: puedeVolver ? atras : null,
+                titleSpacing: puedeVolver ? 0 : 28,
+                title: Text(indice >= 0 ? destinos[indice].titulo : '', style: Theme.of(context).textTheme.titleMedium),
+                actions: acciones,
+              ),
+              body: child,
+            ),
+          ),
         ]),
       );
     }
 
     return Scaffold(
-      appBar: barra,
+      appBar: AppBar(
+        toolbarHeight: 60,
+        leading: puedeVolver ? atras : null,
+        titleSpacing: 0,
+        title: const BwLogo(tamano: 28),
+        actions: acciones,
+      ),
       drawer: Drawer(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.superficie,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.horizontal(right: Radius.circular(20))),
         child: SafeArea(
-          child: ListView(padding: const EdgeInsets.all(12), children: [
-            const Padding(padding: EdgeInsets.fromLTRB(12, 8, 12, 20), child: BwLogo(tamano: 32)),
-            for (var i = 0; i < destinos.length; i++)
-              _ItemNav(destinos[i], activo: i == indice, alTocar: () => Navigator.of(context).pop()),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: BwLogo(
+                  tamano: 30,
+                  alPulsar: () {
+                    Navigator.of(context).pop();
+                    context.go('/');
+                  },
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView(padding: const EdgeInsets.symmetric(horizontal: 12), children: [
+                for (var i = 0; i < destinos.length; i++)
+                  _ItemNav(destinos[i], activo: i == indice, alTocar: () => Navigator.of(context).pop()),
+              ]),
+            ),
+            const _SelloPrivacidad(),
           ]),
         ),
       ),
       body: child,
+    );
+  }
+}
+
+class _SelloPrivacidad extends StatelessWidget {
+  const _SelloPrivacidad();
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: AppColors.verdeSuave.withAlpha(110), borderRadius: BorderRadius.circular(14)),
+      child: Row(children: [
+        const Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.verdeOscuro),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text('Tus datos clínicos viajan y se guardan cifrados.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.verdeOscuro, height: 1.35)),
+        ),
+      ]),
+    );
+  }
+}
+
+class _MenuCuenta extends StatelessWidget {
+  const _MenuCuenta({required this.usuario});
+  final UsuarioSesion? usuario;
+
+  @override
+  Widget build(BuildContext context) {
+    final nombre = usuario?.nombreMostrado ?? '';
+    return PopupMenuButton<String>(
+      tooltip: 'Tu cuenta',
+      position: PopupMenuPosition.under,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      icon: AvatarIniciales(nombre.isEmpty ? '?' : nombre, radio: 17),
+      onSelected: (v) async {
+        if (v == 'inicio') context.go('/inicio');
+        if (v == 'salir') await context.read<SesionCubit>().cerrarSesion();
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          enabled: false,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(nombre, style: Theme.of(context).textTheme.titleSmall),
+            Text(usuario?.email ?? '', style: Theme.of(context).textTheme.bodySmall),
+          ]),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(value: 'inicio', child: Row(children: [Icon(Icons.home_outlined, size: 18), SizedBox(width: 10), Text('Ir al inicio')])),
+        const PopupMenuItem(value: 'salir', child: Row(children: [Icon(Icons.logout, size: 18), SizedBox(width: 10), Text('Cerrar sesión')])),
+      ],
     );
   }
 }
@@ -139,20 +215,45 @@ class _ItemNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = activo ? AppColors.primarioOscuro : AppColors.pizarra;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Material(
-        color: activo ? AppColors.superficieAzul2 : Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
-        child: ListTile(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          leading: Icon(destino.icono, color: activo ? AppColors.primario : AppColors.pizarra),
-          title: Text(destino.titulo,
-              style: TextStyle(fontWeight: activo ? FontWeight.w700 : FontWeight.w500, color: activo ? AppColors.primario : AppColors.marino)),
-          onTap: () {
-            alTocar?.call();
-            context.go(destino.ruta);
-          },
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Semantics(
+        selected: activo,
+        button: true,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            hoverColor: AppColors.superficieAzul,
+            splashFactory: NoSplash.splashFactory,
+            onTap: () {
+              alTocar?.call();
+              context.go(destino.ruta);
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOut,
+              height: 46,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: activo ? AppColors.superficieAzul2 : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(children: [
+                Icon(destino.icono, size: 21, color: color),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(destino.titulo,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: activo ? AppColors.primarioOscuro : AppColors.marino,
+                            fontWeight: activo ? FontWeight.w700 : FontWeight.w400,
+                          )),
+                ),
+              ]),
+            ),
+          ),
         ),
       ),
     );

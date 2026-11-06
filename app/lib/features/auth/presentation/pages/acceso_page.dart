@@ -88,7 +88,7 @@ class _PanelMarca extends StatelessWidget {
         borderRadius: BorderRadius.circular(32),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const ChipEstado('RED CLÍNICA CERTIFICADA', color: Colors.white, fondo: Color(0x26FFFFFF), icono: Icons.shield_outlined),
+        const ChipEstado('Red clínica certificada', color: Colors.white, fondo: Color(0x26FFFFFF), icono: Icons.shield_outlined),
         const SizedBox(height: 24),
         const Text('Tu salud y la de tu familia en un entorno seguro y conectado.',
             style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w800, height: 1.2, letterSpacing: -0.6)),
