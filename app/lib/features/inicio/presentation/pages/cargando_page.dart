@@ -11,7 +11,7 @@ class CargandoPage extends StatelessWidget {
     return const Scaffold(
       body: Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          BwLogo(tamano: 48),
+          BwLogo(tamano: 48, navegable: false),
           SizedBox(height: 24),
           SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 3)),
         ]),

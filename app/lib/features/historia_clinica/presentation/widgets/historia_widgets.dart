@@ -7,7 +7,7 @@ import '../../../../core/widgets/bw_widgets.dart';
 import '../../domain/entities/catalogo_historia.dart';
 import '../../domain/entities/historia_clinica.dart';
 
-const _etiquetaEstilo = TextStyle(color: AppColors.pizarraClara, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8);
+const _etiquetaEstilo = TextStyle(color: AppColors.pizarraClara, fontSize: 12.5, fontWeight: FontWeight.w700);
 
 /// Rejilla que reparte sus hijos en tantas columnas como quepan (mínimo [minAncho] cada una).
 class RejillaAdaptable extends StatelessWidget {
@@ -89,7 +89,7 @@ class CampoDato extends StatelessWidget {
   Widget build(BuildContext context) {
     final vacio = valor == null || valor!.trim().isEmpty;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(etiqueta.toUpperCase(), style: _etiquetaEstilo),
+      Text(etiqueta, style: _etiquetaEstilo),
       const SizedBox(height: 3),
       Text(vacio ? '—' : valor!,
           style: TextStyle(fontSize: 14, height: 1.35, color: vacio ? AppColors.pizarraClara : AppColors.marino, fontWeight: FontWeight.w600)),
@@ -168,7 +168,7 @@ class TileSigno extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(color: AppColors.verdeSuave.withAlpha(110), borderRadius: BorderRadius.circular(14)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(etiqueta.toUpperCase(), style: const TextStyle(color: AppColors.verdeOscuro, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 0.6)),
+        Text(etiqueta, style: const TextStyle(color: AppColors.verdeOscuro, fontSize: 12, fontWeight: FontWeight.w700)),
         const SizedBox(height: 2),
         Text.rich(TextSpan(children: [
           TextSpan(text: valor, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.marino)),
@@ -197,7 +197,7 @@ class _BloqueConsulta extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Padding(
               padding: const EdgeInsets.only(top: 5, bottom: 8),
-              child: Text(titulo.toUpperCase(), style: const TextStyle(color: AppColors.primario, fontSize: 11.5, fontWeight: FontWeight.w800, letterSpacing: 1)),
+              child: Text(titulo, style: const TextStyle(color: AppColors.primarioOscuro, fontSize: 14, fontWeight: FontWeight.w700)),
             ),
             child,
           ]),

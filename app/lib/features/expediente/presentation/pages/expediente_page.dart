@@ -206,7 +206,7 @@ class _Contenido extends StatelessWidget {
           child: const Row(children: [
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('ACCESO DE EMERGENCIA QR', style: TextStyle(color: AppColors.primario, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                Text('Acceso de emergencia QR', style: TextStyle(color: AppColors.primario, fontSize: 11, fontWeight: FontWeight.w800)),
                 SizedBox(height: 4),
                 Text('Pase médico rápido', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 Text('Alergias y tipo de sangre sin desbloquear tu teléfono.', style: TextStyle(color: AppColors.pizarra, fontSize: 12.5)),
