@@ -39,6 +39,15 @@ services:
       # OCR real (Tesseract en español). "simulado" vuelve a las plantillas de demo.
       - key: OCR_PROVIDER
         value: tesseract
+      # Pagos con PayPal sandbox (retención al reservar). Las credenciales se cargan a mano en Render.
+      - key: PAGOS_PROVEEDOR
+        value: paypal
+      - key: PAYPAL_ENTORNO
+        value: sandbox
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
       # El disco del plan gratuito es efímero: los archivos subidos se pierden al reiniciar.
       - key: STORAGE_DIR
         value: /tmp/bewell-storage

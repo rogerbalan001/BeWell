@@ -13,7 +13,7 @@ import { MedicosService } from '../../medicos/application/medicos.service';
 import { Franja } from '../../medicos/domain/bloque-horario';
 import { Medico, Modalidad } from '../../medicos/domain/medico';
 import { PagosService } from '../../pagos/application/pagos.service';
-import { EstadoPago } from '../../pagos/domain/pago';
+import { EstadoPago, MINUTOS_PARA_APROBAR_PAGO, Pago } from '../../pagos/domain/pago';
 import { PerfilesService } from '../../perfiles/application/perfiles.service';
 import { Cita, EstadoCita, Parte } from '../domain/cita';
 import { CitaRepository, FiltrosCitas } from '../domain/cita.repository';
@@ -68,7 +68,7 @@ export class CitasService {
   }
 
   /** HU: agendar una consulta directamente con el especialista elegido. */
-  async agendar(actor: Actor, s: SolicitudAgendar): Promise<Cita> {
+  async agendar(actor: Actor, s: SolicitudAgendar, opciones: { pagoDemo?: boolean } = {}): Promise<Cita> {
     const paciente = await this.perfiles.asegurarGestion(actor, s.pacienteId);
     const medico = await this.medicos.obtenerPublico(s.medicoId);
     const franja = await this.validarFranja(medico, s.inicio, s.modalidad);
@@ -88,7 +88,7 @@ export class CitasService {
       this.reloj.ahora(),
     );
     await this.citas.guardar(cita); // el índice único parcial evita la doble reserva en carreras
-    await this.cobrar(cita);
+    await this.cobrar(cita, opciones.pagoDemo);
     if (cita.estado === EstadoCita.CONFIRMADA) {
       await this.notificador.notificar({
         usuarioId: medico.usuarioId,
@@ -231,7 +231,9 @@ export class CitasService {
     }
     await this.citas.guardar(cita);
     await this.cobrar(cita);
-    await this.notificarOtraParte(cita, parte, 'Propuesta aceptada', `La cita del ${await this.fechaCita(cita)} quedó ${cita.estado === EstadoCita.CONFIRMADA ? 'confirmada' : 'cancelada por pago rechazado'}.`);
+    const resultado =
+      cita.estado === EstadoCita.CONFIRMADA ? 'confirmada' : cita.estado === EstadoCita.PENDIENTE_PAGO ? 'pendiente del pago del paciente' : 'cancelada por pago rechazado';
+    await this.notificarOtraParte(cita, parte, 'Propuesta aceptada', `La cita del ${await this.fechaCita(cita)} quedó ${resultado}.`);
     return cita;
   }
 
@@ -258,6 +260,95 @@ export class CitasService {
     }
     if (vencidas.length) this.logger.log(`Propuestas vencidas: ${vencidas.length}`);
     return vencidas.length;
+  }
+
+  // ---------- Pago con PayPal (la cita espera a que el paciente apruebe el pago) ----------
+
+  /** El paciente volvió de PayPal: se autoriza la orden y, si quedó retenida, se confirma la cita. */
+  async completarPagoPorOrden(orden: string): Promise<{ cita: Cita; pago: Pago }> {
+    const pago = await this.pagos.autorizarOrden(orden);
+    const cita = await this.aplicarPago(await this.obtenerPorId(pago.citaId), pago);
+    return { cita, pago };
+  }
+
+  async citaDeOrden(orden: string): Promise<string | null> {
+    return (await this.pagos.obtenerPorOrden(orden))?.citaId ?? null;
+  }
+
+  /** "Ya pagué": vuelve a consultar PayPal por si el paciente aprobó pero no regresó a Bewell. */
+  async verificarPago(actor: Actor, citaId: string): Promise<Cita> {
+    const cita = await this.obtenerPorId(citaId);
+    if ((await this.parteDelActor(actor, cita)) !== 'PACIENTE') throw new AccesoDenegadoError('Solo el paciente puede pagar la cita');
+    const pago = await this.pagos.obtenerPorCita(cita.id);
+    if (!pago) throw new NoEncontradoError('Pago de la cita', cita.id);
+    return this.aplicarPago(cita, await this.pagos.autorizarPendiente(pago));
+  }
+
+  /** Worker: si el paciente no aprueba el pago en 30 min, la cita se cancela y la franja se libera. */
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async expirarPagosPendientes(): Promise<number> {
+    let canceladas = 0;
+    for (const vencido of await this.pagos.pendientesVencidos()) {
+      try {
+        const pago = await this.pagos.autorizarPendiente(vencido); // última revisión: quizá aprobó y no volvió
+        const cita = await this.aplicarPago(await this.obtenerPorId(pago.citaId), pago);
+        if (cita.estado !== EstadoCita.PENDIENTE_PAGO) continue;
+        cita.cancelar('SISTEMA', `No se completó el pago en ${MINUTOS_PARA_APROBAR_PAGO} minutos`, this.reloj.ahora());
+        await this.citas.guardar(cita);
+        await this.pagos.descartarPendiente(cita.id, 'El paciente no aprobó el pago a tiempo');
+        await this.notificador.notificar({
+          usuarioId: await this.perfiles.titularDe(cita.pacienteId),
+          tipo: 'CITA',
+          titulo: 'Reserva liberada',
+          mensaje: `No recibimos el pago de la cita del ${await this.fechaCita(cita)} y el horario se liberó. No se te cobró nada; puedes reservar de nuevo.`,
+          datos: { citaId: cita.id },
+        });
+        canceladas++;
+      } catch (e) {
+        this.logger.error(`No se pudo revisar el pago pendiente ${vencido.id}: ${(e as Error).message}`);
+      }
+    }
+    if (canceladas) this.logger.log(`Reservas sin pago liberadas: ${canceladas}`);
+    return canceladas;
+  }
+
+  /** Aplica a la cita el estado del pago (retenido → confirmada; rechazado → cancelada). */
+  private async aplicarPago(cita: Cita, pago: Pago): Promise<Cita> {
+    if (cita.estado !== EstadoCita.PENDIENTE_PAGO) {
+      // La cita se canceló (o venció) mientras el paciente pagaba: se devuelve la retención.
+      if (pago.estado === EstadoPago.RETENIDO && cita.estado === EstadoCita.CANCELADA) {
+        await this.pagos.reembolsar(cita.id, pago.monto, 'La cita se canceló antes de confirmar el pago');
+      }
+      return cita;
+    }
+    if (pago.estado === EstadoPago.RETENIDO) {
+      cita.confirmarPago();
+      await this.citas.guardar(cita);
+      await this.avisarCitaConfirmada(cita);
+    } else if (pago.estado === EstadoPago.FALLIDO) {
+      cita.cancelar('SISTEMA', 'Pago rechazado por la pasarela', this.reloj.ahora());
+      await this.citas.guardar(cita);
+    }
+    return cita;
+  }
+
+  private async avisarCitaConfirmada(cita: Cita): Promise<void> {
+    const medico = await this.medicos.obtener(cita.medicoId);
+    const fecha = formatearFechaLocal(cita.inicio, medico.zonaHorariaMin);
+    await this.notificador.notificar({
+      usuarioId: medico.usuarioId,
+      tipo: 'CITA',
+      titulo: 'Nueva cita agendada',
+      mensaje: `Se confirmó el pago de la cita del ${fecha} (${cita.modalidad.toLowerCase()}).`,
+      datos: { citaId: cita.id },
+    });
+    await this.notificador.notificar({
+      usuarioId: await this.perfiles.titularDe(cita.pacienteId),
+      tipo: 'CITA',
+      titulo: 'Pago recibido',
+      mensaje: `Recibimos tu pago con PayPal: la cita del ${fecha} está confirmada. El dinero queda retenido hasta 24 h después de la consulta.`,
+      datos: { citaId: cita.id },
+    });
   }
 
   // ---------- Consultas ----------
@@ -290,14 +381,20 @@ export class CitasService {
 
   // ---------- Auxiliares ----------
 
-  private async cobrar(cita: Cita): Promise<void> {
-    const pago = await this.pagos.retenerPago({
-      citaId: cita.id,
-      pacienteId: cita.pacienteId,
-      medicoId: cita.medicoId,
-      monto: cita.monto,
-      moneda: cita.moneda,
-    });
+  /** Inicia el cobro: con pasarela inmediata la cita queda confirmada o cancelada; con PayPal, pendiente de pago. */
+  private async cobrar(cita: Cita, pagoDemo = false): Promise<void> {
+    const datos = { citaId: cita.id, pacienteId: cita.pacienteId, medicoId: cita.medicoId, monto: cita.monto, moneda: cita.moneda };
+    let pago: Pago;
+    try {
+      pago = pagoDemo ? await this.pagos.registrarPagoDemo(datos) : await this.pagos.iniciarCobro(datos);
+    } catch (e) {
+      // Sin pago no se puede guardar la franja: se libera y se avisa al paciente.
+      this.logger.error(`No se pudo iniciar el cobro de la cita ${cita.id}: ${(e as Error).message}`);
+      cita.cancelar('SISTEMA', 'No se pudo iniciar el pago', this.reloj.ahora());
+      await this.citas.guardar(cita);
+      throw new ReglaNegocioError('No pudimos conectar con la pasarela de pago. Intenta de nuevo en unos minutos.');
+    }
+    if (pago.estado === EstadoPago.PENDIENTE_APROBACION) return; // el paciente paga en PayPal
     if (pago.estado === EstadoPago.RETENIDO) cita.confirmarPago();
     else cita.cancelar('SISTEMA', 'Pago rechazado por la pasarela', this.reloj.ahora());
     await this.citas.guardar(cita);

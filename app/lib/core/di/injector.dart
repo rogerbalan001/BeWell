@@ -129,6 +129,7 @@ void configurarDependencias() {
   sl.registerLazySingleton(() => CancelarCita(sl()));
   sl.registerLazySingleton(() => MarcarCitaAtendida(sl()));
   sl.registerLazySingleton(() => ReportarProblemaPago(sl()));
+  sl.registerLazySingleton(() => VerificarPagoCita(sl()));
   sl.registerLazySingleton(() => ProponerSeguimiento(sl()));
   sl.registerLazySingleton(() => ResponderPropuesta(sl()));
   sl.registerFactory(() => HorarioCubit(sl(), sl()));

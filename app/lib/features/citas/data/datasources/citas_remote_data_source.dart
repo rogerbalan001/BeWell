@@ -81,6 +81,8 @@ class CitaMapper {
               montoReembolsado: numero(pago['montoReembolsado']),
               liberarDespuesDe: fechaOpcional(pago['liberarDespuesDe']),
               motivoDisputa: textoOpcional(pago['motivoDisputa']),
+              proveedor: textoOpcional(pago['proveedor']),
+              urlAprobacion: textoOpcional(pago['urlAprobacion']),
             ),
     );
   }

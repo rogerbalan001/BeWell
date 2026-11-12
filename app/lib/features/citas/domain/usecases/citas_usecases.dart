@@ -47,6 +47,13 @@ class ReportarProblemaPago {
   Future<Cita> call(String id, String motivo) => _r.reportarProblema(id, motivo);
 }
 
+/// Pago con PayPal: "Ya pagué" revisa si el paciente aprobó el pago y, si es así, confirma la cita.
+class VerificarPagoCita {
+  const VerificarPagoCita(this._r);
+  final CitasRepository _r;
+  Future<Cita> call(String id) => _r.verificarPago(id);
+}
+
 /// HU: consulta de seguimiento aceptada por ambas partes.
 class ProponerSeguimiento {
   const ProponerSeguimiento(this._r);

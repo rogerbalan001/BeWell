@@ -9,4 +9,7 @@ export abstract class PagoRepository {
   abstract buscarPorClaveIdempotencia(clave: string): Promise<Pago | null>;
   abstract buscarListosParaLiberar(ahora: Date): Promise<Pago[]>;
   abstract buscarEnDisputa(): Promise<Pago[]>;
+  /** Pago de una orden de PayPal (llega en la URL de retorno como `token`). */
+  abstract buscarPorOrdenPasarela(orden: string): Promise<Pago | null>;
+  abstract buscarPendientesDeAprobacion(): Promise<Pago[]>;
 }

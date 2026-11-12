@@ -9,6 +9,7 @@ abstract class CitasRepository {
   Future<Cita> marcarAtendida(String id, {String? notaClinica, List<String> diagnosticos = const []});
   Future<Cita> marcarNoAsistio(String id);
   Future<Cita> reportarProblema(String id, String motivo);
+  Future<Cita> verificarPago(String id);
   Future<Cita> proponer(PropuestaSeguimiento propuesta);
   Future<Cita> responderPropuesta(String id, {required bool aceptar});
 }

@@ -113,11 +113,11 @@ Fuente: tablero Trello *BeWell* (15 HU). Detalle de tareas en [`docs/BACKLOG.md`
 | Auditoría de solo inserción | Módulo `auditoria`; el paciente la ve en "Médicos autorizados" |
 | Límites de tasa | `@nestjs/throttler` (más estricto en login, QR y verificación de récipes) |
 | OpenAPI /api/v1 | Swagger en `/api/docs` |
-| Workers | Tareas programadas `@Cron`: liberar pagos a las 24 h y vencer propuestas a las 48 h |
+| Workers | Tareas programadas `@Cron`: liberar pagos a las 24 h, vencer propuestas a las 48 h y liberar reservas sin pagar a los 30 min |
 | Flutter Clean Architecture + BLoC | `app/lib/features/*/{domain,data,presentation}`; `core/di/injector.dart` es la raíz de composición |
 
 ### Simplificaciones del MVP (documentadas)
-- **Pasarela de pagos simulada** (`PasarelaSimuladaAdapter`) detrás del puerto `PasarelaPagos`.
+- **Pagos** (`PAGOS_PROVEEDOR`): `paypal` usa **PayPal sandbox** (`PasarelaPayPalAdapter`, API REST v2) y `simulada` aprueba todo sin dinero real (`PasarelaSimuladaAdapter`), ambos detrás del puerto `PasarelaPagos`. Los datos de demostración siempre usan pagos simulados. Ver la sección 5.
 - **OCR** (`OCR_PROVIDER`): `tesseract` lee fotos con Tesseract (español) y el texto de los PDF digitales, y reconoce 18 analitos comunes (`extractor-analitos.ts`). `simulado` devuelve plantillas de demo (un archivo con "ilegible" en el nombre simula un documento no reconocido). Un PDF escaneado sin texto queda como adjunto.
 - **Almacenamiento local cifrado** en lugar de S3 (mismo puerto).
 - **KMS local** en lugar de un KMS gestionado (mismo puerto).
@@ -135,3 +135,23 @@ Fuente: tablero Trello *BeWell* (15 HU). Detalle de tareas en [`docs/BACKLOG.md`
 7. **Referencias**: aprobar la referencia a Cardiología → entrar como Dr. Campos y proponer horario → aceptar como Sofía.
 8. **QR de emergencia**: abrir `/#/e/<token>` sin sesión (vista pública) y con `emergencia@bewell.app` (vista ampliada).
 9. **Admin**: aprobar las credenciales de Andrés Pérez → aparece en el directorio con la insignia.
+
+---
+
+## 5. Pagos con PayPal (sandbox)
+
+El paciente paga al reservar y el dinero queda **retenido** hasta 24 h después de la consulta (igual que con la pasarela simulada):
+
+1. Al confirmar la cita, la API crea una orden de PayPal (`intent: AUTHORIZE`) y la cita queda **pendiente de pago**. La app abre PayPal.
+2. El paciente inicia sesión con una **cuenta personal de prueba** y aprueba el pago. PayPal lo devuelve a `GET /api/v1/pagos/paypal/retorno`, que autoriza la orden (el monto queda retenido) y **confirma la cita**; luego redirige a la cita en la app web.
+3. Si el paciente no vuelve a Bewell, el botón **"Ya pagué, verificar"** (`POST /citas/:id/pago/verificar`) revisa la orden en PayPal. Si no aprueba en **30 minutos**, la reserva se cancela y el horario se libera (no se cobra nada).
+4. Cancelación antes de la consulta: se **anula** la retención (reembolso total) o se captura solo la penalización de la política.
+5. 24 h después de la consulta (sin disputa) se **captura** la retención y el dinero pasa a la cuenta de PayPal de la plataforma.
+
+**Configurar el sandbox**
+1. Entra a [developer.paypal.com](https://developer.paypal.com) con una cuenta de PayPal → **Apps & Credentials** → pestaña **Sandbox** → *Create App* (tipo *Merchant*). Copia el **Client ID** y el **Secret**.
+2. En **Testing Tools → Sandbox Accounts** hay una cuenta *Business* (recibe los pagos) y una *Personal* (el paciente). Con la *Personal* se paga en la app; su correo y contraseña de prueba se ven en *View/Edit account*.
+3. En Render (bewell-api → Environment) o en `backend/.env`: `PAGOS_PROVEEDOR=paypal`, `PAYPAL_ENTORNO=sandbox`, `PAYPAL_CLIENT_ID=…`, `PAYPAL_CLIENT_SECRET=…`. `PUBLIC_API_URL` y `PUBLIC_WEB_URL` deben ser las URL públicas (PayPal redirige ahí).
+4. Los movimientos se ven en [sandbox.paypal.com](https://www.sandbox.paypal.com) entrando con la cuenta *Business*.
+
+Las tarifas de los médicos están en USD, que PayPal sandbox acepta. Sin credenciales, deja `PAGOS_PROVEEDOR=simulada`.

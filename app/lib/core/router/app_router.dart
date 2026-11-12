@@ -107,7 +107,10 @@ GoRouter crearRouter(SesionCubit sesion) {
             builder: (_, s) => ConfirmacionCitaPage(borrador: s.extra is BorradorCita ? s.extra as BorradorCita : null),
           ),
           GoRoute(path: '/citas', builder: (_, __) => const MisCitasPage()),
-          GoRoute(path: '/citas/:id', builder: (_, s) => CitaDetallePage(citaId: s.pathParameters['id']!)),
+          GoRoute(
+            path: '/citas/:id',
+            builder: (_, s) => CitaDetallePage(citaId: s.pathParameters['id']!, resultadoPago: s.uri.queryParameters['pago']),
+          ),
           GoRoute(
             path: '/citas/:id/recipe',
             builder: (_, s) => EmitirRecipePage(citaId: s.pathParameters['id']!, cita: s.extra is Cita ? s.extra as Cita : null),

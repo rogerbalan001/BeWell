@@ -19,6 +19,9 @@ export const aPagoRespuesta = (p: Pago) => ({
   monto: aMonto(p.monto),
   moneda: p.moneda,
   estado: p.estado,
+  proveedor: p.proveedor,
+  /** Página de PayPal donde el paciente aprueba el pago (solo mientras está pendiente). */
+  urlAprobacion: p.pendienteDeAprobacion ? p.urlAprobacion : undefined,
   montoReembolsado: aMonto(p.montoReembolsado),
   liberarDespuesDe: p.liberarDespuesDe,
   motivoDisputa: p.motivoDisputa,

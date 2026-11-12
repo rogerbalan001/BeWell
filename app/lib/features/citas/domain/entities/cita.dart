@@ -11,14 +11,30 @@ class Franja extends Equatable {
 }
 
 class PagoResumen extends Equatable {
-  const PagoResumen({required this.estado, required this.monto, required this.montoReembolsado, this.liberarDespuesDe, this.motivoDisputa});
+  const PagoResumen({
+    required this.estado,
+    required this.monto,
+    required this.montoReembolsado,
+    this.liberarDespuesDe,
+    this.motivoDisputa,
+    this.proveedor,
+    this.urlAprobacion,
+  });
   final String estado;
   final double monto;
   final double montoReembolsado;
   final DateTime? liberarDespuesDe;
   final String? motivoDisputa;
+  /// Pasarela que procesa el pago: PAYPAL o SIMULADA.
+  final String? proveedor;
+  /// Página de PayPal donde el paciente aprueba el pago (solo mientras está pendiente).
+  final String? urlAprobacion;
+
+  bool get esPayPal => proveedor == 'PAYPAL';
+  bool get pendienteAprobacion => estado == 'PENDIENTE_APROBACION';
 
   String get descripcion => switch (estado) {
+        'PENDIENTE_APROBACION' => 'Esperando el pago en PayPal',
         'RETENIDO' => 'Pago retenido (protegido)',
         'EN_DISPUTA' => 'Retenido por reporte en revisión',
         'LIBERADO' => 'Liberado al médico',
@@ -29,7 +45,7 @@ class PagoResumen extends Equatable {
       };
 
   @override
-  List<Object?> get props => [estado, montoReembolsado, liberarDespuesDe];
+  List<Object?> get props => [estado, montoReembolsado, liberarDespuesDe, urlAprobacion];
 }
 
 /// Cita médica con su estado, la política de cancelación aplicada y el pago.
@@ -94,6 +110,10 @@ class Cita extends Equatable {
   bool get pendienteAceptacion => estado == 'PENDIENTE_ACEPTACION';
   bool get activa => const ['PENDIENTE_ACEPTACION', 'PENDIENTE_PAGO', 'CONFIRMADA'].contains(estado);
   bool get futura => inicio.isAfter(DateTime.now());
+
+  /// La reserva espera a que el paciente apruebe el pago en PayPal (la franja se guarda 30 min).
+  bool get esperandoPago => estado == 'PENDIENTE_PAGO' && (pago?.pendienteAprobacion ?? false);
+  String? get urlPago => esperandoPago ? pago?.urlAprobacion : null;
 
   /// HU pagos: el paciente puede reportar un problema mientras el pago siga retenido (24 h).
   bool get puedeReportarProblema =>
