@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../../medicos/domain/entities/medico.dart';
@@ -135,20 +136,20 @@ class _TarjetaPermiso extends StatelessWidget {
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Wrap(spacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
-                Text(p.medico?.nombreCompleto ?? 'Médico', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                Text(p.medico?.nombreCompleto ?? 'Médico', style: AppTextos.tituloTarjeta),
                 ChipEstado(
                   p.revocado ? 'Revocado' : (p.vigente ? (p.escritura ? 'Lectura y escritura' : 'Solo lectura') : 'Vencido'),
                   color: p.vigente ? AppColors.verde : AppColors.pizarraClara,
                 ),
                 if (p.origen == 'REFERENCIA') const ChipEstado('Por referencia', color: AppColors.primario),
               ]),
-              Text(p.medico?.especialidad ?? '', style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
+              Text(p.medico?.especialidad ?? '', style: AppTextos.secundario),
               const SizedBox(height: 8),
               Wrap(spacing: 6, runSpacing: 6, children: [
                 for (final c in p.categorias) ChipEstado(categoriasClinicas[c] ?? c, color: AppColors.primario, fondo: AppColors.superficieAzul2),
               ]),
               const SizedBox(height: 6),
-              Text('Válido hasta ${Formatos.fechaCorta(p.validoHasta)}', style: const TextStyle(fontSize: 12.5, color: AppColors.pizarra)),
+              Text('Válido hasta ${Formatos.fechaCorta(p.validoHasta)}', style: AppTextos.detalle),
             ]),
           ),
           if (p.vigente)
@@ -192,14 +193,14 @@ class _DialogoPermisoState extends State<_DialogoPermiso> {
         width: 520,
         child: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Médico', style: TextStyle(fontWeight: FontWeight.w700)),
+            const Text('Médico', style: AppTextos.enfasis),
             const SizedBox(height: 6),
             Wrap(spacing: 6, runSpacing: 6, children: [
               for (final m in widget.medicos)
                 ChoiceChip(label: Text('${m.nombreCompleto} · ${m.especialidad}'), selected: _medico?.id == m.id, onSelected: (_) => setState(() => _medico = m)),
             ]),
             const SizedBox(height: 14),
-            const Text('Secciones que podrá ver', style: TextStyle(fontWeight: FontWeight.w700)),
+            const Text('Secciones que podrá ver', style: AppTextos.enfasis),
             const SizedBox(height: 6),
             Wrap(spacing: 6, runSpacing: 6, children: [
               for (final e in categoriasClinicas.entries)
@@ -210,7 +211,7 @@ class _DialogoPermisoState extends State<_DialogoPermiso> {
                 ),
             ]),
             const SizedBox(height: 14),
-            const Text('Vigencia', style: TextStyle(fontWeight: FontWeight.w700)),
+            const Text('Vigencia', style: AppTextos.enfasis),
             const SizedBox(height: 6),
             Wrap(spacing: 6, children: [
               for (final d in const [1, 7, 30, 90, 365])

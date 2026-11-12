@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
@@ -141,7 +142,7 @@ class _Contenido extends StatelessWidget {
           LineaTiempo(eventos: d.pagina.items, esTitular: esTitular),
           Center(
             child: Column(children: [
-              Text('Mostrando ${d.pagina.items.length} de ${d.pagina.total} eventos', style: const TextStyle(fontSize: 12.5, color: AppColors.pizarra)),
+              Text('Mostrando ${d.pagina.items.length} de ${d.pagina.total} eventos', style: AppTextos.detalle),
               if (d.hayMas) ...[
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
@@ -195,7 +196,7 @@ class _Contenido extends StatelessWidget {
             esTitular
                 ? 'Tú decides qué médico ve cada sección y hasta cuándo. Cada acceso queda auditado.'
                 : 'En verde, las secciones donde también puedes registrar información.',
-            style: const TextStyle(color: AppColors.pizarra, fontSize: 12.5),
+            style: AppTextos.detalle,
           ),
         ]),
       ),
@@ -206,10 +207,10 @@ class _Contenido extends StatelessWidget {
           child: const Row(children: [
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Acceso de emergencia QR', style: TextStyle(color: AppColors.primario, fontSize: 11, fontWeight: FontWeight.w800)),
+                Text('ACCESO DE EMERGENCIA QR', style: TextStyle(color: AppColors.primario, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
                 SizedBox(height: 4),
-                Text('Pase médico rápido', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-                Text('Alergias y tipo de sangre sin desbloquear tu teléfono.', style: TextStyle(color: AppColors.pizarra, fontSize: 12.5)),
+                Text('Pase médico rápido', style: AppTextos.tituloTarjeta),
+                Text('Alergias y tipo de sangre sin desbloquear tu teléfono.', style: AppTextos.detalle),
               ]),
             ),
             Icon(Icons.qr_code_2, size: 48, color: AppColors.marino),

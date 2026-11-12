@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
@@ -53,8 +54,8 @@ class _VerificarRecipePageState extends State<VerificarRecipePage> {
     final r = _resultado;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: AppColors.superficie,
+        surfaceTintColor: AppColors.superficie,
         title: const BwLogo(tamano: 30),
         actions: [TextButton(onPressed: () => context.go('/'), child: const Text('Ir a Bewell'))],
       ),
@@ -102,7 +103,7 @@ class _Resultado extends StatelessWidget {
         child: Row(children: [
           Icon(Icons.gpp_bad_outlined, color: AppColors.error, size: 36),
           SizedBox(width: 12),
-          Expanded(child: Text('No existe un récipe con ese código. No lo despache.', style: TextStyle(fontWeight: FontWeight.w700))),
+          Expanded(child: Text('No existe un récipe con ese código. No lo despache.', style: AppTextos.enfasis)),
         ]),
       );
     }
@@ -139,7 +140,7 @@ class _Resultado extends StatelessWidget {
           const Divider(height: 24),
           ListaItemsRecipe(r.items),
           const SizedBox(height: 8),
-          Text('Algoritmo ${r.algoritmo ?? ''} · hash ${r.hash ?? ''}', style: const TextStyle(fontSize: 11, color: AppColors.pizarraClara)),
+          Text('Algoritmo ${r.algoritmo ?? ''} · hash ${r.hash ?? ''}', style: AppTextos.mini),
         ]),
       ),
     ]);

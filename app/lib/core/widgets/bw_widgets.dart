@@ -66,14 +66,15 @@ class ChipEstado extends StatelessWidget {
       decoration: BoxDecoration(color: fondo ?? color.withAlpha(28), borderRadius: BorderRadius.circular(99)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         if (icono != null)
-          Icon(icono, size: 13, color: color)
+          Icon(icono, size: 13, color: AppColors.textoSobreTinte(color))
         else
           Container(width: 7, height: 7, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 6),
         Flexible(
           child: Text(texto,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700)),
+              // El texto usa la versión oscura del color para llegar a 4.5:1 sobre el fondo teñido.
+              style: TextStyle(color: AppColors.textoSobreTinte(color), fontSize: 12, fontWeight: FontWeight.w700)),
         ),
       ]),
     );

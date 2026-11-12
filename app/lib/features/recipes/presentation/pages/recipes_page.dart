@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../../auth/presentation/cubit/sesion_cubit.dart';
@@ -84,9 +85,9 @@ class _TarjetaRecipe extends StatelessWidget {
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(r.codigo, style: const TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1)),
-              Text(esMedico ? 'Paciente: ${r.pacienteNombre}' : '${r.medicoNombre} · ${r.especialidad}', style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
+              Text(esMedico ? 'Paciente: ${r.pacienteNombre}' : '${r.medicoNombre} · ${r.especialidad}', style: AppTextos.secundario),
               Text('${r.items.map((i) => i.medicamento).join(', ')} · ${Formatos.fechaCorta(r.emitidoEn)}',
-                  maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)),
+                  maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextos.pequeno),
             ]),
           ),
           ChipEstado(r.vigente ? 'Vigente' : (r.estado == 'ANULADO' ? 'Anulado' : 'Vencido'), color: r.vigente ? AppColors.verde : AppColors.error),

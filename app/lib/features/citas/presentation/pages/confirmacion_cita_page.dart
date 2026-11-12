@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../../perfiles/presentation/cubit/perfil_activo_cubit.dart';
@@ -80,7 +81,7 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
           const SizedBox(width: 14),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(m.nombreCompleto, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+              Text(m.nombreCompleto, style: AppTextos.tituloSeccion),
               Text(m.especialidad, style: const TextStyle(color: AppColors.primario, fontWeight: FontWeight.w600)),
             ]),
           ),
@@ -93,7 +94,7 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
               b.modalidad == 'VIRTUAL' ? 'Consulta en línea\nVideollamada cifrada' : 'Presencial\n${m.direccion ?? ''}'),
         ]),
         const SizedBox(height: 18),
-        const Text('Datos del paciente', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+        const Text('Datos del paciente', style: AppTextos.tituloTarjeta),
         const SizedBox(height: 8),
         BlocBuilder<PerfilActivoCubit, PerfilesState>(builder: (context, s) {
           final p = s.seleccionado;
@@ -108,7 +109,7 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
     final pago = BwTarjeta(
       padding: const EdgeInsets.all(24),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const Text('Desglose de cita', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+        const Text('Desglose de cita', style: AppTextos.tituloSeccion),
         const SizedBox(height: 10),
         FilaDato('Honorarios médicos', Formatos.dinero(m.tarifa, m.moneda)),
         const FilaDato('Plataforma y gestión Bewell', 'Gratis'),
@@ -116,7 +117,7 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
         const Divider(height: 22),
         FilaDato('Importe total', Formatos.dinero(m.tarifa, m.moneda), destacado: true),
         const SizedBox(height: 14),
-        const Text('Método de pago', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.pizarra)),
+        const Text('MÉTODO DE PAGO', style: AppTextos.rotulo),
         const SizedBox(height: 8),
         const Padding(
           padding: EdgeInsets.only(bottom: 8),
@@ -130,7 +131,7 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('PayPal', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                  Text('Con tu cuenta PayPal o tarjeta. Bewell nunca ve tus datos de pago.', style: TextStyle(fontSize: 12, color: AppColors.pizarra)),
+                  Text('Con tu cuenta PayPal o tarjeta. Bewell nunca ve tus datos de pago.', style: AppTextos.detalle),
                 ]),
               ),
               Icon(Icons.check_circle, color: AppColors.primario),
@@ -151,7 +152,7 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
           builder: (context, s) => FilledButton.icon(
             onPressed: _enviando || s.seleccionado == null ? null : () => _confirmar(s.seleccionado!.id),
             icon: _enviando
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.sobrePrimario))
                 : const Icon(Icons.check_circle_outline),
             label: const Text('Confirmar y pagar con PayPal'),
           ),
@@ -195,11 +196,11 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: AppColors.superficieAzul, borderRadius: BorderRadius.circular(18)),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        CircleAvatar(backgroundColor: AppColors.primario, radius: 18, child: Icon(icono, color: Colors.white, size: 18)),
+        CircleAvatar(backgroundColor: AppColors.primario, radius: 18, child: Icon(icono, color: AppColors.sobrePrimario, size: 18)),
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(titulo, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.pizarra)),
+            Text(titulo, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1, color: AppColors.pizarra)),
             const SizedBox(height: 4),
             Text(texto, style: const TextStyle(fontWeight: FontWeight.w600, height: 1.4)),
           ]),

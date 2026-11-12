@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../domain/entities/expediente.dart';
@@ -45,7 +46,7 @@ class LineaTiempo extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: const BoxDecoration(color: AppColors.primario, shape: BoxShape.circle),
-                  child: Icon(iconoEvento(eventos[i].tipo), color: Colors.white, size: 18),
+                  child: Icon(iconoEvento(eventos[i].tipo), color: AppColors.sobrePrimario, size: 18),
                 ),
                 if (i < eventos.length - 1) Expanded(child: Container(width: 2, color: AppColors.superficieAzul2)),
               ]),
@@ -77,14 +78,14 @@ class LineaTiempo extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             ChipEstado(e.tipoLegible, color: AppColors.primario, icono: iconoEvento(e.tipo)),
             const SizedBox(height: 10),
-            Text(e.titulo, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+            Text(e.titulo, style: AppTextos.tituloDetalle),
             Text(Formatos.fechaHora(e.fecha), style: const TextStyle(color: AppColors.pizarra)),
             if (e.medico != null) ...[
               const SizedBox(height: 12),
               Row(children: [
                 AvatarIniciales(e.medico!.nombreCompleto, radio: 18, verificado: e.medico!.verificado),
                 const SizedBox(width: 10),
-                Text('${e.medico!.nombreCompleto} · ${e.medico!.especialidad}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text('${e.medico!.nombreCompleto} · ${e.medico!.especialidad}', style: AppTextos.enfasisSuave),
               ]),
             ],
             const Divider(height: 28),
@@ -124,7 +125,7 @@ class _Evento extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Wrap(spacing: 8, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
         ChipEstado(e.tipoLegible, color: AppColors.primario, fondo: AppColors.superficieAzul2),
-        Text(Formatos.fechaHora(e.fecha), style: const TextStyle(color: AppColors.pizarra, fontSize: 12.5)),
+        Text(Formatos.fechaHora(e.fecha), style: AppTextos.detalle),
         if (e.autoReportado) const ChipEstado('Auto-reportado', color: AppColors.ambar),
         if (e.estadoOrden != null)
           ChipEstado(
@@ -137,11 +138,11 @@ class _Evento extends StatelessWidget {
           ),
       ]),
       const SizedBox(height: 8),
-      Text(e.titulo, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+      Text(e.titulo, style: AppTextos.tituloTarjeta),
       if (e.medico != null)
         Padding(
           padding: const EdgeInsets.only(top: 6),
-          child: Text('${e.medico!.nombreCompleto} · ${e.medico!.especialidad}', style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
+          child: Text('${e.medico!.nombreCompleto} · ${e.medico!.especialidad}', style: AppTextos.secundario),
         ),
       if (e.resumen.isNotEmpty) ...[
         const SizedBox(height: 8),

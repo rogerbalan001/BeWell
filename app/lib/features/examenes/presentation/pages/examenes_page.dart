@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../../perfiles/presentation/cubit/perfil_activo_cubit.dart';
@@ -58,7 +59,7 @@ class _Vista extends StatelessWidget {
               RecursoError(:final mensaje) => VistaError(mensaje, reintentar: () => cubit.cargar(pacienteId)),
               RecursoListo(:final datos) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   if (datos.solicitudes.any((s) => s.pendiente)) ...[
-                    const Text('Órdenes pendientes', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+                    const Text('Órdenes pendientes', style: AppTextos.tituloTarjeta),
                     const SizedBox(height: 10),
                     for (final s in datos.solicitudes.where((s) => s.pendiente))
                       Padding(
@@ -67,10 +68,10 @@ class _Vista extends StatelessWidget {
                           color: AppColors.ambarSuave,
                           child: Wrap(alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 10, children: [
                             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text(s.examenes.join(' · '), style: const TextStyle(fontWeight: FontWeight.w700)),
+                              Text(s.examenes.join(' · '), style: AppTextos.enfasis),
                               Text('Indicada por ${s.medico?.nombreCompleto ?? 'tu médico'} · ${Formatos.fechaCorta(s.creadaEn)}',
-                                  style: const TextStyle(fontSize: 13, color: AppColors.pizarra)),
-                              if (s.indicaciones.isNotEmpty) Text('Indicaciones: ${s.indicaciones}', style: const TextStyle(fontSize: 13)),
+                                  style: AppTextos.secundario),
+                              if (s.indicaciones.isNotEmpty) Text('Indicaciones: ${s.indicaciones}', style: AppTextos.pequeno),
                             ]),
                             FilledButton.icon(
                               onPressed: () => _subir(context, solicitud: s),
@@ -82,7 +83,7 @@ class _Vista extends StatelessWidget {
                       ),
                     const SizedBox(height: 16),
                   ],
-                  const Text('Resultados', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+                  const Text('Resultados', style: AppTextos.tituloTarjeta),
                   const SizedBox(height: 10),
                   if (datos.examenes.isEmpty)
                     const VistaVacia(icono: Icons.biotech_outlined, titulo: 'Aún no has cargado exámenes')
@@ -113,8 +114,11 @@ class _TarjetaExamen extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(e.titulo, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-                Text('${e.nombreArchivo} · ${Formatos.fechaCorta(e.fechaExamen ?? e.cargadoEn)}', style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
+                Text(e.titulo, style: AppTextos.tituloTarjeta),
+                Text(
+                  [if (e.clasificacion != null) e.clasificacion!.categoria, e.nombreArchivo, Formatos.fechaCorta(e.fechaExamen ?? e.cargadoEn)].join(' · '),
+                  style: AppTextos.secundario,
+                ),
               ]),
             ),
             ChipEstado(
@@ -139,7 +143,7 @@ class _TarjetaExamen extends StatelessWidget {
               icon: const Icon(Icons.open_in_new),
               label: const Text('Ver archivo original'),
             ),
-            if (e.estadoExtraccion == 'EXTRAIDO')
+            if (e.estadoExtraccion == 'EXTRAIDO' || e.sinClasificar)
               TextButton.icon(
                 onPressed: () async {
                   final cubit = context.read<ExamenesCubit>();
@@ -147,7 +151,7 @@ class _TarjetaExamen extends StatelessWidget {
                   cubit.cargar(e.pacienteId, silencioso: true);
                 },
                 icon: const Icon(Icons.fact_check_outlined),
-                label: const Text('Revisar valores'),
+                label: Text(e.sinClasificar ? 'Elegir categoría y tipo' : 'Revisar valores'),
               ),
           ]),
         ]),

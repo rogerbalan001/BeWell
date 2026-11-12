@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../domain/entities/medico.dart';
@@ -49,7 +50,7 @@ class _Vista extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
-                  const Text('Especialidad:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  const Text('Especialidad:', style: AppTextos.enfasisPequeno),
                   ChoiceChip(
                     label: const Text('Todas'),
                     selected: cubit.especialidad == null,
@@ -60,7 +61,7 @@ class _Vista extends StatelessWidget {
                 ]),
                 const SizedBox(height: 10),
                 Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
-                  const Text('Modalidad:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  const Text('Modalidad:', style: AppTextos.enfasisPequeno),
                   ChoiceChip(label: const Text('Todas'), selected: cubit.modalidad == null, onSelected: (_) => cubit.filtrar(limpiarModalidad: true)),
                   ChoiceChip(
                     avatar: const Icon(Icons.apartment, size: 16),
@@ -125,12 +126,12 @@ class _PanelLateral extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(color: AppColors.marino, borderRadius: BorderRadius.circular(24)),
         child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Orientación médica', style: TextStyle(color: Color(0xB3FFFFFF), fontSize: 12, fontWeight: FontWeight.w700)),
+          Text('ORIENTACIÓN MÉDICA', style: TextStyle(color: AppColors.sobreOscuroTenue, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
           SizedBox(height: 10),
-          Text('¿Tienes dudas sobre qué especialista necesitas?', style: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700)),
+          Text('¿Tienes dudas sobre qué especialista necesitas?', style: TextStyle(color: AppColors.sobrePrimario, fontSize: 19, fontWeight: FontWeight.w700)),
           SizedBox(height: 10),
           Text('Empieza por Medicina General: tu médico podrá referirte a un especialista de la red compartiendo tu expediente, siempre con tu aprobación.',
-              style: TextStyle(color: Color(0xCCFFFFFF), height: 1.5, fontSize: 13)),
+              style: TextStyle(color: AppColors.sobreOscuroTenue, height: 1.5, fontSize: 13)),
         ]),
       ),
       const SizedBox(height: 16),
@@ -140,7 +141,7 @@ class _PanelLateral extends StatelessWidget {
           SizedBox(width: 12),
           Expanded(
             child: Text('Pago protegido: el cobro se retiene y se libera al médico 24 h después de tu consulta.',
-                style: TextStyle(fontSize: 13, color: AppColors.pizarra, height: 1.4)),
+                style: AppTextos.secundario),
           ),
         ]),
       ),

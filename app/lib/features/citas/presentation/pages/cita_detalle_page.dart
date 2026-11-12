@@ -6,6 +6,7 @@ import '../../../../core/di/injector.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../../auth/presentation/cubit/sesion_cubit.dart';
@@ -16,6 +17,7 @@ import '../../../resenas/presentation/widgets/estrellas.dart';
 import '../../domain/entities/cita.dart';
 import '../../domain/usecases/citas_usecases.dart';
 import '../cubit/citas_cubits.dart';
+import '../../../chat/presentation/widgets/boton_chat.dart';
 import '../widgets/pago_paypal.dart';
 import '../widgets/selector_franjas.dart';
 import '../widgets/tarjeta_cita.dart';
@@ -242,7 +244,7 @@ class _DetalleState extends State<_Detalle> {
             child: SingleChildScrollView(
               child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
                 const Text('La cita quedará "pendiente de aceptación" hasta que la otra parte la acepte (máximo 48 h).',
-                    style: TextStyle(color: AppColors.pizarra, fontSize: 13)),
+                    style: AppTextos.secundario),
                 const SizedBox(height: 12),
                 SegmentedButton<String>(
                   segments: const [
@@ -312,6 +314,12 @@ class _DetalleState extends State<_Detalle> {
           label: const Text('No asistió'),
         ),
       ],
+      if (c.confirmada || c.atendida)
+        BotonChat(
+          citaId: c.id,
+          etiqueta: esMedico ? 'Chat con el paciente' : 'Chat con el médico',
+          conQuien: esMedico ? c.pacienteNombre : c.medicoNombre,
+        ),
       if (c.confirmada && c.futura)
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
@@ -362,7 +370,7 @@ class _DetalleState extends State<_Detalle> {
         Row(children: [
           const Icon(Icons.confirmation_number_outlined, color: AppColors.primario),
           const SizedBox(width: 8),
-          Text('#${c.codigo}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+          Text('#${c.codigo}', style: AppTextos.tituloSeccion),
           const Spacer(),
           ChipEstado(c.estadoLegible, color: colorEstadoCita(c.estado)),
         ]),
@@ -372,7 +380,7 @@ class _DetalleState extends State<_Detalle> {
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(esMedico ? c.pacienteNombre : c.medicoNombre, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+              Text(esMedico ? c.pacienteNombre : c.medicoNombre, style: AppTextos.tituloTarjeta),
               Text(esMedico ? 'Paciente' : '${c.especialidad} · paciente: ${c.pacienteNombre}', style: const TextStyle(color: AppColors.pizarra)),
             ]),
           ),
@@ -420,7 +428,7 @@ class _DetalleState extends State<_Detalle> {
         titulo: 'Política ${c.politica.nombre.toLowerCase()}',
         subtitulo: 'Aceptada al reservar',
         icono: Icons.policy_outlined,
-        child: Text(c.politica.descripcion, style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
+        child: Text(c.politica.descripcion, style: AppTextos.secundario),
       ),
       if (c.atendida && !esMedico) ...[
         const SizedBox(height: 16),

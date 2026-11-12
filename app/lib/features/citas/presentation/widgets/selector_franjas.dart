@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../domain/entities/cita.dart';
 
@@ -38,7 +39,7 @@ class _SelectorFranjasState extends State<SelectorFranjas> {
     final hoy = _soloDia(DateTime.now());
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(Formatos.mesAnio(dia), style: const TextStyle(fontWeight: FontWeight.w700)),
+      Text(Formatos.mesAnio(dia), style: AppTextos.enfasis),
       const SizedBox(height: 10),
       SizedBox(
         height: 84,
@@ -59,10 +60,10 @@ class _SelectorFranjasState extends State<SelectorFranjas> {
                   borderRadius: BorderRadius.circular(22),
                 ),
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text(Formatos.diaSemanaCorto(d), style: TextStyle(fontSize: 12, color: activo ? Colors.white70 : AppColors.pizarra)),
-                  Text('${d.day}', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: activo ? Colors.white : AppColors.marino)),
+                  Text(Formatos.diaSemanaCorto(d), style: TextStyle(fontSize: 12, color: activo ? AppColors.sobrePrimario : AppColors.pizarra)),
+                  Text('${d.day}', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: activo ? AppColors.sobrePrimario : AppColors.marino)),
                   if (d == hoy)
-                    Text('Hoy', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: activo ? Colors.white : AppColors.primario)),
+                    Text('Hoy', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: activo ? AppColors.sobrePrimario : AppColors.primario)),
                 ]),
               ),
             );
@@ -82,7 +83,7 @@ class _SelectorFranjasState extends State<SelectorFranjas> {
         Row(children: [
           Icon(icono, size: 18, color: AppColors.pizarra),
           const SizedBox(width: 6),
-          Text('$titulo (${franjas.length} cupos)', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          Text('$titulo (${franjas.length} cupos)', style: AppTextos.enfasisPequeno),
         ]),
         const SizedBox(height: 8),
         Wrap(spacing: 8, runSpacing: 8, children: [
@@ -94,7 +95,7 @@ class _SelectorFranjasState extends State<SelectorFranjas> {
               shape: const StadiumBorder(),
               selectedColor: AppColors.primario,
               labelStyle: TextStyle(
-                color: widget.seleccionada == f ? Colors.white : AppColors.marino,
+                color: widget.seleccionada == f ? AppColors.sobrePrimario : AppColors.marino,
                 fontWeight: FontWeight.w600,
               ),
               onSelected: (_) => widget.alElegir(f),
