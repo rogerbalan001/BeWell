@@ -18,6 +18,7 @@ IconData _icono(String tipo) => switch (tipo) {
       'VERIFICACION' => Icons.verified_outlined,
       'PERMISO' => Icons.lock_open_outlined,
       'RECORDATORIO' => Icons.alarm_outlined,
+      'PAGO' => Icons.payments_outlined,
       _ => Icons.notifications_none,
     };
 
