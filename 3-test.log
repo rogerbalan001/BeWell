@@ -1,0 +1,43 @@
+PASS test/dominio/historia-clinica.spec.ts (5.705 s)
+PASS test/infraestructura/pasarela-paypal.spec.ts
+[32m[Nest] 2907  - [39m11/12/2026, 2:52:36 PM [32m    LOG[39m [38;5;3m[PasarelaPayPal] [39m[32mOrden ORD-1: 45.50 USD (cita cita123)[39m
+[33m[Nest] 2907  - [39m11/12/2026, 2:52:36 PM [33m   WARN[39m [38;5;3m[PasarelaPayPal] [39m[33mPayPal POST /v2/checkout/orders/ORD-1/authorize → 422 ORDER_NOT_APPROVED (debug_id -)[39m
+[33m[Nest] 2907  - [39m11/12/2026, 2:52:36 PM [33m   WARN[39m [38;5;3m[PasarelaPayPal] [39m[33mPayPal POST /v2/checkout/orders/ORD-1/authorize → 422 ORDER_ALREADY_AUTHORIZED (debug_id -)[39m
+[33m[Nest] 2907  - [39m11/12/2026, 2:52:36 PM [33m   WARN[39m [38;5;3m[PasarelaPayPal] [39m[33mPayPal POST /v2/payments/authorizations/AUTH-1/capture → 422 AUTHORIZATION_ALREADY_CAPTURED (debug_id -)[39m
+[33m[Nest] 2907  - [39m11/12/2026, 2:52:36 PM [33m   WARN[39m [38;5;3m[PasarelaPayPal] [39m[33mPAGOS_PROVEEDOR=paypal pero faltan PAYPAL_CLIENT_ID o PAYPAL_CLIENT_SECRET: los cobros fallarán.[39m
+PASS test/aplicacion/historia-clinica.service.spec.ts (7.078 s)
+PASS test/aplicacion/citas.service.spec.ts (7.19 s)
+PASS test/aplicacion/pagos-paypal.spec.ts
+[32m[Nest] 2914  - [39m11/12/2026, 2:52:37 PM [32m    LOG[39m [38;5;3m[PagosService] [39m[32mPagos liberados: 1[39m
+[32m[Nest] 2914  - [39m11/12/2026, 2:52:37 PM [32m    LOG[39m [38;5;3m[CitasService] [39m[32mPropuestas vencidas: 1[39m
+[32m[Nest] 2907  - [39m11/12/2026, 2:52:37 PM [32m    LOG[39m [38;5;3m[CitasService] [39m[32mReservas sin pago liberadas: 1[39m
+[32m[Nest] 2907  - [39m11/12/2026, 2:52:37 PM [32m    LOG[39m [38;5;3m[PagosService] [39m[32mPagos liberados: 1[39m
+PASS test/aplicacion/recipes-y-emergencias.spec.ts
+PASS test/dominio/clinico.spec.ts
+PASS test/aplicacion/expediente.service.spec.ts
+PASS test/dominio/cita-y-pago.spec.ts
+PASS test/aplicacion/recordatorios.service.spec.ts
+PASS test/aplicacion/chat.service.spec.ts
+PASS test/dominio/politica-y-medico.spec.ts
+PASS test/aplicacion/examenes-clasificacion.spec.ts
+PASS test/infraestructura/clasificadores.spec.ts
+PASS test/dominio/extractor-analitos.spec.ts
+[33m[Nest] 2907  - [39m11/12/2026, 2:52:38 PM [33m   WARN[39m [38;5;3m[ExamenesService] [39m[33mLa clasificación falló para el examen 6af5d2b63009f1cadab85a82: Gemini no responde[39m
+[33m[Nest] 2907  - [39m11/12/2026, 2:52:38 PM [33m   WARN[39m [38;5;3m[ExamenesService] [39m[33mLa clasificación falló para el examen 6af5d2b66e8f7aa75d02d367: Gemini no responde[39m
+[33m[Nest] 2914  - [39m11/12/2026, 2:52:38 PM [33m   WARN[39m [38;5;3m[ClasificadorGemini] [39m[33mGemini respondió 429: {"error":{"message":"cuota"}}[39m
+[33m[Nest] 2914  - [39m11/12/2026, 2:52:38 PM [33m   WARN[39m [38;5;3m[ClasificadorGemini] [39m[33mNo se pudo clasificar el examen con Gemini: sin red[39m
+[33m[Nest] 2914  - [39m11/12/2026, 2:52:38 PM [33m   WARN[39m [38;5;3m[ClasificadorGemini] [39m[33mGemini no devolvió JSON válido: no es json[39m
+[33m[Nest] 2914  - [39m11/12/2026, 2:52:38 PM [33m   WARN[39m [38;5;3m[ClasificadorGemini] [39m[33mIA_EXAMENES=gemini pero falta GEMINI_API_KEY: los exámenes se guardarán sin sugerencia.[39m
+PASS test/dominio/clasificacion-examen.spec.ts
+PASS test/dominio/recordatorios.spec.ts
+PASS test/dominio/solicitud-examen.spec.ts
+PASS test/aplicacion/disputas.service.spec.ts
+PASS test/dominio/mensaje-chat.spec.ts
+PASS test/dominio/pago-paypal.spec.ts
+PASS test/interfaz/archivos.controller.spec.ts
+
+Test Suites: 22 passed, 22 total
+Tests:       165 passed, 165 total
+Snapshots:   0 total
+Time:        9.418 s
+Ran all test suites.
