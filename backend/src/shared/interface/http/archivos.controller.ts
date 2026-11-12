@@ -19,6 +19,8 @@ export class ArchivosController {
     const ruta = this.almacenamiento.resolverTokenLectura(token);
     const archivo = await this.almacenamiento.leer(ruta);
     res.setHeader('Content-Type', archivo.tipoMime);
+    // El navegador debe respetar el tipo declarado: un archivo subido nunca se interpreta como HTML o script.
+    res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(archivo.nombreOriginal)}"`);
     res.setHeader('Cache-Control', 'private, max-age=60');
     res.send(archivo.contenido);
