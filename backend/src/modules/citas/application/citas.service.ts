@@ -174,7 +174,23 @@ export class CitasService {
     const cita = await this.obtenerPorId(citaId);
     if ((await this.parteDelActor(actor, cita)) !== 'PACIENTE') throw new AccesoDenegadoError('Solo el paciente puede reportar un problema');
     asegurar(cita.estado === EstadoCita.ATENDIDA, 'Solo se pueden reportar problemas de citas atendidas');
-    await this.pagos.abrirDisputa(cita.id, motivo);
+    const pago = await this.pagos.abrirDisputa(cita.id, motivo);
+    const medico = await this.medicos.obtener(cita.medicoId);
+    const fecha = formatearFechaLocal(cita.inicio, medico.zonaHorariaMin);
+    await this.notificador.notificar({
+      usuarioId: medico.usuarioId,
+      tipo: 'PAGO',
+      titulo: 'Un paciente reportó un problema',
+      mensaje: `Se reportó un problema con la consulta del ${fecha}: "${pago.motivoDisputa}". El pago queda retenido hasta que el equipo de Bewell lo revise.`,
+      datos: { citaId: cita.id, pagoId: pago.id },
+    });
+    await this.notificador.notificar({
+      usuarioId: await this.perfiles.titularDe(cita.pacienteId),
+      tipo: 'PAGO',
+      titulo: 'Recibimos tu reporte',
+      mensaje: `El pago de la consulta del ${fecha} queda retenido mientras revisamos tu reporte. Te avisaremos cuando se resuelva.`,
+      datos: { citaId: cita.id, pagoId: pago.id },
+    });
   }
 
   // ---------- Citas de seguimiento (HU: aceptación de ambas partes) ----------

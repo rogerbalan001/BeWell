@@ -5,7 +5,7 @@ import { aMonto } from '../../../shared/domain/dinero';
 import { RolUsuario } from '../../../shared/domain/roles';
 import { Roles } from '../../../shared/interface/auth/decoradores';
 import { ParseObjectIdPipe } from '../../../shared/interface/http/parse-object-id.pipe';
-import { PagosService } from '../application/pagos.service';
+import { DisputaConPartes, DisputasService } from '../application/disputas.service';
 import { Pago } from '../domain/pago';
 
 export class ResolverDisputaDto {
@@ -29,21 +29,29 @@ export const aPagoRespuesta = (p: Pago) => ({
   historial: p.historial,
 });
 
+const aDisputaRespuesta = ({ pago, partes }: DisputaConPartes) => ({
+  ...aPagoRespuesta(pago),
+  pacienteNombre: partes.pacienteNombre,
+  medicoNombre: partes.medicoNombre,
+  /** Fecha en que el paciente reportó el problema. */
+  abiertaEn: [...pago.historial].reverse().find((h) => h.estado === 'EN_DISPUTA')?.fecha,
+});
+
 /** «Boundary» Gestión de disputas de pago (administrador). */
 @ApiTags('Pagos')
 @ApiBearerAuth()
 @Roles(RolUsuario.ADMIN)
 @Controller('pagos')
 export class PagosController {
-  constructor(private readonly pagos: PagosService) {}
+  constructor(private readonly servicio: DisputasService) {}
 
   @Get('disputas')
   async disputas() {
-    return (await this.pagos.listarDisputas()).map(aPagoRespuesta);
+    return (await this.servicio.listar()).map(aDisputaRespuesta);
   }
 
   @Post(':id/resolver')
   async resolver(@Param('id', ParseObjectIdPipe) id: string, @Body() dto: ResolverDisputaDto) {
-    return aPagoRespuesta(await this.pagos.resolverDisputa(id, dto.accion, dto.nota ?? ''));
+    return aDisputaRespuesta(await this.servicio.resolver(id, dto.accion, dto.nota ?? ''));
   }
 }
