@@ -126,7 +126,7 @@ class _PanelLateral extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(color: AppColors.marino, borderRadius: BorderRadius.circular(24)),
         child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('ORIENTACIÓN MÉDICA', style: TextStyle(color: AppColors.sobreOscuroTenue, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+          Text('Orientación médica', style: TextStyle(color: AppColors.sobreOscuroTenue, fontSize: 12, fontWeight: FontWeight.w700)),
           SizedBox(height: 10),
           Text('¿Tienes dudas sobre qué especialista necesitas?', style: TextStyle(color: AppColors.sobrePrimario, fontSize: 19, fontWeight: FontWeight.w700)),
           SizedBox(height: 10),

@@ -45,7 +45,7 @@ Future<void> mostrarRecipeConQr(BuildContext context, Recipe r) {
         child: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              const BwLogo(tamano: 28),
+              const BwLogo(tamano: 28, navegable: false),
               const Spacer(),
               ChipEstado(r.vigente ? 'Vigente' : (r.estado == 'ANULADO' ? 'Anulado' : 'Vencido'), color: r.vigente ? AppColors.verde : AppColors.error),
             ]),

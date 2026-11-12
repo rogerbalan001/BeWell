@@ -117,7 +117,7 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
         const Divider(height: 22),
         FilaDato('Importe total', Formatos.dinero(m.tarifa, m.moneda), destacado: true),
         const SizedBox(height: 14),
-        const Text('MÉTODO DE PAGO', style: AppTextos.rotulo),
+        const Text('Método de pago', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.pizarra)),
         const SizedBox(height: 8),
         const Padding(
           padding: EdgeInsets.only(bottom: 8),
@@ -200,7 +200,7 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(titulo, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1, color: AppColors.pizarra)),
+            Text(titulo, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.pizarra)),
             const SizedBox(height: 4),
             Text(texto, style: const TextStyle(fontWeight: FontWeight.w600, height: 1.4)),
           ]),
