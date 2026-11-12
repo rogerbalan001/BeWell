@@ -11,6 +11,10 @@ import '../../features/citas/data/repositories/citas_repository_impl.dart';
 import '../../features/citas/domain/repositories/citas_repository.dart';
 import '../../features/citas/domain/usecases/citas_usecases.dart';
 import '../../features/citas/presentation/cubit/citas_cubits.dart';
+import '../../features/disputas/data/datasources/disputas_remote_data_source.dart';
+import '../../features/disputas/data/repositories/disputas_repository_impl.dart';
+import '../../features/disputas/domain/repositories/disputas_repository.dart';
+import '../../features/disputas/domain/usecases/disputas_usecases.dart';
 import '../../features/emergencia/data/datasources/emergencia_remote_data_source.dart';
 import '../../features/emergencia/data/repositories/emergencia_repository_impl.dart';
 import '../../features/emergencia/domain/repositories/emergencia_repository.dart';
@@ -193,4 +197,9 @@ void configurarDependencias() {
   sl.registerLazySingleton<RecordatoriosRepository>(() => RecordatoriosRepositoryImpl(sl()));
   sl.registerLazySingleton(() => GestionarRecordatorios(sl()));
   sl.registerFactory(() => RecordatoriosCubit(sl()));
+
+  // ---------- Disputas de pago (administrador) ----------
+  sl.registerLazySingleton(() => DisputasRemoteDataSource(sl()));
+  sl.registerLazySingleton<DisputasRepository>(() => DisputasRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => GestionarDisputas(sl()));
 }
