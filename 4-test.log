@@ -1,0 +1,68 @@
+
+::group::✅ Passing tests
+✅ /home/runner/work/BeWell/BeWell/app/test/verificar_recipe_test.dart: un récipe válido muestra el emisor, el paciente y los medicamentos
+✅ /home/runner/work/BeWell/BeWell/app/test/pago_paypal_test.dart: una reserva pendiente de PayPal trae la URL para pagar
+✅ /home/runner/work/BeWell/BeWell/app/test/pago_paypal_test.dart: una cita ya pagada con PayPal no ofrece volver a pagar
+✅ /home/runner/work/BeWell/BeWell/app/test/pago_paypal_test.dart: los pagos de demostración (sin proveedor) siguen funcionando
+✅ /home/runner/work/BeWell/BeWell/app/test/pago_paypal_test.dart: el mensaje al volver de PayPal depende del resultado
+✅ /home/runner/work/BeWell/BeWell/app/test/verificar_recipe_test.dart: un récipe anulado no es válido y muestra el motivo
+✅ /home/runner/work/BeWell/BeWell/app/test/verificar_recipe_test.dart: un récipe vencido no es válido
+✅ /home/runner/work/BeWell/BeWell/app/test/verificar_recipe_test.dart: un código inexistente avisa que no se despache
+✅ /home/runner/work/BeWell/BeWell/app/test/sprint2_rutas_y_pantallas_test.dart: todas las pantallas del Sprint 2 y 3 tienen ruta y dependencias registradas
+✅ /home/runner/work/BeWell/BeWell/app/test/chat_test.dart: ChatCubit abre la conversación y marca como leídos los mensajes recibidos
+✅ /home/runner/work/BeWell/BeWell/app/test/chat_test.dart: ChatCubit actualizar pide solo los posteriores al último y agrega los nuevos sin repetir
+✅ /home/runner/work/BeWell/BeWell/app/test/chat_test.dart: ChatCubit enviar agrega el mensaje propio y rechaza los vacíos
+✅ /home/runner/work/BeWell/BeWell/app/test/chat_test.dart: ChatCubit el contador de no leídos es por cita
+✅ /home/runner/work/BeWell/BeWell/app/test/sprint2_rutas_y_pantallas_test.dart: Recordatorios: muestra los tres interruptores y guarda el cambio
+✅ /home/runner/work/BeWell/BeWell/app/test/sprint2_rutas_y_pantallas_test.dart: Línea de tiempo: el titular abre el récipe desde el detalle; la orden muestra su estado
+✅ /home/runner/work/BeWell/BeWell/app/test/sprint2_rutas_y_pantallas_test.dart: Línea de tiempo: el médico no ve el botón al documento del paciente
+✅ /home/runner/work/BeWell/BeWell/app/test/sprint2_rutas_y_pantallas_test.dart: Órdenes de exámenes: el médico anula una orden pendiente con motivo
+✅ /home/runner/work/BeWell/BeWell/app/test/chat_test.dart: ChatVista muestra los mensajes y envía uno nuevo
+✅ /home/runner/work/BeWell/BeWell/app/test/chat_test.dart: ChatVista con la cita cancelada no deja escribir
+✅ /home/runner/work/BeWell/BeWell/app/test/widget_test.dart: las iniciales se calculan con nombre y apellido
+✅ /home/runner/work/BeWell/BeWell/app/test/disputas_datos_test.dart: lee una disputa de GET /pagos/disputas
+✅ /home/runner/work/BeWell/BeWell/app/test/disputas_datos_test.dart: una disputa resuelta ya no está abierta
+✅ /home/runner/work/BeWell/BeWell/app/test/disputas_datos_test.dart: las acciones usan los códigos de la API
+✅ /home/runner/work/BeWell/BeWell/app/test/disputas_page_test.dart: muestra cada disputa con el motivo, el monto y las dos acciones
+✅ /home/runner/work/BeWell/BeWell/app/test/disputas_page_test.dart: sin disputas muestra el estado vacío
+✅ /home/runner/work/BeWell/BeWell/app/test/recordatorios_test.dart: cada tipo de recordatorio se activa o desactiva por separado
+✅ /home/runner/work/BeWell/BeWell/app/test/recordatorios_test.dart: el código que envía la API se traduce al tipo
+✅ /home/runner/work/BeWell/BeWell/app/test/disputas_page_test.dart: reembolsar pide confirmación y nota, resuelve y quita la disputa
+✅ /home/runner/work/BeWell/BeWell/app/test/disputas_page_test.dart: si el administrador vuelve atrás no se resuelve nada
+✅ /home/runner/work/BeWell/BeWell/app/test/disputas_page_test.dart: el cubit quita la disputa resuelta de la lista
+✅ /home/runner/work/BeWell/BeWell/app/test/ordenes_examenes_test.dart: el estado de la orden se muestra en palabras del médico
+✅ /home/runner/work/BeWell/BeWell/app/test/ordenes_examenes_test.dart: solo una orden pendiente se puede anular
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) marino sobre blanco
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) marino sobre lienzo
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) marino sobre superficieAzul
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) marino sobre superficieAzul2
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) pizarra sobre blanco
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) pizarra sobre lienzo
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) pizarra sobre superficieAzul
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) pizarra sobre superficieAzul2
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) pizarraClara sobre blanco
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) pizarraClara sobre lienzo
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) pizarraClara sobre superficieAzul
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) pizarraClara sobre superficieAzul2
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) texto blanco sobre el azul primario
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) texto de un chip verde sobre su fondo teñido
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) texto de un chip primario sobre su fondo teñido
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) texto de un chip ámbar sobre su fondo teñido
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) texto de un chip error sobre su fondo teñido
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: Contraste mínimo 4.5:1 (criterio de la HU de interfaz coherente) texto de un chip pizarraClara sobre su fondo teñido
+✅ /home/runner/work/BeWell/BeWell/app/test/linea_tiempo_test.dart: los detalles se muestran en palabras y se ocultan las claves internas
+✅ /home/runner/work/BeWell/BeWell/app/test/linea_tiempo_test.dart: una orden de exámenes muestra su estado
+✅ /home/runner/work/BeWell/BeWell/app/test/linea_tiempo_test.dart: "Ver más" agrega la página siguiente sin repetir eventos
+✅ /home/runner/work/BeWell/BeWell/app/test/tema_test.dart: ChipEstado usa la versión legible del color para el texto
+✅ /home/runner/work/BeWell/BeWell/app/test/clasificacion_examen_test.dart: Datos lee la sugerencia de la IA con su confianza
+✅ /home/runner/work/BeWell/BeWell/app/test/clasificacion_examen_test.dart: Datos un examen sin clasificación queda por clasificar
+✅ /home/runner/work/BeWell/BeWell/app/test/clasificacion_examen_test.dart: Datos solo se envía la clasificación si cambió o no había
+✅ /home/runner/work/BeWell/BeWell/app/test/clasificacion_examen_test.dart: Mensaje al terminar la carga con sugerencia y valores
+✅ /home/runner/work/BeWell/BeWell/app/test/clasificacion_examen_test.dart: Mensaje al terminar la carga si la IA falló pide elegir la categoría y el tipo
+✅ /home/runner/work/BeWell/BeWell/app/test/clasificacion_examen_test.dart: SelectorClasificacion muestra la sugerencia con su confianza ya seleccionada
+✅ /home/runner/work/BeWell/BeWell/app/test/clasificacion_examen_test.dart: SelectorClasificacion sin sugerencia avisa que hay que elegir
+✅ /home/runner/work/BeWell/BeWell/app/test/clasificacion_examen_test.dart: SelectorClasificacion el paciente corrige la sugerencia eligiendo otra categoría y tipo
+✅ /home/runner/work/BeWell/BeWell/app/test/clasificacion_examen_test.dart: SelectorClasificacion con la categoría "Otro" se escribe el tipo
+::endgroup::
+
+🎉 63 tests passed.
