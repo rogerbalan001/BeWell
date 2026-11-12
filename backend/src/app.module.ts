@@ -19,6 +19,7 @@ import { PagosModule } from './modules/pagos/pagos.module';
 import { PerfilesModule } from './modules/perfiles/perfiles.module';
 import { RecipesModule } from './modules/recipes/recipes.module';
 import { RecordatoriosModule } from './modules/recordatorios/recordatorios.module';
+import { ChatModule } from './modules/chat/chat.module';
 import { ResenasModule } from './modules/resenas/resenas.module';
 import { ErroresDominioFilter } from './shared/interface/http/errores-dominio.filter';
 import { SharedModule } from './shared/shared.module';
@@ -52,6 +53,7 @@ import { SharedModule } from './shared/shared.module';
     RecipesModule,
     EmergenciasModule,
     RecordatoriosModule,
+    ChatModule,
     DemoModule,
   ],
   controllers: [SaludController],
