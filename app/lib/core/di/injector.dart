@@ -6,6 +6,11 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
 import '../../features/auth/presentation/cubit/sesion_cubit.dart';
+import '../../features/chat/data/datasources/chat_remote_data_source.dart';
+import '../../features/chat/data/repositories/chat_repository_impl.dart';
+import '../../features/chat/domain/repositories/chat_repository.dart';
+import '../../features/chat/domain/usecases/chat_usecases.dart';
+import '../../features/chat/presentation/cubit/chat_cubit.dart';
 import '../../features/citas/data/datasources/citas_remote_data_source.dart';
 import '../../features/citas/data/repositories/citas_repository_impl.dart';
 import '../../features/citas/domain/repositories/citas_repository.dart';
@@ -192,4 +197,10 @@ void configurarDependencias() {
   sl.registerLazySingleton<RecordatoriosRepository>(() => RecordatoriosRepositoryImpl(sl()));
   sl.registerLazySingleton(() => GestionarRecordatorios(sl()));
   sl.registerFactory(() => RecordatoriosCubit(sl()));
+
+  // ---------- Chat médico-paciente (Sprint 3) ----------
+  sl.registerLazySingleton(() => ChatRemoteDataSource(sl()));
+  sl.registerLazySingleton<ChatRepository>(() => ChatRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => ConversarEnCita(sl()));
+  sl.registerFactory(() => ChatCubit(sl()));
 }

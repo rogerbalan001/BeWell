@@ -16,6 +16,7 @@ import '../../../resenas/presentation/widgets/estrellas.dart';
 import '../../domain/entities/cita.dart';
 import '../../domain/usecases/citas_usecases.dart';
 import '../cubit/citas_cubits.dart';
+import '../../../chat/presentation/widgets/boton_chat.dart';
 import '../widgets/selector_franjas.dart';
 import '../widgets/tarjeta_cita.dart';
 
@@ -229,6 +230,12 @@ class _DetalleState extends State<_Detalle> {
           label: const Text('No asistió'),
         ),
       ],
+      if (c.confirmada || c.atendida)
+        BotonChat(
+          citaId: c.id,
+          etiqueta: esMedico ? 'Chat con el paciente' : 'Chat con el médico',
+          conQuien: esMedico ? c.pacienteNombre : c.medicoNombre,
+        ),
       if (c.confirmada && c.futura)
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
