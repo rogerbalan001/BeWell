@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../../resenas/presentation/widgets/estrellas.dart';
@@ -87,7 +88,7 @@ class _Contenido extends StatelessWidget {
                 ? null
                 : Row(mainAxisSize: MainAxisSize.min, children: [
                     const Icon(Icons.star_rounded, color: AppColors.primario),
-                    Text(' ${e.promedio.toStringAsFixed(1)} de 5', style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text(' ${e.promedio.toStringAsFixed(1)} de 5', style: AppTextos.enfasis),
                   ]),
             child: e.total == 0
                 ? const Text('Este médico aún no tiene reseñas.', style: TextStyle(color: AppColors.pizarra))
@@ -95,7 +96,7 @@ class _Contenido extends StatelessWidget {
                     Wrap(spacing: 22, runSpacing: 8, children: [
                       for (final (n, v) in [('Puntualidad', e.puntualidad), ('Trato', e.trato), ('Claridad', e.claridad), ('Instalaciones', e.instalaciones)])
                         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(n, style: const TextStyle(fontSize: 12, color: AppColors.pizarra)),
+                          Text(n, style: AppTextos.detalle),
                           Text(v.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: AppColors.primario)),
                         ]),
                     ]),
@@ -109,7 +110,7 @@ class _Contenido extends StatelessWidget {
                           Row(children: [
                             AvatarIniciales(r.autor ?? 'P', radio: 16),
                             const SizedBox(width: 10),
-                            Expanded(child: Text(r.autor ?? 'Paciente', style: const TextStyle(fontWeight: FontWeight.w700))),
+                            Expanded(child: Text(r.autor ?? 'Paciente', style: AppTextos.enfasis)),
                             Estrellas(r.promedio, tamano: 14),
                           ]),
                           if (r.comentario != null) ...[

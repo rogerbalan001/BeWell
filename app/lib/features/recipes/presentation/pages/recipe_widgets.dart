@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../domain/entities/recipe.dart';
@@ -23,8 +24,8 @@ class ListaItemsRecipe extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('${i.medicamento} ${i.presentacion}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                Text('${i.dosis} · ${i.frecuencia} · ${i.duracionDias} días', style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
+                Text('${i.medicamento} ${i.presentacion}', style: AppTextos.enfasis),
+                Text('${i.dosis} · ${i.frecuencia} · ${i.duracionDias} días', style: AppTextos.secundario),
                 if (i.indicaciones != null) Text(i.indicaciones!, style: const TextStyle(fontSize: 12.5, fontStyle: FontStyle.italic)),
               ]),
             ),
@@ -44,16 +45,16 @@ Future<void> mostrarRecipeConQr(BuildContext context, Recipe r) {
         child: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              const BwLogo(tamano: 28, navegable: false),
+              const BwLogo(tamano: 28),
               const Spacer(),
               ChipEstado(r.vigente ? 'Vigente' : (r.estado == 'ANULADO' ? 'Anulado' : 'Vencido'), color: r.vigente ? AppColors.verde : AppColors.error),
             ]),
             const SizedBox(height: 14),
-            Text('Récipe ${r.codigo}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+            Text('Récipe ${r.codigo}', style: AppTextos.tituloSeccion),
             Text('${r.medicoNombre} · ${r.especialidad}', style: const TextStyle(color: AppColors.pizarra)),
             Text('Paciente: ${r.pacienteNombre}', style: const TextStyle(color: AppColors.pizarra)),
             Text('Emitido ${Formatos.fechaCorta(r.emitidoEn)} · válido hasta ${Formatos.fechaCorta(r.validoHasta)}',
-                style: const TextStyle(color: AppColors.pizarra, fontSize: 12.5)),
+                style: AppTextos.detalle),
             if (r.diagnostico != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text('Dx: ${r.diagnostico}')),
             const SizedBox(height: 12),
             ListaItemsRecipe(r.items),
@@ -61,7 +62,7 @@ Future<void> mostrarRecipeConQr(BuildContext context, Recipe r) {
             Center(
               child: Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borde)),
+                decoration: BoxDecoration(color: AppColors.sobrePrimario, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borde)),
                 child: QrImageView(data: r.urlVerificacion, version: QrVersions.auto, size: 190),
               ),
             ),
@@ -70,11 +71,11 @@ Future<void> mostrarRecipeConQr(BuildContext context, Recipe r) {
             const SizedBox(height: 4),
             const Center(
               child: Text('La farmacia escanea el QR o ingresa el código para verificar la firma digital.',
-                  textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.pizarra)),
+                  textAlign: TextAlign.center, style: AppTextos.detalle),
             ),
             const SizedBox(height: 8),
             Text('Firma ${r.algoritmo} · SHA-256 ${r.hash.substring(0, r.hash.length < 16 ? r.hash.length : 16)}…',
-                style: const TextStyle(fontSize: 11, color: AppColors.pizarraClara)),
+                style: AppTextos.mini),
           ]),
         ),
       ),

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../../auth/presentation/cubit/sesion_cubit.dart';
@@ -65,7 +66,7 @@ class _TarjetaReferencia extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Expanded(
-              child: Text('${r.pacienteNombre} → ${r.especialidadDestino}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              child: Text('${r.pacienteNombre} → ${r.especialidadDestino}', style: AppTextos.tituloTarjeta),
             ),
             ChipEstado(r.estadoLegible, color: r.pendiente ? AppColors.ambar : (r.estado == 'APROBADA' ? AppColors.verde : AppColors.pizarraClara)),
           ]),

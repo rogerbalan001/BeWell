@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../domain/entities/cita.dart';
@@ -31,16 +32,16 @@ class TarjetaCita extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(color: AppColors.superficieAzul2, borderRadius: BorderRadius.circular(16)),
           child: Column(children: [
-            Text(Formatos.diaSemanaCorto(cita.inicio), style: const TextStyle(fontSize: 11, color: AppColors.pizarra)),
-            Text('${cita.inicio.day}', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+            Text(Formatos.diaSemanaCorto(cita.inicio), style: AppTextos.mini),
+            Text('${cita.inicio.day}', style: AppTextos.tituloDetalle),
             Text(Formatos.hora(cita.inicio), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
           ]),
         ),
         const SizedBox(width: 14),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(titulo, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-            Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
+            Text(titulo, style: AppTextos.tituloTarjeta),
+            Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextos.secundario),
             const SizedBox(height: 8),
             Wrap(spacing: 6, runSpacing: 6, children: [
               ChipEstado(cita.estadoLegible, color: colorEstadoCita(cita.estado)),

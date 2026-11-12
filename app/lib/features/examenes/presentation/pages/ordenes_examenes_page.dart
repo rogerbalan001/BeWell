@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
@@ -95,14 +96,14 @@ class _TarjetaOrden extends StatelessWidget {
       child: BwTarjeta(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Wrap(alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.center, spacing: 12, runSpacing: 8, children: [
-            Text('Indicada el ${Formatos.fechaCorta(orden.creadaEn)}', style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
+            Text('Indicada el ${Formatos.fechaCorta(orden.creadaEn)}', style: AppTextos.secundario),
             ChipEstado(orden.estadoLegible, color: color, fondo: fondo, icono: icono),
           ]),
           const SizedBox(height: 8),
           Text(orden.examenes.join(' · '), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
           if (orden.indicaciones.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text('Indicaciones: ${orden.indicaciones}', style: const TextStyle(fontSize: 13, color: AppColors.pizarra)),
+            Text('Indicaciones: ${orden.indicaciones}', style: AppTextos.secundario),
           ],
           if (orden.completada) ...[
             const SizedBox(height: 8),
@@ -114,7 +115,7 @@ class _TarjetaOrden extends StatelessWidget {
           ],
           if (orden.anulada && (orden.motivoAnulacion ?? '').isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text('Motivo de la anulación: ${orden.motivoAnulacion}', style: const TextStyle(fontSize: 13, color: AppColors.pizarra)),
+            Text('Motivo de la anulación: ${orden.motivoAnulacion}', style: AppTextos.secundario),
           ],
           if (orden.pendiente) ...[
             const SizedBox(height: 10),
@@ -161,7 +162,7 @@ class _DialogoAnularState extends State<_DialogoAnular> {
       content: SizedBox(
         width: 420,
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(widget.orden.examenes.join(', '), style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(widget.orden.examenes.join(', '), style: AppTextos.enfasisSuave),
           const SizedBox(height: 12),
           TextField(
             controller: _motivo,

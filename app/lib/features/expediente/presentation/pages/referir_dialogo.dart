@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -23,7 +24,7 @@ Future<void> mostrarDialogoReferir(BuildContext context, {required String pacien
           width: 480,
           child: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Especialista de la red', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text('Especialista de la red', style: AppTextos.enfasisSuave),
               const SizedBox(height: 8),
               Wrap(spacing: 6, runSpacing: 6, children: [
                 for (final m in medicos)

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -115,7 +116,7 @@ class _EmitirRecipePageState extends State<EmitirRecipePage> {
           ),
           const SizedBox(height: 8),
           Wrap(spacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
-            const Text('Vigencia:', style: TextStyle(fontWeight: FontWeight.w600)),
+            const Text('Vigencia:', style: AppTextos.enfasisSuave),
             for (final d in const [7, 15, 30, 60, 90]) ChoiceChip(label: Text('$d días'), selected: _vigencia == d, onSelected: (_) => setState(() => _vigencia = d)),
           ]),
           const SizedBox(height: 18),

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
@@ -14,6 +15,7 @@ import '../../domain/entities/examen.dart';
 import '../../domain/usecases/examenes_usecases.dart';
 
 /// HU: subir fotos o PDF de exámenes y que la app extraiga los valores.
+/// El nombre es opcional: la app sugiere la categoría y el tipo del examen.
 class SubirExamenPage extends StatefulWidget {
   const SubirExamenPage({super.key, this.solicitudId, this.tituloSugerido});
   final String? solicitudId;
@@ -46,27 +48,23 @@ class _SubirExamenPageState extends State<SubirExamenPage> {
 
   Future<void> _subir(String pacienteId) async {
     final f = _archivo;
-    if (f?.bytes == null || _titulo.text.trim().isEmpty) {
-      mostrarMensaje(context, 'Indica el nombre del examen y elige el archivo', error: true);
+    if (f?.bytes == null) {
+      mostrarMensaje(context, 'Elige la foto o el PDF del examen', error: true);
       return;
     }
     setState(() => _subiendo = true);
     try {
       final examen = await sl<SubirExamen>()(
         pacienteId: pacienteId,
-        titulo: _titulo.text.trim(),
+        titulo: _titulo.text.trim().isEmpty ? null : _titulo.text.trim(),
         archivo: ArchivoExamen(bytes: f!.bytes!, nombre: f.name),
         solicitudId: widget.solicitudId,
         fechaExamen: _fecha,
       );
       if (!mounted) return;
-      if (examen.estadoExtraccion == 'EXTRAIDO') {
-        mostrarMensaje(context, 'Detectamos ${examen.resultados.length} valores. Revísalos antes de guardar.');
-        context.pushReplacement('/examenes/${examen.id}/revisar', extra: examen);
-      } else {
-        mostrarMensaje(context, 'No reconocimos valores en el documento: quedó guardado como adjunto en tu expediente.');
-        context.pop();
-      }
+      mostrarMensaje(context, mensajeTrasSubir(examen));
+      // Siempre se revisa: la categoría y el tipo sugeridos (o elegirlos) y los valores detectados.
+      context.pushReplacement('/examenes/${examen.id}/revisar', extra: examen);
     } on Failure catch (e) {
       if (mounted) mostrarMensaje(context, e.mensaje, error: true);
     } finally {
@@ -89,7 +87,14 @@ class _SubirExamenPageState extends State<SubirExamenPage> {
           BwTarjeta(
             padding: const EdgeInsets.all(24),
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              TextField(controller: _titulo, decoration: AppTheme.campo('Nombre del examen (p. ej. "Perfil lipídico")', icono: Icons.biotech_outlined)),
+              TextField(
+                controller: _titulo,
+                decoration: AppTheme.campo(
+                  'Nombre del examen (opcional)',
+                  ayuda: 'Si lo dejas vacío, la app deduce la categoría y el tipo.',
+                  icono: Icons.biotech_outlined,
+                ),
+              ),
               const SizedBox(height: 14),
               OutlinedButton.icon(
                 icon: const Icon(Icons.event),
@@ -113,7 +118,7 @@ class _SubirExamenPageState extends State<SubirExamenPage> {
                   child: Column(children: [
                     Icon(_archivo == null ? Icons.cloud_upload_outlined : Icons.insert_drive_file_outlined, size: 44, color: AppColors.primario),
                     const SizedBox(height: 8),
-                    Text(_archivo?.name ?? 'Toca para elegir una foto o un PDF', style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text(_archivo?.name ?? 'Toca para elegir una foto o un PDF', style: AppTextos.enfasis),
                     if (_archivo != null)
                       Text('${(_archivo!.size / 1024 / 1024).toStringAsFixed(2)} MB', style: const TextStyle(color: AppColors.pizarra)),
                   ]),
@@ -123,14 +128,14 @@ class _SubirExamenPageState extends State<SubirExamenPage> {
               FilledButton.icon(
                 onPressed: _subiendo || perfil == null ? null : () => _subir(perfil.id),
                 icon: _subiendo
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.sobrePrimario))
                     : const Icon(Icons.auto_awesome),
-                label: Text(_subiendo ? 'Procesando…' : 'Subir y extraer valores'),
+                label: Text(_subiendo ? 'Analizando el examen…' : 'Subir y analizar'),
               ),
               const SizedBox(height: 10),
               const Text(
                 'Los valores extraídos automáticamente no se consideran clínicamente confiables hasta que tú los confirmas y un médico los valida.',
-                style: TextStyle(fontSize: 12, color: AppColors.pizarra),
+                style: AppTextos.detalle,
               ),
             ]),
           ),
@@ -138,4 +143,13 @@ class _SubirExamenPageState extends State<SubirExamenPage> {
       ),
     );
   }
+}
+
+/// Mensaje que ve el paciente al terminar la carga, según lo que reconoció la app.
+String mensajeTrasSubir(Examen e) {
+  final valores = e.resultados.length;
+  final sugerencia = e.clasificacion?.sugeridaPorIa == true ? 'Parece un examen de «${e.clasificacion!.tipo}». ' : '';
+  if (e.sinClasificar && valores == 0) return 'Guardamos el archivo. Elige la categoría y el tipo del examen.';
+  if (valores == 0) return '${sugerencia}Confirma la categoría y el tipo antes de guardar.';
+  return '${sugerencia}Detectamos $valores ${valores == 1 ? 'valor' : 'valores'}. Revísalos antes de guardar.';
 }

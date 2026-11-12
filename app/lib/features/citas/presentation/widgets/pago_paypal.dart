@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../domain/entities/cita.dart';
 
@@ -55,13 +56,13 @@ class TarjetaPagoPendiente extends StatelessWidget {
       const Row(children: [
         Icon(Icons.timer_outlined, color: AppColors.ambar, size: 20),
         SizedBox(width: 8),
-        Expanded(child: Text('Completa tu pago para confirmar la cita', style: TextStyle(fontWeight: FontWeight.w700))),
+        Expanded(child: Text('Completa tu pago para confirmar la cita', style: AppTextos.enfasis)),
       ]),
       const SizedBox(height: 6),
       Text(
         'Apartamos tu horario por 30 minutos. Paga ${Formatos.dinero(cita.monto, cita.moneda)} con PayPal; '
         'el dinero queda retenido y solo se le entrega al médico 24 h después de tu consulta.',
-        style: const TextStyle(fontSize: 12.5, color: AppColors.pizarra, height: 1.4),
+        style: AppTextos.detalle,
       ),
       const SizedBox(height: 12),
       FilledButton.icon(

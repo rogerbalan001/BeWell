@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
@@ -72,13 +73,13 @@ class _FormularioState extends State<_Formulario> {
         onTap: () => setState(() => _modalidad = valor),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            CircleAvatar(backgroundColor: activo ? AppColors.primario : Colors.white, child: Icon(icono, color: activo ? Colors.white : AppColors.pizarra)),
+            CircleAvatar(backgroundColor: activo ? AppColors.primario : AppColors.sobrePrimario, child: Icon(icono, color: activo ? AppColors.sobrePrimario : AppColors.pizarra)),
             const Spacer(),
             if (activo) const ChipEstado('Activa', icono: Icons.check, color: AppColors.primario),
           ]),
           const SizedBox(height: 10),
-          Text(titulo, style: const TextStyle(fontWeight: FontWeight.w700)),
-          Text(texto, style: const TextStyle(color: AppColors.pizarra, fontSize: 12.5)),
+          Text(titulo, style: AppTextos.enfasis),
+          Text(texto, style: AppTextos.detalle),
         ]),
       ),
     );
@@ -95,9 +96,9 @@ class _FormularioState extends State<_Formulario> {
           const SizedBox(width: 14),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(m.nombreCompleto, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+              Text(m.nombreCompleto, style: AppTextos.tituloTarjeta),
               Text('${m.especialidad} · ★ ${m.calificacion.toStringAsFixed(1)} (${m.totalResenas} reseñas)',
-                  style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
+                  style: AppTextos.secundario),
             ]),
           ),
           TextButton.icon(onPressed: () => context.go('/directorio'), icon: const Icon(Icons.swap_horiz), label: const Text('Cambiar')),
@@ -136,7 +137,7 @@ class _FormularioState extends State<_Formulario> {
 
     final resumen = BwTarjeta(
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const Text('Resumen preliminar', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.pizarra)),
+        const Text('RESUMEN PRELIMINAR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.2, color: AppColors.pizarra)),
         const SizedBox(height: 12),
         const Row(children: [Text('Paciente:', style: TextStyle(color: AppColors.pizarra)), SizedBox(width: 8), SelectorPerfil()]),
         const Divider(height: 24),

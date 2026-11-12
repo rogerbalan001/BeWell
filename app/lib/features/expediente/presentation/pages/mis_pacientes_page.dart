@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../domain/entities/expediente.dart';
@@ -43,9 +44,9 @@ class MisPacientesPage extends StatelessWidget {
                             const SizedBox(width: 14),
                             Expanded(
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(p.nombre, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                                Text(p.nombre, style: AppTextos.tituloTarjeta),
                                 Text('${p.edad} años · acceso hasta ${Formatos.fechaCorta(p.validoHasta)}',
-                                    style: const TextStyle(color: AppColors.pizarra, fontSize: 13)),
+                                    style: AppTextos.secundario),
                                 const SizedBox(height: 6),
                                 Wrap(spacing: 4, runSpacing: 4, children: [
                                   for (final c in p.categorias)

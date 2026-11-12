@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_textos.dart';
 import '../../domain/entities/examen.dart';
 
 /// Tabla compacta de analitos con el nivel de confianza del OCR.
@@ -18,9 +19,9 @@ class TablaResultados extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Row(children: [
-              Expanded(flex: 3, child: Text(r.analito, style: const TextStyle(fontWeight: FontWeight.w600))),
+              Expanded(flex: 3, child: Text(r.analito, style: AppTextos.enfasisSuave)),
               Expanded(flex: 2, child: Text('${r.valor} ${r.unidad ?? ''}', style: const TextStyle(fontWeight: FontWeight.w800))),
-              Expanded(flex: 2, child: Text(r.rangoReferencia ?? '', style: const TextStyle(color: AppColors.pizarra, fontSize: 12))),
+              Expanded(flex: 2, child: Text(r.rangoReferencia ?? '', style: AppTextos.detalle)),
               if (r.validadoPorMedico)
                 const Tooltip(message: 'Validado por médico', child: Icon(Icons.verified, color: AppColors.verde, size: 18))
               else if (r.confianzaOcr != null)
