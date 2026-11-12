@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/admin/presentation/pages/verificaciones_page.dart';
+import '../../features/disputas/presentation/pages/disputas_page.dart';
 import '../../features/auth/presentation/cubit/sesion_cubit.dart';
 import '../../features/auth/presentation/pages/acceso_page.dart';
 import '../../features/citas/domain/entities/cita.dart';
@@ -40,7 +41,6 @@ import '../../features/perfiles/presentation/pages/perfiles_page.dart';
 import '../../features/recipes/presentation/pages/emitir_recipe_page.dart';
 import '../../features/recipes/presentation/pages/recipes_page.dart';
 import '../../features/recipes/presentation/pages/verificar_recipe_page.dart';
-import '../widgets/bw_widgets.dart';
 
 /// Convierte el stream del SesionCubit en un Listenable para go_router.
 class _Refresco extends ChangeNotifier {
@@ -156,39 +156,10 @@ GoRouter crearRouter(SesionCubit sesion) {
             ),
           ),
           GoRoute(path: '/admin/verificaciones', builder: (_, __) => const VerificacionesPage()),
+          GoRoute(path: '/admin/disputas', builder: (_, __) => const DisputasPage()),
         ],
       ),
     ],
-    errorBuilder: (_, s) => _NoEncontrada(ruta: s.uri.toString()),
+    errorBuilder: (_, s) => Scaffold(body: Center(child: Text('Página no encontrada: ${s.uri}'))),
   );
-}
-
-/// Página para rutas inexistentes: explica qué pasó y ofrece volver al inicio.
-class _NoEncontrada extends StatelessWidget {
-  const _NoEncontrada({required this.ruta});
-  final String ruta;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
-    return Scaffold(
-      appBar: AppBar(title: const BwLogo(tamano: 30)),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('No encontramos esta página', style: t.headlineMedium),
-              const SizedBox(height: 10),
-              Text('La dirección $ruta no existe o cambió. Desde el inicio llegas a tus citas, tu expediente y todo lo demás.',
-                  style: t.bodyLarge),
-              const SizedBox(height: 24),
-              FilledButton.icon(onPressed: () => context.go('/'), icon: const Icon(Icons.home_outlined), label: const Text('Ir al inicio')),
-            ]),
-          ),
-        ),
-      ),
-    );
-  }
 }

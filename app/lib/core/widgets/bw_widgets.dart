@@ -1,61 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../theme/app_colors.dart';
-import '../theme/app_theme.dart';
 import '../utils/formatos.dart';
 
 /// Logotipo de Bewell (corazón en un cuadro azul + palabra).
-///
-/// Por defecto es un enlace al inicio: `/` muestra la portada a quien no inició
-/// sesión y el router redirige a `/inicio` a quien sí. Con [alPulsar] se
-/// reemplaza ese destino (por ejemplo, para volver arriba en la portada) y con
-/// `navegable: false` queda como imagen (récipe impreso, pantalla de carga).
 class BwLogo extends StatelessWidget {
-  const BwLogo({super.key, this.claro = false, this.tamano = 36, this.navegable = true, this.alPulsar});
+  const BwLogo({super.key, this.claro = false, this.tamano = 36});
   final bool claro;
   final double tamano;
-  final bool navegable;
-  final VoidCallback? alPulsar;
 
   @override
   Widget build(BuildContext context) {
-    final marca = Row(mainAxisSize: MainAxisSize.min, children: [
+    return Row(mainAxisSize: MainAxisSize.min, children: [
       Container(
         width: tamano,
         height: tamano,
         decoration: BoxDecoration(color: AppColors.primario, borderRadius: BorderRadius.circular(tamano * 0.3)),
         child: Icon(Icons.favorite_rounded, color: Colors.white, size: tamano * 0.55),
       ),
-      SizedBox(width: tamano * 0.28),
-      Text.rich(
-        TextSpan(children: [
-          TextSpan(text: 'Be', style: TextStyle(color: claro ? Colors.white : AppColors.marino)),
-          TextSpan(text: 'well', style: TextStyle(color: claro ? const Color(0xFF8DB8FF) : AppColors.primario)),
-        ]),
-        style: AppTheme.titulos(fontSize: tamano * 0.62, fontWeight: FontWeight.w800, letterSpacing: -0.6),
-      ),
+      const SizedBox(width: 10),
+      Text.rich(TextSpan(children: [
+        TextSpan(text: 'Be', style: TextStyle(color: claro ? Colors.white : AppColors.marino)),
+        const TextSpan(text: 'well', style: TextStyle(color: AppColors.primario)),
+      ]), style: TextStyle(fontSize: tamano * 0.6, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
     ]);
-    if (!navegable) return ExcludeSemantics(child: marca);
-
-    return Semantics(
-      link: true,
-      label: 'Bewell, ir al inicio',
-      excludeSemantics: true,
-      child: Tooltip(
-        message: 'Ir al inicio',
-        waitDuration: const Duration(milliseconds: 600),
-        child: InkWell(
-          onTap: alPulsar ?? () => context.go('/'),
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6), child: marca),
-        ),
-      ),
-    );
   }
 }
 
-/// Tarjeta blanca con borde azul tenue y esquinas de 20 px.
+/// Tarjeta blanca con borde azul tenue y esquinas de 24 px.
 class BwTarjeta extends StatelessWidget {
   const BwTarjeta({super.key, required this.child, this.padding = const EdgeInsets.all(20), this.color, this.onTap, this.borde});
   final Widget child;
@@ -70,8 +42,8 @@ class BwTarjeta extends StatelessWidget {
     return Material(
       color: color ?? AppColors.superficie,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: borde ?? AppColors.borde),
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: borde ?? AppColors.bordeAzul),
       ),
       clipBehavior: Clip.antiAlias,
       child: onTap == null ? contenido : InkWell(onTap: onTap, child: contenido),
@@ -137,7 +109,7 @@ class AvatarIniciales extends StatelessWidget {
   }
 }
 
-/// Encabezado de página: contexto breve, título y descripción opcional.
+/// Encabezado de página con antetítulo en mayúsculas (eyebrow).
 class Encabezado extends StatelessWidget {
   const Encabezado({super.key, this.antetitulo, required this.titulo, this.descripcion, this.accion});
   final String? antetitulo;
@@ -149,21 +121,18 @@ class Encabezado extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final textos = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      if (antetitulo != null) ...[
-        Text(antetitulo!, style: t.labelLarge?.copyWith(color: AppColors.primarioOscuro)),
-        const SizedBox(height: 4),
-      ],
-      Text(titulo, style: t.headlineMedium),
+      if (antetitulo != null)
+        Text(antetitulo!.toUpperCase(),
+            style: const TextStyle(color: AppColors.primario, fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 1.4)),
+      if (antetitulo != null) const SizedBox(height: 6),
+      Text(titulo, style: t.headlineMedium?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.6)),
       if (descripcion != null) ...[
-        const SizedBox(height: 8),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 620),
-          child: Text(descripcion!, style: t.bodyLarge?.copyWith(color: AppColors.pizarra)),
-        ),
+        const SizedBox(height: 6),
+        Text(descripcion!, style: t.bodyMedium?.copyWith(color: AppColors.pizarra, height: 1.5)),
       ],
     ]);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 20),
       child: accion == null
           ? textos
           : Wrap(
@@ -201,7 +170,7 @@ class SeccionTarjeta extends StatelessWidget {
           ],
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(titulo, style: Theme.of(context).textTheme.titleMedium),
+              Text(titulo, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               if (subtitulo != null)
                 Text(subtitulo!, style: const TextStyle(color: AppColors.pizarraClara, fontSize: 13)),
             ]),
@@ -391,8 +360,9 @@ Future<bool> confirmar(BuildContext context, {required String titulo, required S
   return r ?? false;
 }
 
-/// Pide un texto en un diálogo (motivo de cancelación, de rechazo, etc.).
-Future<String?> pedirTexto(BuildContext context, {required String titulo, required String etiqueta, String accion = 'Enviar'}) async {
+/// Pide un texto en un diálogo (motivo de cancelación, de rechazo, etc.). Devuelve null si se cancela; con [obligatorio] en false,
+/// aceptar sin escribir devuelve una cadena vacía.
+Future<String?> pedirTexto(BuildContext context, {required String titulo, required String etiqueta, String accion = 'Enviar', bool obligatorio = true}) async {
   final controlador = TextEditingController();
   final r = await showDialog<String>(
     context: context,
@@ -405,5 +375,6 @@ Future<String?> pedirTexto(BuildContext context, {required String titulo, requir
       ],
     ),
   );
-  return (r == null || r.isEmpty) ? null : r;
+  if (r == null) return null;
+  return r.isEmpty && obligatorio ? null : r;
 }

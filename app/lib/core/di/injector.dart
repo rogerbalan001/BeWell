@@ -15,6 +15,7 @@ import '../../features/disputas/data/datasources/disputas_remote_data_source.dar
 import '../../features/disputas/data/repositories/disputas_repository_impl.dart';
 import '../../features/disputas/domain/repositories/disputas_repository.dart';
 import '../../features/disputas/domain/usecases/disputas_usecases.dart';
+import '../../features/disputas/presentation/cubit/disputas_cubit.dart';
 import '../../features/emergencia/data/datasources/emergencia_remote_data_source.dart';
 import '../../features/emergencia/data/repositories/emergencia_repository_impl.dart';
 import '../../features/emergencia/domain/repositories/emergencia_repository.dart';
@@ -202,4 +203,5 @@ void configurarDependencias() {
   sl.registerLazySingleton(() => DisputasRemoteDataSource(sl()));
   sl.registerLazySingleton<DisputasRepository>(() => DisputasRepositoryImpl(sl()));
   sl.registerLazySingleton(() => GestionarDisputas(sl()));
+  sl.registerFactory(() => DisputasCubit(sl()));
 }
