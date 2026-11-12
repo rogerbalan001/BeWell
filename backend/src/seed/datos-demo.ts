@@ -320,7 +320,7 @@ export async function sembrarDatosDemo(obtener: Resolver, urlWeb: string): Promi
       creadaEn: sumarDias(inicio, -3),
     });
     await citaRepo.guardar(cita);
-    await pagos.retenerPago({ citaId: cita.id, pacienteId, medicoId: medico.id, monto: cita.monto, moneda: cita.moneda });
+    await pagos.registrarPagoDemo({ citaId: cita.id, pacienteId, medicoId: medico.id, monto: cita.monto, moneda: cita.moneda });
     if (estado === EstadoCita.ATENDIDA) {
       const pago = (await pagoRepo.buscarPorCita(cita.id))!;
       pago.programarLiberacion(cita.atendidaEn!);
@@ -364,7 +364,7 @@ export async function sembrarDatosDemo(obtener: Resolver, urlWeb: string): Promi
       inicio: franjas[2].inicio,
       modalidad: 'VIRTUAL',
       motivo: 'Control metabólico y revisión de perfil lipídico',
-    });
+    }, { pagoDemo: true });
   }
 
   // Récipe firmado y orden de exámenes de la consulta atendida.

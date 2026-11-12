@@ -16,13 +16,16 @@ import '../../../resenas/presentation/widgets/estrellas.dart';
 import '../../domain/entities/cita.dart';
 import '../../domain/usecases/citas_usecases.dart';
 import '../cubit/citas_cubits.dart';
+import '../widgets/pago_paypal.dart';
 import '../widgets/selector_franjas.dart';
 import '../widgets/tarjeta_cita.dart';
 
 /// Detalle de una cita con las acciones permitidas según el rol y el estado.
 class CitaDetallePage extends StatelessWidget {
-  const CitaDetallePage({super.key, required this.citaId});
+  const CitaDetallePage({super.key, required this.citaId, this.resultadoPago});
   final String citaId;
+  /// `?pago=` cuando PayPal devuelve al paciente a la cita (ok, cancelado, rechazado…).
+  final String? resultadoPago;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +34,7 @@ class CitaDetallePage extends StatelessWidget {
       child: BlocBuilder<CitaDetalleCubit, Recurso<Cita>>(builder: (context, estado) {
         return switch (estado) {
           RecursoError(:final mensaje) => VistaError(mensaje, reintentar: () => context.read<CitaDetalleCubit>().cargar(citaId)),
-          RecursoListo(:final datos) => _Detalle(datos),
+          RecursoListo(:final datos) => _Detalle(datos, resultadoPago: resultadoPago),
           _ => const VistaCargando(),
         };
       }),
@@ -40,8 +43,9 @@ class CitaDetallePage extends StatelessWidget {
 }
 
 class _Detalle extends StatefulWidget {
-  const _Detalle(this.cita);
+  const _Detalle(this.cita, {this.resultadoPago});
   final Cita cita;
+  final String? resultadoPago;
   @override
   State<_Detalle> createState() => _DetalleState();
 }
@@ -49,6 +53,7 @@ class _Detalle extends StatefulWidget {
 class _DetalleState extends State<_Detalle> {
   Resena? _resena;
   bool _ocupado = false;
+  late final AppLifecycleListener _ciclo;
 
   Cita get c => widget.cita;
   bool get _esMedico => context.read<SesionCubit>().usuario?.esMedico ?? false;
@@ -56,6 +61,16 @@ class _DetalleState extends State<_Detalle> {
   @override
   void initState() {
     super.initState();
+    // Al volver de PayPal (navegador o app de PayPal) se refresca la cita para ver si ya quedó confirmada.
+    _ciclo = AppLifecycleListener(onResume: () {
+      if (mounted && c.esperandoPago) context.read<CitaDetalleCubit>().cargar(c.id, silencioso: true);
+    });
+    final aviso = mensajeRetornoPago(widget.resultadoPago);
+    if (aviso != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) mostrarMensaje(context, aviso, error: widget.resultadoPago == 'rechazado' || widget.resultadoPago == 'error');
+      });
+    }
     if (c.atendida) {
       sl<ObtenerResenaDeCita>()(c.id).then((r) {
         if (mounted) setState(() => _resena = r);
@@ -70,6 +85,74 @@ class _DetalleState extends State<_Detalle> {
       sl<ObtenerResenaDeCita>()(c.id).then((r) {
         if (mounted) setState(() => _resena = r);
       }).catchError((_) {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _ciclo.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pagar(String url) async {
+    final abierto = await abrirPayPal(url).catchError((_) => false);
+    if (!abierto && mounted) mostrarMensaje(context, 'No se pudo abrir PayPal. Intenta de nuevo.', error: true);
+  }
+
+  Future<void> _verificarPago() async {
+    setState(() => _ocupado = true);
+    try {
+      final cita = await sl<VerificarPagoCita>()(c.id);
+      if (!mounted) return;
+      mostrarMensaje(
+        context,
+        cita.confirmada
+            ? '¡Pago recibido! Tu cita está confirmada.'
+            : cita.esperandoPago
+                ? 'Todavía no vemos el pago aprobado en PayPal.'
+                : 'El pago no se completó y la cita no se confirmó.',
+        error: !cita.confirmada && !cita.esperandoPago,
+      );
+      context.read<CitaDetalleCubit>().cargar(c.id, silencioso: true);
+    } on Failure catch (f) {
+      if (mounted) mostrarMensaje(context, f.mensaje, error: true);
+    } finally {
+      if (mounted) setState(() => _ocupado = false);
+    }
+  }
+
+  Future<void> _cancelarReserva() async {
+    final ok = await confirmar(
+      context,
+      titulo: 'Cancelar reserva',
+      mensaje: 'Todavía no se te ha cobrado nada. El horario quedará libre para otro paciente.',
+      accion: 'Sí, cancelar',
+      peligro: true,
+    );
+    if (!ok || !mounted) return;
+    await _accion(() => sl<CancelarCita>()(c.id, 'Cancelada antes de pagar'), 'Reserva cancelada');
+  }
+
+  Future<void> _aceptarPropuesta() async {
+    setState(() => _ocupado = true);
+    try {
+      final cita = await sl<ResponderPropuesta>().aceptar(c.id);
+      if (!mounted) return;
+      final url = cita.urlPago;
+      if (url != null && !_esMedico) {
+        mostrarMensaje(context, 'Propuesta aceptada. Te llevamos a PayPal para pagar la cita.');
+        await _pagar(url);
+      } else {
+        mostrarMensaje(
+          context,
+          cita.confirmada ? 'Propuesta aceptada: cita confirmada y pago retenido' : 'Propuesta aceptada: falta el pago del paciente',
+        );
+      }
+      if (mounted) context.read<CitaDetalleCubit>().cargar(c.id, silencioso: true);
+    } on Failure catch (f) {
+      if (mounted) mostrarMensaje(context, f.mensaje, error: true);
+    } finally {
+      if (mounted) setState(() => _ocupado = false);
     }
   }
 
@@ -205,7 +288,7 @@ class _DetalleState extends State<_Detalle> {
     final acciones = <Widget>[
       if (c.pendienteAceptacion && c.parteQueDebeResponder == miParte) ...[
         FilledButton.icon(
-          onPressed: _ocupado ? null : () => _accion(() => sl<ResponderPropuesta>().aceptar(c.id), 'Propuesta aceptada: cita confirmada y pago retenido'),
+          onPressed: _ocupado ? null : _aceptarPropuesta,
           icon: const Icon(Icons.check),
           label: const Text('Aceptar propuesta'),
         ),
@@ -319,7 +402,17 @@ class _DetalleState extends State<_Detalle> {
             if (c.pago!.montoReembolsado > 0) FilaDato('Reembolsado', Formatos.dinero(c.pago!.montoReembolsado, c.moneda)),
             if (c.pago!.estado == 'RETENIDO' && c.pago!.liberarDespuesDe != null)
               FilaDato('Se libera al médico', Formatos.fechaHora(c.pago!.liberarDespuesDe!)),
+            if (c.pago!.esPayPal && !c.esperandoPago) const FilaDato('Método', 'PayPal'),
           ],
+          if (c.esperandoPago)
+            TarjetaPagoPendiente(
+              cita: c,
+              vistaMedico: esMedico,
+              ocupado: _ocupado,
+              onPagar: () => _pagar(c.urlPago!),
+              onVerificar: _verificarPago,
+              onCancelar: _cancelarReserva,
+            ),
         ]),
       ),
       const SizedBox(height: 16),

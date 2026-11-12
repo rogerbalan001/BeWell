@@ -101,6 +101,15 @@ export class CitasController {
     return (await this.responder([await this.citas.marcarNoAsistio(actor, id)]))[0];
   }
 
+  /** "Ya pagué": revisa en PayPal si el paciente aprobó el pago y, si es así, confirma la cita. */
+  @ApiBearerAuth()
+  @Roles(RolUsuario.PACIENTE)
+  @HttpCode(200)
+  @Post(':id/pago/verificar')
+  async verificarPago(@ActorActual() actor: Actor, @Param('id', ParseObjectIdPipe) id: string) {
+    return (await this.responder([await this.citas.verificarPago(actor, id)]))[0];
+  }
+
   @ApiBearerAuth()
   @Roles(RolUsuario.PACIENTE)
   @HttpCode(200)

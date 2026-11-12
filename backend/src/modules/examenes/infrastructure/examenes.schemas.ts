@@ -18,6 +18,13 @@ export class ExamenDoc {
   @Prop({ type: Types.ObjectId, required: true }) cargadoPorUsuarioId: Types.ObjectId;
   @Prop({ required: true }) cargadoEn: Date;
   @Prop({ type: Types.ObjectId }) validadoPorMedicoId?: Types.ObjectId;
+  /** Categoría y tipo (sugeridos por la IA o elegidos por el paciente). */
+  @Prop() categoria?: string;
+  @Prop() tipo?: string;
+  /** 0–1 si lo sugirió la IA; ausente si lo eligió el paciente. */
+  @Prop() confianzaClasificacion?: number;
+  @Prop() origenClasificacion?: string;
+  @Prop() tituloAutomatico?: boolean;
 }
 export const ExamenSchema = SchemaFactory.createForClass(ExamenDoc);
 ExamenSchema.index({ pacienteId: 1, cargadoEn: -1 });

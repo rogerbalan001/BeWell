@@ -42,6 +42,9 @@ class CitasRepositoryImpl implements CitasRepository {
       CitaMapper.desdeJson(await _r.accion(id, 'reportar-problema', {'motivo': motivo}));
 
   @override
+  Future<Cita> verificarPago(String id) async => CitaMapper.desdeJson(await _r.accion(id, 'pago/verificar'));
+
+  @override
   Future<Cita> proponer(PropuestaSeguimiento propuesta) async => CitaMapper.desdeJson(await _r.proponer(propuesta));
 
   @override

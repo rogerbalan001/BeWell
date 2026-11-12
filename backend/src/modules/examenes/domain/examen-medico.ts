@@ -1,5 +1,9 @@
 import { asegurar } from '../../../shared/domain/errores';
 import { generarId } from '../../../shared/domain/id';
+import { categoriaValida, ClasificacionExamen, tipoNormalizado } from './clasificacion-examen';
+
+/** Nombre que recibe un examen sin título y sin clasificar. */
+export const TITULO_SIN_CLASIFICAR = 'Examen sin clasificar';
 
 /** «Entity» embebida ResultadoAnalito (equivalente a Observation en FHIR). */
 export interface ResultadoAnalito {
@@ -37,6 +41,10 @@ export interface PropsExamen {
   cargadoPorUsuarioId: string;
   cargadoEn: Date;
   validadoPorMedicoId?: string;
+  /** Categoría y tipo sugeridos por la IA o elegidos por el paciente. */
+  clasificacion?: ClasificacionExamen;
+  /** El título no lo escribió el paciente: se toma del tipo y cambia si se corrige la clasificación. */
+  tituloAutomatico?: boolean;
 }
 
 /** «Entity» ExamenMedico: guarda solo la referencia al archivo en el almacenamiento de objetos. */
@@ -55,24 +63,52 @@ export class ExamenMedico implements PropsExamen {
   cargadoPorUsuarioId: string;
   cargadoEn: Date;
   validadoPorMedicoId?: string;
+  clasificacion?: ClasificacionExamen;
+  tituloAutomatico?: boolean;
 
   constructor(props: PropsExamen) {
     Object.assign(this, props);
   }
 
   static cargar(
-    datos: Omit<PropsExamen, 'id' | 'estadoExtraccion' | 'resultados' | 'cargadoEn' | 'validadoPorMedicoId'>,
+    datos: Omit<PropsExamen, 'id' | 'estadoExtraccion' | 'resultados' | 'cargadoEn' | 'validadoPorMedicoId' | 'clasificacion' | 'tituloAutomatico' | 'titulo'> & {
+      titulo?: string;
+    },
     ahora: Date,
   ): ExamenMedico {
-    asegurar(datos.titulo?.trim(), 'Indica el nombre del examen');
+    // El título es opcional: si el paciente no lo escribe, se toma del tipo que sugiera la IA.
+    const titulo = datos.titulo?.trim() ?? '';
     return new ExamenMedico({
       ...datos,
       id: generarId(),
-      titulo: datos.titulo.trim(),
+      titulo: titulo || TITULO_SIN_CLASIFICAR,
+      tituloAutomatico: !titulo,
       estadoExtraccion: EstadoExtraccion.NO_RECONOCIDO,
       resultados: [],
       cargadoEn: ahora,
     });
+  }
+
+  /** Guarda la sugerencia de la IA. Sin sugerencia, el examen queda sin clasificar y el paciente la elige. */
+  registrarSugerencia(sugerencia: { categoria: string; tipo: string; confianza: number } | null): void {
+    if (!sugerencia?.tipo?.trim()) return;
+    this.aplicarClasificacion({
+      categoria: categoriaValida(sugerencia.categoria),
+      tipo: tipoNormalizado(sugerencia.tipo),
+      confianza: Math.min(Math.max(sugerencia.confianza ?? 0, 0), 1),
+      origen: 'IA',
+    });
+  }
+
+  /** El paciente corrige la sugerencia o elige la categoría y el tipo si la IA no los reconoció. */
+  corregirClasificacion(categoria: string, tipo: string): void {
+    asegurar(tipo?.trim(), 'Indica el tipo de examen');
+    this.aplicarClasificacion({ categoria: categoriaValida(categoria), tipo: tipoNormalizado(tipo), origen: 'PACIENTE' });
+  }
+
+  private aplicarClasificacion(c: ClasificacionExamen): void {
+    this.clasificacion = c;
+    if (this.tituloAutomatico) this.titulo = c.tipo;
   }
 
   /** Resultado del OCR: si no detectó nada, el examen queda como adjunto (degradación controlada). */

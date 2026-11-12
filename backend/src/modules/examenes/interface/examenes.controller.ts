@@ -6,6 +6,7 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsDateString,
+  IsIn,
   IsMongoId,
   IsNotEmpty,
   IsOptional,
@@ -21,8 +22,14 @@ import { MedicosService } from '../../medicos/application/medicos.service';
 import { aMedicoResumen } from '../../expediente/interface/dto/expediente.dto';
 import { ExamenesService } from '../application/examenes.service';
 import { CATALOGO_EXAMENES } from '../domain/catalogo-examenes';
+import { CATEGORIAS_EXAMEN } from '../domain/clasificacion-examen';
 import { ExamenMedico } from '../domain/examen-medico';
 import { SolicitudExamen } from '../domain/solicitud-examen';
+
+export class ClasificacionDto {
+  @IsString() @IsIn(CATEGORIAS_EXAMEN) categoria: string;
+  @IsString() @IsNotEmpty() @MaxLength(150) tipo: string;
+}
 
 export class AnularSolicitudDto {
   @IsString() @IsNotEmpty() @MaxLength(500) motivo: string;
@@ -71,6 +78,9 @@ const aExamenRespuesta = (e: ExamenMedico) => ({
   resultados: e.resultados,
   validadoPorMedico: !!e.validadoPorMedicoId,
   cargadoEn: e.cargadoEn,
+  /** Categoría y tipo; con origen IA es una sugerencia que el paciente puede corregir. */
+  clasificacion: e.clasificacion,
+  tituloAutomatico: !!e.tituloAutomatico,
 });
 
 /** «Boundary» ExamenesController. */
@@ -142,6 +152,13 @@ export class ExamenesController {
   @Put(':id/resultados')
   async confirmarResultados(@ActorActual() actor: Actor, @Param('id', ParseObjectIdPipe) id: string, @Body() dto: ConfirmarResultadosDto) {
     return aExamenRespuesta(await this.examenes.confirmarResultados(actor, id, dto.resultados));
+  }
+
+  /** El paciente corrige la categoría y el tipo sugeridos por la IA, o los elige si no hubo sugerencia. */
+  @Roles(RolUsuario.PACIENTE)
+  @Put(':id/clasificacion')
+  async corregirClasificacion(@ActorActual() actor: Actor, @Param('id', ParseObjectIdPipe) id: string, @Body() dto: ClasificacionDto) {
+    return aExamenRespuesta(await this.examenes.corregirClasificacion(actor, id, dto.categoria, dto.tipo));
   }
 
   @Roles(RolUsuario.MEDICO)

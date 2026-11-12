@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CifradorCampos } from '../../../shared/application/cifrador-campos';
 import { oid, oidOpcional, str, strOpcional } from '../../../shared/infrastructure/mongo/mongo.utils';
+import { OrigenClasificacion } from '../domain/clasificacion-examen';
 import { EstadoExtraccion, ExamenMedico, ResultadoAnalito } from '../domain/examen-medico';
 import { ExamenRepository, SolicitudExamenRepository } from '../domain/repositorios';
 import { EstadoSolicitud, SolicitudExamen } from '../domain/solicitud-examen';
@@ -35,6 +36,11 @@ export class MongoExamenRepository extends ExamenRepository {
         cargadoPorUsuarioId: oid(e.cargadoPorUsuarioId),
         cargadoEn: e.cargadoEn,
         validadoPorMedicoId: oidOpcional(e.validadoPorMedicoId),
+        categoria: e.clasificacion?.categoria,
+        tipo: e.clasificacion?.tipo,
+        confianzaClasificacion: e.clasificacion?.confianza,
+        origenClasificacion: e.clasificacion?.origen,
+        tituloAutomatico: e.tituloAutomatico,
       },
       { upsert: true },
     );
@@ -65,6 +71,11 @@ export class MongoExamenRepository extends ExamenRepository {
       cargadoPorUsuarioId: str(d.cargadoPorUsuarioId),
       cargadoEn: d.cargadoEn,
       validadoPorMedicoId: strOpcional(d.validadoPorMedicoId),
+      clasificacion:
+        d.categoria && d.tipo
+          ? { categoria: d.categoria, tipo: d.tipo, confianza: d.confianzaClasificacion, origen: (d.origenClasificacion as OrigenClasificacion) ?? 'PACIENTE' }
+          : undefined,
+      tituloAutomatico: d.tituloAutomatico ?? false,
     });
   }
 }

@@ -11,8 +11,9 @@ import '../../../perfiles/presentation/cubit/perfil_activo_cubit.dart';
 import '../../domain/entities/cita.dart';
 import '../../domain/usecases/citas_usecases.dart';
 import '../cubit/citas_cubits.dart';
+import '../widgets/pago_paypal.dart';
 
-/// Paso 3 de 3: "¡Tu cita está casi lista!". Al confirmar se retiene el pago.
+/// Paso 3 de 3: "¡Tu cita está casi lista!". Al confirmar se paga con PayPal y el monto queda retenido.
 class ConfirmacionCitaPage extends StatefulWidget {
   const ConfirmacionCitaPage({super.key, required this.borrador});
   final BorradorCita? borrador;
@@ -22,7 +23,6 @@ class ConfirmacionCitaPage extends StatefulWidget {
 }
 
 class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
-  String _metodo = 'TARJETA';
   bool _enviando = false;
 
   Future<void> _confirmar(String pacienteId) async {
@@ -37,6 +37,14 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
         motivo: b.motivo,
       ));
       if (!mounted) return;
+      final urlPago = cita.urlPago;
+      if (urlPago != null) {
+        // PayPal: el horario queda apartado 30 min mientras el paciente aprueba el pago.
+        mostrarMensaje(context, 'Te llevamos a PayPal para pagar. Al terminar, vuelve a Bewell.');
+        context.go('/citas/${cita.id}');
+        await abrirPayPal(urlPago).catchError((_) => false);
+        return;
+      }
       if (cita.confirmada) {
         mostrarMensaje(context, '¡Cita confirmada! Código ${cita.codigo}');
       } else {
@@ -110,30 +118,25 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
         const SizedBox(height: 14),
         const Text('Método de pago', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.pizarra)),
         const SizedBox(height: 8),
-        for (final (valor, icono, titulo, texto) in const [
-          ('TARJETA', Icons.credit_card, 'Tarjeta de débito o crédito', 'Datos tokenizados por la pasarela'),
-          ('PAGO_MOVIL', Icons.phone_android, 'Pago móvil', 'Confirmación inmediata'),
-        ])
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: BwTarjeta(
-              padding: const EdgeInsets.all(12),
-              color: _metodo == valor ? AppColors.superficieAzul2 : AppColors.superficieAzul,
-              borde: _metodo == valor ? AppColors.primario : Colors.transparent,
-              onTap: () => setState(() => _metodo = valor),
-              child: Row(children: [
-                Icon(icono, color: AppColors.primario),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(titulo, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                    Text(texto, style: const TextStyle(fontSize: 12, color: AppColors.pizarra)),
-                  ]),
-                ),
-                if (_metodo == valor) const Icon(Icons.check_circle, color: AppColors.primario),
-              ]),
-            ),
+        const Padding(
+          padding: EdgeInsets.only(bottom: 8),
+          child: BwTarjeta(
+            padding: EdgeInsets.all(12),
+            color: AppColors.superficieAzul2,
+            borde: AppColors.primario,
+            child: Row(children: [
+              Icon(Icons.account_balance_wallet_outlined, color: AppColors.primario),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('PayPal', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                  Text('Con tu cuenta PayPal o tarjeta. Bewell nunca ve tus datos de pago.', style: TextStyle(fontSize: 12, color: AppColors.pizarra)),
+                ]),
+              ),
+              Icon(Icons.check_circle, color: AppColors.primario),
+            ]),
           ),
+        ),
         const SizedBox(height: 6),
         Container(
           padding: const EdgeInsets.all(12),
@@ -150,7 +153,7 @@ class _ConfirmacionCitaPageState extends State<ConfirmacionCitaPage> {
             icon: _enviando
                 ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                 : const Icon(Icons.check_circle_outline),
-            label: const Text('Confirmar y agendar cita'),
+            label: const Text('Confirmar y pagar con PayPal'),
           ),
         ),
         const SizedBox(height: 8),

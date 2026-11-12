@@ -136,8 +136,8 @@ export class ExpedienteService {
   }
 
   /** Uso interno: refleja en la línea de tiempo un cambio del documento de origen (p. ej. orden completada o anulada). */
-  async actualizarEventoDeDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>): Promise<void> {
-    await this.eventos.actualizarDetallesPorDocumento(documentoOrigenId, tipo, detalles);
+  async actualizarEventoDeDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>, titulo?: string): Promise<void> {
+    await this.eventos.actualizarDetallesPorDocumento(documentoOrigenId, tipo, detalles, titulo);
   }
 
   /**

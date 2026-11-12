@@ -9,5 +9,7 @@ etapa 1-install npm install --no-audit --no-fund
 etapa 2-tsc npx tsc --noEmit -p tsconfig.json
 etapa 3-test npx jest --ci
 etapa 4-build npm run build
+# Punta a punta por HTTP contra el MongoDB del job (servicio "mongo" en ci.yml).
+etapa 5-e2e npm run test:e2e
 cat "$LOGS/resumen.txt"
 exit $fallo

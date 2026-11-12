@@ -9,6 +9,7 @@ import { CitaRepository } from './domain/cita.repository';
 import { CitaDoc, CitaSchema } from './infrastructure/cita.schema';
 import { MongoCitaRepository } from './infrastructure/mongo-cita.repository';
 import { CitasController } from './interface/citas.controller';
+import { PagoPayPalController } from './interface/pago-paypal.controller';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { CitasController } from './interface/citas.controller';
     PagosModule,
     ExpedienteModule,
   ],
-  controllers: [CitasController],
+  controllers: [CitasController, PagoPayPalController],
   providers: [CitasService, { provide: CitaRepository, useClass: MongoCitaRepository }],
   exports: [CitasService],
 })

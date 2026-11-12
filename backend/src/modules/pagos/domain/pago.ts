@@ -4,6 +4,8 @@ import { generarId } from '../../../shared/domain/id';
 import { sumarHoras } from '../../../shared/domain/reloj';
 
 export enum EstadoPago {
+  /** Orden creada en la pasarela (PayPal); falta que el paciente la apruebe. */
+  PENDIENTE_APROBACION = 'PENDIENTE_APROBACION',
   RETENIDO = 'RETENIDO',
   EN_DISPUTA = 'EN_DISPUTA',
   LIBERADO = 'LIBERADO',
@@ -15,10 +17,24 @@ export enum EstadoPago {
 /** Horas que el pago permanece retenido tras marcar la cita como atendida (HU pagos). */
 export const HORAS_RETENCION_TRAS_CONSULTA = 24;
 
+/** Proveedor de la pasarela simulada y de los pagos de demostración: nunca llama a un procesador externo. */
+export const PROVEEDOR_SIMULADO = 'SIMULADA';
+
+/** Minutos que se guarda la franja mientras el paciente aprueba el pago en PayPal. */
+export const MINUTOS_PARA_APROBAR_PAGO = 30;
+
 export interface MovimientoPago {
   estado: EstadoPago;
   fecha: Date;
   nota?: string;
+}
+
+export interface DatosNuevoPago {
+  citaId: string;
+  pacienteId: string;
+  medicoId: string;
+  monto: Centavos;
+  moneda: string;
 }
 
 export interface PropsPago {
@@ -31,7 +47,14 @@ export interface PropsPago {
   /** RETENCION (pago diferido: se cobra al reservar y se libera tras la consulta). */
   modalidad: string;
   estado: EstadoPago;
+  /** Pasarela que procesó el pago (SIMULADA, PAYPAL). */
+  proveedor: string;
+  /** Autorización (retención) en la pasarela: se captura o se anula después. */
   referenciaPasarela?: string;
+  /** Orden de la pasarela que el paciente debe aprobar (PayPal). */
+  ordenPasarela?: string;
+  /** Página de la pasarela donde el paciente aprueba el pago. */
+  urlAprobacion?: string;
   claveIdempotencia: string;
   liberarDespuesDe?: Date;
   montoReembolsado: Centavos;
@@ -54,7 +77,10 @@ export class Pago implements PropsPago {
   moneda: string;
   modalidad: string;
   estado: EstadoPago;
+  proveedor: string;
   referenciaPasarela?: string;
+  ordenPasarela?: string;
+  urlAprobacion?: string;
   claveIdempotencia: string;
   liberarDespuesDe?: Date;
   montoReembolsado: Centavos;
@@ -67,10 +93,12 @@ export class Pago implements PropsPago {
     Object.assign(this, props);
   }
 
+  /** Pasarela inmediata: el monto queda retenido (o rechazado) en el acto. */
   static registrar(
-    datos: { citaId: string; pacienteId: string; medicoId: string; monto: Centavos; moneda: string },
+    datos: DatosNuevoPago,
     resultado: { aprobado: boolean; referencia?: string; mensaje?: string },
     ahora: Date,
+    proveedor = PROVEEDOR_SIMULADO,
   ): Pago {
     asegurar(datos.monto > 0, 'El monto del pago debe ser mayor que cero');
     const estado = resultado.aprobado ? EstadoPago.RETENIDO : EstadoPago.FALLIDO;
@@ -79,6 +107,7 @@ export class Pago implements PropsPago {
       ...datos,
       modalidad: 'RETENCION',
       estado,
+      proveedor,
       referenciaPasarela: resultado.referencia,
       claveIdempotencia: Pago.claveParaCita(datos.citaId),
       montoReembolsado: 0,
@@ -86,6 +115,57 @@ export class Pago implements PropsPago {
       creadoEn: ahora,
       actualizadoEn: ahora,
     });
+  }
+
+  /** Pasarela con aprobación (PayPal): el pago espera a que el paciente lo apruebe. */
+  static iniciar(datos: DatosNuevoPago, orden: { proveedor: string; orden: string; urlAprobacion: string }, ahora: Date): Pago {
+    asegurar(datos.monto > 0, 'El monto del pago debe ser mayor que cero');
+    asegurar(orden.orden && orden.urlAprobacion, 'La pasarela no devolvió la orden de pago');
+    return new Pago({
+      id: generarId(),
+      ...datos,
+      modalidad: 'RETENCION',
+      estado: EstadoPago.PENDIENTE_APROBACION,
+      proveedor: orden.proveedor,
+      ordenPasarela: orden.orden,
+      urlAprobacion: orden.urlAprobacion,
+      claveIdempotencia: Pago.claveParaCita(datos.citaId),
+      montoReembolsado: 0,
+      historial: [{ estado: EstadoPago.PENDIENTE_APROBACION, fecha: ahora, nota: `Orden ${orden.orden} creada; falta la aprobación del paciente` }],
+      creadoEn: ahora,
+      actualizadoEn: ahora,
+    });
+  }
+
+  get pendienteDeAprobacion(): boolean {
+    return this.estado === EstadoPago.PENDIENTE_APROBACION;
+  }
+
+  /** La franja deja de guardarse si el paciente no aprueba el pago a tiempo. */
+  aprobacionVencida(ahora: Date): boolean {
+    return this.pendienteDeAprobacion && ahora.getTime() - this.creadoEn.getTime() >= MINUTOS_PARA_APROBAR_PAGO * 60_000;
+  }
+
+  /** Resultado de autorizar la orden ya aprobada: queda RETENIDO o FALLIDO. Si sigue pendiente no cambia. */
+  aplicarAutorizacion(resultado: { aprobado: boolean; referencia?: string; mensaje?: string; pendiente?: boolean }, ahora: Date): void {
+    this.exigirEstado(EstadoPago.PENDIENTE_APROBACION);
+    if (resultado.pendiente) return;
+    if (resultado.aprobado) {
+      asegurar(resultado.referencia, 'La pasarela no devolvió la autorización del pago');
+      this.referenciaPasarela = resultado.referencia;
+      this.urlAprobacion = undefined;
+      this.cambiarEstado(EstadoPago.RETENIDO, ahora, resultado.mensaje ?? 'Pago aprobado y retenido');
+    } else {
+      this.urlAprobacion = undefined;
+      this.cambiarEstado(EstadoPago.FALLIDO, ahora, resultado.mensaje ?? 'La pasarela rechazó el pago');
+    }
+  }
+
+  /** El paciente no completó el pago (venció el plazo o se canceló la cita): no se cobró nada. */
+  descartar(nota: string, ahora: Date): void {
+    this.exigirEstado(EstadoPago.PENDIENTE_APROBACION);
+    this.urlAprobacion = undefined;
+    this.cambiarEstado(EstadoPago.FALLIDO, ahora, nota);
   }
 
   /** Una cita solo puede cobrarse una vez aunque la app reintente la solicitud. */

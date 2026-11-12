@@ -158,6 +158,12 @@ export class PagosMemoria extends PagoRepository {
   async buscarEnDisputa() {
     return this.m['todos']().filter((p) => p.estado === EstadoPago.EN_DISPUTA);
   }
+  async buscarPorOrdenPasarela(orden: string) {
+    return this.m['todos']().find((p) => p.ordenPasarela === orden) ?? null;
+  }
+  async buscarPendientesDeAprobacion() {
+    return this.m['todos']().filter((p) => p.estado === EstadoPago.PENDIENTE_APROBACION);
+  }
 }
 
 export class ExpedientesMemoria extends ExpedienteRepository {
@@ -193,9 +199,10 @@ export class EventosMemoria extends EventoClinicoRepository {
       .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
     return { items: todos.slice((p.pagina - 1) * p.tamano, p.pagina * p.tamano), total: todos.length };
   }
-  async actualizarDetallesPorDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>) {
+  async actualizarDetallesPorDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>, titulo?: string) {
     for (const e of this.m['todos']().filter((x) => x.documentoOrigenId === documentoOrigenId && x.tipo === tipo)) {
       e.detalles = { ...e.detalles, ...detalles };
+      if (titulo) e.titulo = titulo;
       await this.m.guardar(e);
     }
   }
@@ -241,6 +248,26 @@ export class CacheMemoria extends FichaEmergenciaCache {
 export class PasarelaFalsa extends PasarelaPagos {
   aprobar = true;
   operaciones: string[] = [];
+  /** Simula PayPal: el pago espera a que el paciente apruebe la orden. */
+  conAprobacion = false;
+  /** Órdenes que el paciente ya aprobó en la "página de PayPal". */
+  aprobadas = new Set<string>();
+  override get proveedor() {
+    return this.conAprobacion ? 'PAYPAL' : 'SIMULADA';
+  }
+  override get requiereAprobacion() {
+    return this.conAprobacion;
+  }
+  override async crearOrden(monto: number, _m: string, citaId: string) {
+    this.operaciones.push(`orden:${monto}`);
+    const orden = `ORD-${citaId.slice(-6)}`;
+    return { orden, urlAprobacion: `https://paypal.test/checkoutnow?token=${orden}` };
+  }
+  override async autorizarOrden(orden: string): Promise<ResultadoPasarela> {
+    this.operaciones.push(`autorizarOrden:${orden}`);
+    if (!this.aprobadas.has(orden)) return { aprobado: false, pendiente: true };
+    return this.aprobar ? { aprobado: true, referencia: `AUTH-${orden}` } : { aprobado: false, mensaje: 'Fondos insuficientes' };
+  }
   async autorizar(monto: number): Promise<ResultadoPasarela> {
     this.operaciones.push(`autorizar:${monto}`);
     return this.aprobar ? { aprobado: true, referencia: `REF-${generarId()}` } : { aprobado: false, mensaje: 'Fondos insuficientes' };

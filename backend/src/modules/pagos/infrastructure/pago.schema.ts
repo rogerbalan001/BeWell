@@ -18,7 +18,11 @@ export class PagoDoc {
   @Prop({ required: true }) moneda: string;
   @Prop({ required: true }) modalidad: string;
   @Prop({ required: true }) estado: string;
+  /** Pagos anteriores a PayPal no lo tienen: se leen como SIMULADA. */
+  @Prop() proveedor?: string;
   @Prop() referenciaPasarela?: string;
+  @Prop({ index: true, sparse: true }) ordenPasarela?: string;
+  @Prop() urlAprobacion?: string;
   @Prop({ required: true, unique: true }) claveIdempotencia: string;
   @Prop() liberarDespuesDe?: Date;
   @Prop({ type: Types.Decimal128, required: true }) montoReembolsado: Types.Decimal128;
@@ -30,3 +34,4 @@ export class PagoDoc {
 
 export const PagoSchema = SchemaFactory.createForClass(PagoDoc);
 PagoSchema.index({ estado: 1, liberarDespuesDe: 1 });
+PagoSchema.index({ estado: 1, creadoEn: 1 });
