@@ -14,6 +14,7 @@ import { PerfilesService } from '../../perfiles/application/perfiles.service';
 import { ExamenMedico, ResultadoAnalito } from '../domain/examen-medico';
 import { ExamenRepository, SolicitudExamenRepository } from '../domain/repositorios';
 import { EstadoSolicitud, SolicitudExamen } from '../domain/solicitud-examen';
+import { ClasificadorExamen } from './clasificador-examen';
 import { ServicioOcr } from './servicio-ocr';
 
 export interface ArchivoExamen {
@@ -34,6 +35,7 @@ export class ExamenesService {
     private readonly examenes: ExamenRepository,
     private readonly solicitudes: SolicitudExamenRepository,
     private readonly ocr: ServicioOcr,
+    private readonly clasificador: ClasificadorExamen,
     private readonly almacenamiento: AlmacenamientoArchivos,
     private readonly politica: PoliticaAccesoExpediente,
     private readonly expediente: ExpedienteService,
@@ -120,7 +122,7 @@ export class ExamenesService {
 
   async cargar(
     actor: Actor,
-    datos: { pacienteId: string; titulo: string; solicitudId?: string; fechaExamen?: Date },
+    datos: { pacienteId: string; titulo?: string; solicitudId?: string; fechaExamen?: Date },
     archivo: ArchivoExamen,
   ): Promise<ExamenMedico> {
     await this.asegurarCarga(actor, datos.pacienteId);
@@ -148,13 +150,14 @@ export class ExamenesService {
     try {
       const resultados = await this.ocr.extraer(
         { contenido: archivo.contenido, tipoMime: archivo.tipoMime, nombre: archivo.nombreOriginal },
-        solicitud?.examenes ?? [datos.titulo],
+        solicitud?.examenes ?? (datos.titulo ? [datos.titulo] : []),
       );
       examen.registrarExtraccion(resultados as ResultadoAnalito[] | null);
     } catch (e) {
       this.logger.warn(`OCR falló para el examen ${examen.id}: ${(e as Error).message}`);
       examen.registrarExtraccion(null);
     }
+    await this.clasificar(examen, archivo, datos.titulo);
     await this.examenes.guardar(examen);
 
     await this.expediente.registrarEvento({
@@ -166,7 +169,11 @@ export class ExamenesService {
       medicoId: solicitud?.medicoId,
       autorUsuarioId: actor.id,
       documentoOrigenId: examen.id,
-      detalles: { estadoExtraccion: examen.estadoExtraccion, tipoMime: examen.tipoMime },
+      detalles: {
+        estadoExtraccion: examen.estadoExtraccion,
+        tipoMime: examen.tipoMime,
+        ...(examen.clasificacion ? { categoria: examen.clasificacion.categoria, tipoExamen: examen.clasificacion.tipo } : {}),
+      },
     });
 
     if (solicitud) {
@@ -183,6 +190,22 @@ export class ExamenesService {
         datos: { solicitudId: solicitud.id, examenId: examen.id, pacienteId: paciente.id },
       });
     }
+    return examen;
+  }
+
+  /** El paciente corrige la categoría y el tipo sugeridos (o los elige si la IA no los reconoció). */
+  async corregirClasificacion(actor: Actor, examenId: string, categoria: string, tipo: string): Promise<ExamenMedico> {
+    const examen = await this.obtenerExamen(examenId);
+    await this.perfiles.asegurarGestion(actor, examen.pacienteId);
+    examen.corregirClasificacion(categoria, tipo);
+    await this.examenes.guardar(examen);
+    // En la línea de tiempo el examen pasa a llamarse como el tipo elegido (si el paciente no le puso nombre).
+    await this.expediente.actualizarEventoDeDocumento(
+      examen.id,
+      TipoEvento.EXAMEN,
+      { categoria: examen.clasificacion!.categoria, tipoExamen: examen.clasificacion!.tipo },
+      examen.tituloAutomatico ? examen.titulo : undefined,
+    );
     return examen;
   }
 
@@ -225,6 +248,22 @@ export class ExamenesService {
   async urlArchivo(actor: Actor, examenId: string): Promise<string> {
     const examen = await this.obtener(actor, examenId);
     return this.almacenamiento.generarUrlLectura(examen.archivoRef, 300);
+  }
+
+  /**
+   * Pide a la IA la categoría y el tipo. Nunca bloquea la carga: si falla o no
+   * reconoce el documento, el examen queda sin clasificar y el paciente elige.
+   */
+  private async clasificar(examen: ExamenMedico, archivo: ArchivoExamen, tituloPaciente?: string): Promise<void> {
+    try {
+      const sugerencia = await this.clasificador.clasificar(
+        { contenido: archivo.contenido, tipoMime: archivo.tipoMime, nombre: archivo.nombreOriginal },
+        { analitos: examen.resultados.map((r) => r.analito), tituloPaciente: tituloPaciente?.trim() || undefined },
+      );
+      examen.registrarSugerencia(sugerencia);
+    } catch (e) {
+      this.logger.warn(`La clasificación falló para el examen ${examen.id}: ${(e as Error).message}`);
+    }
   }
 
   private async asegurarCarga(actor: Actor, pacienteId: string): Promise<void> {

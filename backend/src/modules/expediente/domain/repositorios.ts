@@ -36,7 +36,8 @@ export abstract class EventoClinicoRepository {
    * Agrega o reemplaza claves de `detalles` en los eventos generados por un
    * documento de otro módulo (p. ej. el estado de una orden de exámenes).
    */
-  abstract actualizarDetallesPorDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>): Promise<void>;
+  /** Cambia los detalles (y el título, si se indica) de los eventos que salieron de ese documento. */
+  abstract actualizarDetallesPorDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>, titulo?: string): Promise<void>;
 }
 
 export abstract class ReferenciaRepository {

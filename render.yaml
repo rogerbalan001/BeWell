@@ -48,6 +48,11 @@ services:
         sync: false
       - key: PAYPAL_CLIENT_SECRET
         sync: false
+      # Clasificación de exámenes con Google Gemini. La clave se carga a mano en Render.
+      - key: IA_EXAMENES
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
       # El disco del plan gratuito es efímero: los archivos subidos se pierden al reiniciar.
       - key: STORAGE_DIR
         value: /tmp/bewell-storage

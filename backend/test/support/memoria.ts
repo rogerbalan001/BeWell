@@ -199,9 +199,10 @@ export class EventosMemoria extends EventoClinicoRepository {
       .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
     return { items: todos.slice((p.pagina - 1) * p.tamano, p.pagina * p.tamano), total: todos.length };
   }
-  async actualizarDetallesPorDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>) {
+  async actualizarDetallesPorDocumento(documentoOrigenId: string, tipo: TipoEvento, detalles: Record<string, string>, titulo?: string) {
     for (const e of this.m['todos']().filter((x) => x.documentoOrigenId === documentoOrigenId && x.tipo === tipo)) {
       e.detalles = { ...e.detalles, ...detalles };
+      if (titulo) e.titulo = titulo;
       await this.m.guardar(e);
     }
   }
