@@ -1,0 +1,18 @@
+
+> bewell-backend@0.1.0 test:e2e
+> jest --config test/e2e/jest-e2e.json --runInBand
+
+PASS test/e2e/api.e2e-spec.ts (5.793 s)
+  API Bewell de punta a punta (HTTP + MongoDB)
+    ✓ responde la ruta de salud (18 ms)
+    ✓ rechaza credenciales inválidas y rutas protegidas sin token (39 ms)
+    ✓ valida los datos de entrada (400) (28 ms)
+    ✓ un paciente agenda, el pago queda retenido y conversa con su médico por el chat (120 ms)
+    ✓ las rutas del administrador rechazan a otros roles (45 ms)
+    ✓ las descargas de archivos llevan X-Content-Type-Options: nosniff (45 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        5.957 s
+Ran all test suites.
