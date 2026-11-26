@@ -20,6 +20,7 @@ import '../cubit/citas_cubits.dart';
 import '../../../chat/presentation/widgets/boton_chat.dart';
 import '../widgets/pago_paypal.dart';
 import '../widgets/selector_franjas.dart';
+import '../widgets/dialogo_cancelacion.dart';
 import '../widgets/tarjeta_cita.dart';
 
 /// Detalle de una cita con las acciones permitidas según el rol y el estado.
@@ -168,19 +169,8 @@ class _DetalleState extends State<_Detalle> {
   }
 
   Future<void> _cancelar() async {
-    final reembolso = c.reembolsoSiCancelaAhora ?? 0;
-    final ok = await confirmar(
-      context,
-      titulo: 'Cancelar cita',
-      mensaje: _esMedico
-          ? 'Al cancelar como médico se reembolsa el 100 % al paciente.'
-          : 'Según la política ${c.politica.nombre.toLowerCase()}, recibirás un reembolso de ${Formatos.dinero(reembolso, c.moneda)}.',
-      accion: 'Sí, cancelar',
-      peligro: true,
-    );
-    if (!ok || !mounted) return;
-    final motivo = await pedirTexto(context, titulo: 'Motivo de la cancelación', etiqueta: 'Cuéntanos brevemente el motivo', accion: 'Cancelar cita');
-    if (motivo == null) return;
+    final motivo = await pedirCancelacion(context, c, porMedico: _esMedico);
+    if (motivo == null || !mounted) return;
     setState(() => _ocupado = true);
     try {
       final (_, monto) = await sl<CancelarCita>()(c.id, motivo);
