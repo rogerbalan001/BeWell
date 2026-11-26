@@ -86,6 +86,9 @@ export class PerfilesMemoria extends PerfilPacienteRepository {
   async buscarPorTitular(usuarioId: string) {
     return this.m['todos']().filter((p) => p.titularUsuarioId === usuarioId);
   }
+  async buscarPorCedula(cedula: string) {
+    return this.m['todos']().filter((p) => p.cedula === cedula);
+  }
 }
 
 export class MedicosMemoria extends MedicoRepository {

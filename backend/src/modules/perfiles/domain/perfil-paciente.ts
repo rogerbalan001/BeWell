@@ -3,6 +3,15 @@ import { generarId } from '../../../shared/domain/id';
 
 export type Sexo = 'F' | 'M' | 'OTRO';
 export const PARENTESCO_TITULAR = 'TITULAR';
+/** Parentesco de un perfil que pasó a ser gestionado por la propia persona al cumplir la mayoría de edad. */
+export const PARENTESCO_INDEPENDIENTE = 'INDEPENDIENTE';
+export const EDAD_MAYORIA = 18;
+
+/** Pedido de un dependiente mayor de edad para gestionar su propio perfil desde su cuenta. */
+export interface SolicitudControl {
+  usuarioId: string;
+  solicitadaEn: Date;
+}
 
 export interface DatosPersonales {
   nombres: string;
@@ -17,6 +26,7 @@ export interface PropsPerfilPaciente extends DatosPersonales {
   titularUsuarioId: string;
   parentescoConTitular: string;
   creadoEn: Date;
+  solicitudControl?: SolicitudControl;
 }
 
 /**
@@ -34,6 +44,7 @@ export class PerfilPaciente implements PropsPerfilPaciente {
   fechaNacimiento: Date;
   sexo: Sexo;
   creadoEn: Date;
+  solicitudControl?: SolicitudControl;
 
   constructor(props: PropsPerfilPaciente) {
     Object.assign(this, props);
@@ -73,6 +84,33 @@ export class PerfilPaciente implements PropsPerfilPaciente {
     const m = ahora.getUTCMonth() - this.fechaNacimiento.getUTCMonth();
     if (m < 0 || (m === 0 && ahora.getUTCDate() < this.fechaNacimiento.getUTCDate())) edad--;
     return edad;
+  }
+
+  esMayorDeEdad(ahora: Date): boolean {
+    return this.edad(ahora) >= EDAD_MAYORIA;
+  }
+
+  /** HU perfiles: al cumplir la mayoría de edad, el dependiente puede pedir el control de su perfil. */
+  solicitarControl(usuarioId: string, ahora: Date): void {
+    asegurar(!this.esTitular, 'Este perfil ya es el titular de su cuenta');
+    asegurar(this.esMayorDeEdad(ahora), `Solo un dependiente con ${EDAD_MAYORIA} años o más puede pedir el control de su perfil`);
+    asegurar(this.titularUsuarioId !== usuarioId, 'Ya gestionas este perfil');
+    this.solicitudControl = { usuarioId, solicitadaEn: ahora };
+  }
+
+  /** El titular entrega el perfil: pasa a la cuenta de la persona, con su expediente completo. */
+  aprobarControl(ahora: Date): void {
+    const solicitud = this.solicitudControl;
+    asegurar(solicitud, 'No hay una solicitud de control pendiente');
+    asegurar(this.esMayorDeEdad(ahora), `El perfil todavía no cumple ${EDAD_MAYORIA} años`);
+    this.titularUsuarioId = solicitud.usuarioId;
+    this.parentescoConTitular = PARENTESCO_INDEPENDIENTE;
+    this.solicitudControl = undefined;
+  }
+
+  rechazarControl(): void {
+    asegurar(this.solicitudControl, 'No hay una solicitud de control pendiente');
+    this.solicitudControl = undefined;
   }
 
   esGestionadoPor(usuarioId: string): boolean {

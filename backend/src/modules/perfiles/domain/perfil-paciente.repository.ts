@@ -6,4 +6,6 @@ export abstract class PerfilPacienteRepository {
   abstract buscarPorId(id: string): Promise<PerfilPaciente | null>;
   abstract buscarPorIds(ids: string[]): Promise<PerfilPaciente[]>;
   abstract buscarPorTitular(usuarioId: string): Promise<PerfilPaciente[]>;
+  /** Perfiles con esa cédula (búsqueda por huella, sin descifrar la colección). */
+  abstract buscarPorCedula(cedula: string): Promise<PerfilPaciente[]>;
 }

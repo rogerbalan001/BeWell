@@ -17,6 +17,16 @@ class PerfilesRemoteDataSource {
         'sexo': d.sexo,
         if (d.cedula != null && d.cedula!.isNotEmpty) 'cedula': d.cedula,
       }));
+
+  /// El dependiente, ya mayor de edad, pide desde su cuenta el control de su perfil.
+  Future<Map<String, dynamic>> solicitarControl(String cedula, DateTime fechaNacimiento) async => mapa(await _api.post(
+        '/perfiles/control/solicitar',
+        data: {'cedula': cedula, 'fechaNacimiento': Formatos.soloFecha(fechaNacimiento)},
+      ));
+
+  /// El titular entrega el perfil (aprobar) o rechaza la solicitud.
+  Future<Map<String, dynamic>> responderControl(String perfilId, {required bool aprobar}) async =>
+      mapa(await _api.post('/perfiles/$perfilId/control/${aprobar ? 'aprobar' : 'rechazar'}'));
 }
 
 /// Mapper JSON → entidad (DTO de la capa de datos).
@@ -31,5 +41,7 @@ class PerfilMapper {
         edad: (j['edad'] as num?)?.toInt() ?? 0,
         sexo: j['sexo'] as String,
         cedula: textoOpcional(j['cedula']),
+        mayorDeEdad: j['mayorDeEdad'] as bool? ?? ((j['edad'] as num?)?.toInt() ?? 0) >= 18,
+        solicitudControlPendiente: j['solicitudControlPendiente'] as bool? ?? false,
       );
 }

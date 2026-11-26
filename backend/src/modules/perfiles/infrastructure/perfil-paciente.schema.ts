@@ -15,6 +15,9 @@ export class PerfilPacienteDoc {
   @Prop({ required: true }) fechaNacimiento: Date;
   @Prop({ required: true }) sexo: string;
   @Prop({ required: true }) creadoEn: Date;
+  /** Dependiente mayor de edad que pidió gestionar este perfil desde su propia cuenta. */
+  @Prop({ type: Types.ObjectId }) solicitudControlUsuarioId?: Types.ObjectId;
+  @Prop() solicitudControlEn?: Date;
 }
 
 export const PerfilPacienteSchema = SchemaFactory.createForClass(PerfilPacienteDoc);

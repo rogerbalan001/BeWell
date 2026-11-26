@@ -11,4 +11,12 @@ class PerfilesRepositoryImpl implements PerfilesRepository {
 
   @override
   Future<Perfil> crearFamiliar(NuevoPerfil datos) async => PerfilMapper.desdeJson(await _remoto.crear(datos));
+
+  @override
+  Future<Perfil> solicitarControl(String cedula, DateTime fechaNacimiento) async =>
+      PerfilMapper.desdeJson(await _remoto.solicitarControl(cedula, fechaNacimiento));
+
+  @override
+  Future<Perfil> responderControl(String perfilId, {required bool aprobar}) async =>
+      PerfilMapper.desdeJson(await _remoto.responderControl(perfilId, aprobar: aprobar));
 }

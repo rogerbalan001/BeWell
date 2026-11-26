@@ -4,7 +4,7 @@ import { Actor, RolUsuario } from '../../../shared/domain/roles';
 import { ActorActual, Roles } from '../../../shared/interface/auth/decoradores';
 import { ParseObjectIdPipe } from '../../../shared/interface/http/parse-object-id.pipe';
 import { PerfilesService } from '../application/perfiles.service';
-import { ActualizarPerfilDto, aPerfilRespuesta, CrearPerfilFamiliarDto, PerfilRespuesta } from './dto/perfil.dto';
+import { ActualizarPerfilDto, aPerfilRespuesta, CrearPerfilFamiliarDto, PerfilRespuesta, SolicitarControlDto } from './dto/perfil.dto';
 
 /** «Boundary» HU: gestionar los perfiles de mis hijos o padres desde mi cuenta. */
 @ApiTags('Perfiles familiares')
@@ -23,6 +23,22 @@ export class PerfilesController {
   async crearPerfilFamiliar(@ActorActual() actor: Actor, @Body() dto: CrearPerfilFamiliarDto): Promise<PerfilRespuesta> {
     const datos = Object.assign(new CrearPerfilFamiliarDto(), dto).aDominio();
     return aPerfilRespuesta(await this.perfiles.crearPerfilFamiliar(actor.id, dto.parentescoConTitular, datos));
+  }
+
+  /** Un dependiente que ya es mayor de edad pide, desde su propia cuenta, el control de su perfil. */
+  @Post('control/solicitar')
+  async solicitarControl(@ActorActual() actor: Actor, @Body() dto: SolicitarControlDto): Promise<PerfilRespuesta> {
+    return aPerfilRespuesta(await this.perfiles.solicitarControl(actor, dto.cedula, new Date(dto.fechaNacimiento)));
+  }
+
+  @Post(':id/control/aprobar')
+  async aprobarControl(@ActorActual() actor: Actor, @Param('id', ParseObjectIdPipe) id: string): Promise<PerfilRespuesta> {
+    return aPerfilRespuesta(await this.perfiles.responderSolicitudControl(actor, id, true));
+  }
+
+  @Post(':id/control/rechazar')
+  async rechazarControl(@ActorActual() actor: Actor, @Param('id', ParseObjectIdPipe) id: string): Promise<PerfilRespuesta> {
+    return aPerfilRespuesta(await this.perfiles.responderSolicitudControl(actor, id, false));
   }
 
   @Get(':id')

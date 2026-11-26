@@ -30,6 +30,8 @@ export class MongoPerfilPacienteRepository extends PerfilPacienteRepository {
         fechaNacimiento: p.fechaNacimiento,
         sexo: p.sexo,
         creadoEn: p.creadoEn,
+        solicitudControlUsuarioId: p.solicitudControl ? oid(p.solicitudControl.usuarioId) : undefined,
+        solicitudControlEn: p.solicitudControl?.solicitadaEn,
       },
       { upsert: true },
     );
@@ -50,6 +52,11 @@ export class MongoPerfilPacienteRepository extends PerfilPacienteRepository {
     return docs.map((d) => this.aDominio(d));
   }
 
+  async buscarPorCedula(cedula: string): Promise<PerfilPaciente[]> {
+    const docs = await this.modelo.find({ cedulaHuella: this.cifrador.huella(cedula) }).lean();
+    return docs.map((d) => this.aDominio(d));
+  }
+
   private aDominio(d: PerfilPacienteDoc): PerfilPaciente {
     return new PerfilPaciente({
       id: str(d._id),
@@ -61,6 +68,10 @@ export class MongoPerfilPacienteRepository extends PerfilPacienteRepository {
       fechaNacimiento: d.fechaNacimiento,
       sexo: d.sexo as Sexo,
       creadoEn: d.creadoEn,
+      solicitudControl:
+        d.solicitudControlUsuarioId && d.solicitudControlEn
+          ? { usuarioId: str(d.solicitudControlUsuarioId), solicitadaEn: d.solicitudControlEn }
+          : undefined,
     });
   }
 }

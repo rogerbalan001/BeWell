@@ -26,6 +26,12 @@ export class CrearPerfilFamiliarDto extends DatosPersonalesDto {
   @IsString() @IsNotEmpty() @MaxLength(30) parentescoConTitular: string;
 }
 
+export class SolicitarControlDto {
+  @IsString() @IsNotEmpty() @MaxLength(20) cedula: string;
+  /** ISO 8601 (AAAA-MM-DD). */
+  @IsDateString() fechaNacimiento: string;
+}
+
 export class ActualizarPerfilDto {
   @IsOptional() @IsString() @IsNotEmpty() nombres?: string;
   @IsOptional() @IsString() @IsNotEmpty() apellidos?: string;
@@ -46,6 +52,10 @@ export interface PerfilRespuesta {
   fechaNacimiento: string;
   edad: number;
   sexo: Sexo;
+  mayorDeEdad: boolean;
+  /** Hay un pedido del propio dependiente (mayor de edad) para gestionar su perfil. */
+  solicitudControlPendiente: boolean;
+  solicitudControlEn?: string;
 }
 
 export const aPerfilRespuesta = (p: PerfilPaciente, ahora = new Date()): PerfilRespuesta => ({
@@ -60,4 +70,7 @@ export const aPerfilRespuesta = (p: PerfilPaciente, ahora = new Date()): PerfilR
   fechaNacimiento: p.fechaNacimiento.toISOString().slice(0, 10),
   edad: p.edad(ahora),
   sexo: p.sexo,
+  mayorDeEdad: p.esMayorDeEdad(ahora),
+  solicitudControlPendiente: !!p.solicitudControl,
+  solicitudControlEn: p.solicitudControl?.solicitadaEn.toISOString(),
 });

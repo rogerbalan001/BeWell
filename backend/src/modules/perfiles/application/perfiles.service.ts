@@ -45,6 +45,32 @@ export class PerfilesService {
     return perfil;
   }
 
+  /**
+   * El dependiente, ya mayor de edad y con su propia cuenta, pide el control de su perfil.
+   * Se identifica con la cédula y la fecha de nacimiento que cargó su titular.
+   */
+  async solicitarControl(actor: Actor, cedula: string, fechaNacimiento: Date): Promise<PerfilPaciente> {
+    const dia = (f: Date) => f.toISOString().slice(0, 10);
+    const perfil = (await this.perfiles.buscarPorCedula(cedula.trim())).find(
+      (p) => !p.esTitular && dia(p.fechaNacimiento) === dia(fechaNacimiento),
+    );
+    if (!perfil) {
+      throw new ReglaNegocioError('No encontramos un perfil dependiente con esa cédula y fecha de nacimiento');
+    }
+    perfil.solicitarControl(actor.id, this.reloj.ahora());
+    await this.perfiles.guardar(perfil);
+    return perfil;
+  }
+
+  /** El titular aprueba (entrega el perfil) o rechaza la solicitud. */
+  async responderSolicitudControl(actor: Actor, pacienteId: string, aprobar: boolean): Promise<PerfilPaciente> {
+    const perfil = await this.asegurarGestion(actor, pacienteId);
+    if (aprobar) perfil.aprobarControl(this.reloj.ahora());
+    else perfil.rechazarControl();
+    await this.perfiles.guardar(perfil);
+    return perfil;
+  }
+
   async obtener(pacienteId: string): Promise<PerfilPaciente> {
     const perfil = await this.perfiles.buscarPorId(pacienteId);
     if (!perfil) throw new NoEncontradoError('Paciente', pacienteId);

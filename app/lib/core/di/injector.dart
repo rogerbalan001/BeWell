@@ -101,6 +101,7 @@ void configurarDependencias() {
   sl.registerLazySingleton<PerfilesRepository>(() => PerfilesRepositoryImpl(sl()));
   sl.registerLazySingleton(() => ListarPerfiles(sl()));
   sl.registerLazySingleton(() => CrearPerfilFamiliar(sl()));
+  sl.registerLazySingleton(() => ControlDePerfil(sl()));
   sl.registerLazySingleton(() => PerfilActivoCubit(sl(), sl()));
 
   // ---------- Médicos, agenda y verificación ----------

@@ -12,6 +12,8 @@ class Perfil extends Equatable {
     required this.edad,
     required this.sexo,
     this.cedula,
+    this.mayorDeEdad = false,
+    this.solicitudControlPendiente = false,
   });
 
   final String id;
@@ -24,13 +26,22 @@ class Perfil extends Equatable {
   final String sexo;
   final String? cedula;
 
+  /// Tiene 18 años o más.
+  final bool mayorDeEdad;
+
+  /// El propio dependiente, ya mayor de edad, pidió gestionar su perfil desde su cuenta.
+  final bool solicitudControlPendiente;
+
+  /// Dependiente que ya puede tomar el control de su perfil.
+  bool get puedeIndependizarse => !esTitular && mayorDeEdad;
+
   String get nombreCompleto => '$nombres $apellidos';
   String get etiqueta => esTitular ? 'Yo' : _capitalizar(parentesco);
 
   static String _capitalizar(String s) => s.isEmpty ? s : s[0] + s.substring(1).toLowerCase();
 
   @override
-  List<Object?> get props => [id, nombres, apellidos, parentesco, cedula, fechaNacimiento];
+  List<Object?> get props => [id, nombres, apellidos, parentesco, cedula, fechaNacimiento, mayorDeEdad, solicitudControlPendiente];
 }
 
 class NuevoPerfil {
