@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/clinico/terminologia.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_textos.dart';
 import '../../domain/entities/examen.dart';
@@ -20,7 +21,7 @@ class TablaResultados extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Row(children: [
               Expanded(flex: 3, child: Text(r.analito, style: AppTextos.enfasisSuave)),
-              Expanded(flex: 2, child: Text('${r.valor} ${r.unidad ?? ''}', style: const TextStyle(fontWeight: FontWeight.w800))),
+              Expanded(flex: 2, child: _Valor(r)),
               Expanded(flex: 2, child: Text(r.rangoReferencia ?? '', style: AppTextos.detalle)),
               if (r.validadoPorMedico)
                 const Tooltip(message: 'Validado por médico', child: Icon(Icons.verified, color: AppColors.verde, size: 18))
@@ -34,5 +35,26 @@ class TablaResultados extends StatelessWidget {
           ),
       ]),
     );
+  }
+}
+
+/// Valor con su unidad oficial y una marca cuando cae fuera del rango de referencia.
+class _Valor extends StatelessWidget {
+  const _Valor(this.r);
+  final ResultadoAnalito r;
+
+  @override
+  Widget build(BuildContext context) {
+    final posicion = posicionEnRango(r.valor, r.rangoReferencia) ?? 0;
+    final fuera = posicion != 0;
+    final color = fuera ? AppColors.error : null;
+    return Row(children: [
+      Flexible(child: Text('${r.valor} ${r.unidad ?? ''}', style: TextStyle(fontWeight: FontWeight.w800, color: color))),
+      if (fuera)
+        Tooltip(
+          message: posicion > 0 ? 'Por encima del rango de referencia' : 'Por debajo del rango de referencia',
+          child: Icon(posicion > 0 ? Icons.arrow_upward : Icons.arrow_downward, size: 16, color: AppColors.error),
+        ),
+    ]);
   }
 }

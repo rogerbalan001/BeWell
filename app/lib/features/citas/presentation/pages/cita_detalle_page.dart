@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/clinico/buscador_cie10.dart';
+import '../../../../core/clinico/terminologia.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/estado/recurso.dart';
@@ -185,34 +187,60 @@ class _DetalleState extends State<_Detalle> {
   }
 
   Future<void> _atender() async {
-    final nota = TextEditingController();
-    final diagnosticos = TextEditingController();
+    final s = TextEditingController(), o = TextEditingController(), a = TextEditingController(), p = TextEditingController();
+    var diagnosticos = <String>[];
+    String? error;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Registrar consulta atendida'),
-        content: SizedBox(
-          width: 480,
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: nota, maxLines: 4, decoration: const InputDecoration(labelText: 'Nota clínica (se guarda cifrada en el expediente)')),
-            const SizedBox(height: 10),
-            TextField(controller: diagnosticos, decoration: const InputDecoration(labelText: 'Diagnósticos (separados por coma)')),
-            const SizedBox(height: 10),
-            const Text('El pago se liberará automáticamente en 24 h, salvo que el paciente reporte un problema.', style: TextStyle(fontSize: 12)),
-          ]),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          title: const Text('Registrar consulta atendida'),
+          content: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(
+              child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Nota de evolución (formato SOAP). Se guarda cifrada en el expediente.', style: TextStyle(fontSize: 12.5)),
+                const SizedBox(height: 10),
+                TextField(controller: s, maxLines: 2, decoration: const InputDecoration(labelText: 'S · Subjetivo', hintText: 'Lo que refiere el paciente: síntomas, evolución')),
+                const SizedBox(height: 8),
+                TextField(controller: o, maxLines: 2, decoration: const InputDecoration(labelText: 'O · Objetivo', hintText: 'Signos vitales, examen físico y resultados')),
+                const SizedBox(height: 8),
+                TextField(controller: a, maxLines: 2, decoration: const InputDecoration(labelText: 'A · Análisis', hintText: 'Interpretación clínica')),
+                const SizedBox(height: 8),
+                TextField(controller: p, maxLines: 2, decoration: const InputDecoration(labelText: 'P · Plan', hintText: 'Tratamiento, exámenes, control')),
+                const SizedBox(height: 12),
+                BuscadorCie10(valores: diagnosticos, alCambiar: (v) => setLocal(() => diagnosticos = v), etiqueta: 'Diagnósticos CIE-10'),
+                if (error != null) ...[
+                  const SizedBox(height: 8),
+                  Text(error!, style: const TextStyle(color: AppColors.error, fontSize: 12.5)),
+                ],
+                const SizedBox(height: 10),
+                const Text('El pago se liberará automáticamente en 24 h, salvo que el paciente reporte un problema.', style: TextStyle(fontSize: 12)),
+              ]),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Volver')),
+            FilledButton(
+              onPressed: () {
+                if ([s, o, a, p].any((c) => c.text.trim().isEmpty)) {
+                  setLocal(() => error = 'Completa las cuatro partes de la nota SOAP.');
+                  return;
+                }
+                Navigator.pop(ctx, true);
+              },
+              child: const Text('Marcar atendida'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Volver')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Marcar atendida')),
-        ],
       ),
     );
     if (ok != true) return;
     await _accion(
       () => sl<MarcarCitaAtendida>()(
         c.id,
-        notaClinica: nota.text.trim(),
-        diagnosticos: diagnosticos.text.split(',').map((d) => d.trim()).where((d) => d.isNotEmpty).toList(),
+        notaClinica: componerNotaSoap(subjetivo: s.text, objetivo: o.text, analisis: a.text, plan: p.text),
+        diagnosticos: diagnosticos,
       ),
       'Consulta registrada en el expediente del paciente',
     );

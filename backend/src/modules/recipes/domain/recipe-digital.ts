@@ -3,6 +3,13 @@ import { asegurar, ReglaNegocioError } from '../../../shared/domain/errores';
 import { generarId } from '../../../shared/domain/id';
 import { sumarDias } from '../../../shared/domain/reloj';
 
+/**
+ * Terminología estandarizada: la dosis lleva cantidad y unidad del Sistema Internacional
+ * (o UI / mEq) o la forma farmacéutica que se cuenta. Sin unidad válida no se emite el récipe.
+ */
+export const DOSIS_CON_UNIDAD =
+  /^\d+([.,]\d+)?\s*(mg|g|mcg|µg|ml|ui|meq|tabletas?|tab|c[aá]psulas?|gotas?|ampollas?|sobres?|puffs?|aplicaci[oó]n(es)?)$/i;
+
 /** «Entity» embebida ItemRecipe. */
 export interface ItemRecipe {
   medicamento: string;
@@ -76,6 +83,10 @@ export class RecipeDigital implements PropsRecipe {
     asegurar(datos.items.length > 0, 'El récipe debe incluir al menos un medicamento');
     for (const i of datos.items) {
       asegurar(i.medicamento?.trim() && i.dosis?.trim() && i.frecuencia?.trim(), 'Cada medicamento requiere nombre, dosis y frecuencia');
+      asegurar(
+        DOSIS_CON_UNIDAD.test(i.dosis.trim()),
+        `La dosis "${i.dosis.trim()}" no tiene una unidad válida: usa mg, g, mcg, ml, UI, mEq o la forma farmacéutica (tableta, cápsula, gota…)`,
+      );
       asegurar(Number.isInteger(i.duracionDias) && i.duracionDias > 0, 'La duración del tratamiento debe ser un número de días');
     }
     asegurar(datos.validoDias >= 1 && datos.validoDias <= 180, 'La vigencia debe estar entre 1 y 180 días');

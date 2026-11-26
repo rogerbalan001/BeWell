@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/clinico/buscador_cie10.dart';
+import '../../../../core/clinico/terminologia.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/estado/recurso.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -131,6 +133,10 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
     }
     if (_diagnosticos.isEmpty) {
       mostrarMensaje(context, 'Agrega al menos una impresión diagnóstica (X)', error: true);
+      return;
+    }
+    if (!_diagnosticos.every(tieneCodigoCie10)) {
+      mostrarMensaje(context, 'Cada diagnóstico debe tener su código CIE-10: elígelo en el buscador (X)', error: true);
       return;
     }
     if ([_planDiagnostico, _planPreventivo, _planEducativo, _planTerapeutico].every((c) => c.text.trim().isEmpty)) {
@@ -326,12 +332,7 @@ class _ConsultaFormPageState extends State<ConsultaFormPage> {
                 ),
               ]),
               _bloque('X', 'Impresión diagnóstica', [
-                EditorLista(
-                  etiqueta: 'Agregar diagnóstico *',
-                  ayuda: 'Uno o más diagnósticos; puedes incluir el código CIE-10',
-                  valores: _diagnosticos,
-                  alCambiar: (v) => setState(() => _diagnosticos = v),
-                ),
+                BuscadorCie10(valores: _diagnosticos, alCambiar: (v) => setState(() => _diagnosticos = v)),
               ]),
               _bloque('XI', 'Exámenes', [
                 RejillaAdaptable(minAncho: 260, espacio: 12, children: [
