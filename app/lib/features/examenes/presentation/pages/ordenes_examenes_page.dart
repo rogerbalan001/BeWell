@@ -12,6 +12,7 @@ import '../../../../core/widgets/bw_widgets.dart';
 import '../../domain/entities/examen.dart';
 import '../../domain/usecases/examenes_usecases.dart';
 import '../cubit/examenes_cubit.dart';
+import '../widgets/resultados_por_validar.dart';
 
 /// HU médico: ver si las órdenes de exámenes del paciente siguen pendientes,
 /// ya tienen resultados (completadas) o fueron anuladas, y anular una pendiente.
@@ -53,6 +54,7 @@ class _Vista extends StatelessWidget {
               descripcion: pacienteNombre == null || pacienteNombre!.isEmpty ? null : 'Paciente: $pacienteNombre',
               accion: FilledButton.icon(onPressed: () => _nuevaOrden(context), icon: const Icon(Icons.add), label: const Text('Nueva orden')),
             ),
+            ResultadosPorValidar(pacienteId: pacienteId),
             switch (estado) {
               RecursoError(:final mensaje) => VistaError(mensaje, reintentar: () => context.read<OrdenesExamenesCubit>().cargar(pacienteId)),
               RecursoListo(:final datos) when datos.isEmpty => const VistaVacia(
