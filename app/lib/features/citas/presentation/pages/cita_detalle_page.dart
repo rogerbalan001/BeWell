@@ -372,7 +372,7 @@ class _DetalleState extends State<_Detalle> {
           const SizedBox(width: 8),
           Text('#${c.codigo}', style: AppTextos.tituloSeccion),
           const Spacer(),
-          ChipEstado(c.estadoLegible, color: colorEstadoCita(c.estado)),
+          ChipEstado(c.estadoLegible, color: colorEstadoCita(c.estadoVisible)),
         ]),
         const Divider(height: 28),
         Row(children: [

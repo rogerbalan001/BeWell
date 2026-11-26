@@ -9,7 +9,7 @@ import '../../domain/entities/cita.dart';
 Color colorEstadoCita(String estado) => switch (estado) {
       'CONFIRMADA' => AppColors.primario,
       'ATENDIDA' => AppColors.verde,
-      'PENDIENTE_ACEPTACION' || 'PENDIENTE_PAGO' => AppColors.ambar,
+      'PENDIENTE_ACEPTACION' || 'PENDIENTE_PAGO' || 'POR_REGISTRAR' => AppColors.ambar,
       _ => AppColors.pizarraClara,
     };
 
@@ -44,7 +44,7 @@ class TarjetaCita extends StatelessWidget {
             Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextos.secundario),
             const SizedBox(height: 8),
             Wrap(spacing: 6, runSpacing: 6, children: [
-              ChipEstado(cita.estadoLegible, color: colorEstadoCita(cita.estado)),
+              ChipEstado(cita.estadoLegible, color: colorEstadoCita(cita.estadoVisible)),
               ChipEstado(cita.esVirtual ? 'Videollamada' : 'Presencial',
                   icono: cita.esVirtual ? Icons.videocam_outlined : Icons.apartment, color: AppColors.pizarra),
               if (!vistaMedico && cita.pacienteNombre.isNotEmpty)

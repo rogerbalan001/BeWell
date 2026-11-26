@@ -111,6 +111,18 @@ class Cita extends Equatable {
   bool get activa => const ['PENDIENTE_ACEPTACION', 'PENDIENTE_PAGO', 'CONFIRMADA'].contains(estado);
   bool get futura => inicio.isAfter(DateTime.now());
 
+  /// La hora de la cita ya terminó.
+  bool get yaPaso => fin.isBefore(DateTime.now());
+
+  /// Confirmada, ya pasó y el médico todavía no la marcó como atendida o no asistió.
+  bool get porRegistrar => confirmada && yaPaso;
+
+  /// Se quedó esperando respuesta o pago y su hora ya pasó.
+  bool get vencida => (estado == 'PENDIENTE_ACEPTACION' || estado == 'PENDIENTE_PAGO') && yaPaso;
+
+  /// Estado que se muestra: distingue las citas pasadas que siguen sin registrar.
+  String get estadoVisible => porRegistrar ? 'POR_REGISTRAR' : (vencida ? 'VENCIDA' : estado);
+
   /// La reserva espera a que el paciente apruebe el pago en PayPal (la franja se guarda 30 min).
   bool get esperandoPago => estado == 'PENDIENTE_PAGO' && (pago?.pendienteAprobacion ?? false);
   String? get urlPago => esperandoPago ? pago?.urlAprobacion : null;
@@ -119,7 +131,9 @@ class Cita extends Equatable {
   bool get puedeReportarProblema =>
       atendida && pago?.estado == 'RETENIDO' && (pago?.liberarDespuesDe?.isAfter(DateTime.now()) ?? false);
 
-  String get estadoLegible => switch (estado) {
+  String get estadoLegible => switch (estadoVisible) {
+        'POR_REGISTRAR' => 'Por registrar por el médico',
+        'VENCIDA' => 'Vencida sin confirmar',
         'PENDIENTE_ACEPTACION' => 'Pendiente de aceptación',
         'PENDIENTE_PAGO' => 'Pendiente de pago',
         'CONFIRMADA' => 'Confirmada',

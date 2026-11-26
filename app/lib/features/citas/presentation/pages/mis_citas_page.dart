@@ -29,13 +29,18 @@ class _Vista extends StatefulWidget {
 class _VistaState extends State<_Vista> {
   int _pestana = 0;
 
-  List<Cita> _filtrar(List<Cita> citas) {
-    final ahora = DateTime.now();
+  /// Próximas: confirmadas cuya hora no ha pasado. En la agenda del médico van primero
+  /// las que ya pasaron y siguen sin registrar, para marcarlas como atendidas o no asistió.
+  /// Historial: todo lo demás, con el estado real (una cita pasada nunca sale como "Confirmada").
+  List<Cita> _filtrar(List<Cita> citas, bool esMedico) {
+    final proximas = citas.where((c) => c.confirmada && !c.yaPaso).toList()..sort((a, b) => a.inicio.compareTo(b.inicio));
+    final porRegistrar = esMedico ? (citas.where((c) => c.porRegistrar).toList()..sort((a, b) => a.inicio.compareTo(b.inicio))) : <Cita>[];
+    final porResponder = citas.where((c) => c.pendienteAceptacion && !c.yaPaso).toList();
     return switch (_pestana) {
-      0 => citas.where((c) => c.confirmada && c.fin.isAfter(ahora.subtract(const Duration(hours: 2)))).toList()
-        ..sort((a, b) => a.inicio.compareTo(b.inicio)),
-      1 => citas.where((c) => c.pendienteAceptacion).toList(),
-      _ => citas.where((c) => !(c.confirmada && c.fin.isAfter(ahora.subtract(const Duration(hours: 2)))) && !c.pendienteAceptacion).toList(),
+      0 => [...porRegistrar, ...proximas],
+      1 => porResponder,
+      _ => citas.where((c) => !proximas.contains(c) && !porRegistrar.contains(c) && !porResponder.contains(c)).toList()
+        ..sort((a, b) => b.inicio.compareTo(a.inicio)),
     };
   }
 
@@ -74,7 +79,7 @@ class _VistaState extends State<_Vista> {
               const SizedBox(height: 16),
               switch (estado) {
                 RecursoError(:final mensaje) => VistaError(mensaje, reintentar: cubit.cargar),
-                RecursoListo(:final datos) => _Lista(_filtrar(datos), esMedico),
+                RecursoListo(:final datos) => _Lista(_filtrar(datos, esMedico), esMedico),
                 _ => const VistaCargando(),
               },
             ]),
