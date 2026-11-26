@@ -2,12 +2,15 @@ import 'package:bewell/features/citas/data/datasources/citas_remote_data_source.
 import 'package:bewell/features/citas/presentation/widgets/pago_paypal.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+// La reserva es para dentro de dos días: una cita cuya hora ya pasó se muestra con su estado real (vencida o por registrar).
+final _inicio = DateTime.now().add(const Duration(days: 2));
+
 Map<String, dynamic> citaJson({required String estado, Map<String, dynamic>? pago}) => {
       'id': 'c1',
       'codigo': 'BW-00001',
       'estado': estado,
-      'inicio': '2026-11-02T13:00:00.000Z',
-      'fin': '2026-11-02T13:30:00.000Z',
+      'inicio': _inicio.toUtc().toIso8601String(),
+      'fin': _inicio.add(const Duration(minutes: 30)).toUtc().toIso8601String(),
       'modalidad': 'VIRTUAL',
       'motivo': 'Control',
       'monto': 45,
