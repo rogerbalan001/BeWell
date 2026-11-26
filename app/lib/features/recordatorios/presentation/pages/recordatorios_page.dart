@@ -8,6 +8,7 @@ import '../../../../core/utils/formatos.dart';
 import '../../../../core/widgets/bw_widgets.dart';
 import '../../domain/entities/recordatorio.dart';
 import '../cubit/recordatorios_cubit.dart';
+import '../widgets/tarjeta_push.dart';
 
 IconData _icono(TipoRecordatorio t) => switch (t) {
       TipoRecordatorio.citas => Icons.event_note_outlined,
@@ -49,7 +50,7 @@ class _Vista extends StatelessWidget {
               antetitulo: 'Tu tratamiento al día',
               titulo: 'Recordatorios',
               descripcion: 'Te avisamos de tus citas, tus medicamentos y los exámenes pendientes, también los de tu familia. '
-                  'Los recibes en Notificaciones.',
+                  'Los recibes en Notificaciones y, si lo activas, como notificación en tu teléfono.',
             ),
             switch (estado) {
               RecursoError(:final mensaje) => VistaError(mensaje, reintentar: () => context.read<RecordatoriosCubit>().cargar()),
@@ -69,6 +70,8 @@ class _Vista extends StatelessWidget {
                         ),
                     ]),
                   ),
+                  const SizedBox(height: 16),
+                  const TarjetaPush(),
                   const SizedBox(height: 16),
                   SeccionTarjeta(
                     titulo: 'Próximos 7 días',

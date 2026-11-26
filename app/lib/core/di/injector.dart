@@ -68,6 +68,7 @@ import '../../features/resenas/data/repositories/resenas_repository_impl.dart';
 import '../../features/resenas/domain/repositories/resenas_repository.dart';
 import '../../features/resenas/domain/usecases/resenas_usecases.dart';
 import '../network/api_client.dart';
+import '../push/notificaciones_push.dart';
 import '../network/token_storage.dart';
 
 /// Contenedor de inyección de dependencias (get_it). Es la raíz de
@@ -78,6 +79,7 @@ void configurarDependencias() {
   // ---------- Core ----------
   sl.registerLazySingleton<TokenStorage>(() => TokenStorage(const FlutterSecureStorage()));
   sl.registerLazySingleton<ApiClient>(() => ApiClient(sl()));
+  sl.registerLazySingleton(() => NotificacionesPush(sl()));
 
   // ---------- Auth ----------
   sl.registerLazySingleton(() => AuthRemoteDataSource(sl()));
